@@ -1,0 +1,76 @@
+version: '3'
+services:
+  workspace:
+    build:
+      context: .
+      dockerfile: workspace/Dockerfile
+      args:
+        VARIANT: 18-buster
+    volumes:
+      - ..:/workspace:cached
+      - ./elasticsearch/certs:/export/elasticsearch/certs
+    command: /bin/sh -c "while sleep 1000; do :; done"
+  mysql:
+    image: mysql:8.0.32
+    ports: 
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=database
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=user
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - 10000:10000
+      - 10001:10001
+      - 10002:10002
+  setup_es:
+    image: elasticsearch:8.8.0
+    volumes:
+      - ./elasticsearch/certs:/usr/share/elasticsearch/config/certs
+    user: "0"
+    command: >
+      bash -c '
+        echo "Checking CA...";
+        if [ ! -f config/certs/ca.zip ]; then
+          echo "Creating CA";
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip -j config/certs/ca.zip -d config/certs;
+        fi;
+        echo "Checking Certs...";
+        if [ ! -f config/certs/certs.zip ]; then
+          echo "Creating certs";
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca.crt --ca-key config/certs/ca.key;
+          unzip -j config/certs/certs.zip -d config/certs;
+        fi;
+        echo "Finalizing permissions...";
+        chmod -R 777 config/certs/*.zip config/certs/*.key config/certs/*.crt;
+        echo "Done";
+      '
+  es01:
+    build:
+      context: .
+      dockerfile: elasticsearch/Dockerfile
+      args:
+        VARIANT: 8.8.0
+    volumes:
+      - ./elasticsearch/certs:/usr/share/elasticsearch/config/certs
+    environment:
+      - node.name=es01
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - ELASTIC_PASSWORD=elastic
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/es01.key
+      - xpack.security.http.ssl.certificate=certs/es01.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca.crt
+      - xpack.security.http.ssl.verification_mode=certificate
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    depends_on:
+      setup_es:
+        condition: service_completed_successfully

@@ -1,0 +1,45 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+{
+  "name": "${localWorkspaceFolderBasename} Development",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "workspace",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "telemetry.enableTelemetry": false,
+        "redhat.telemetry.enabled": false,
+        "vulnCost.sendStatistics": false,
+        "editor.renderWhitespace": "all",
+        "editor.renderControlCharacters": true,
+        "editor.formatOnSave": true,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "files.insertFinalNewline": true,
+        "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false
+      },
+      "extensions": [
+        "ms-ceintl.vscode-language-pack-ja",
+        "ms-vscode.vscode-node-azure-pack",
+        "dbaeumer.vscode-eslint",
+        "mhutchie.git-graph",
+        "bradlc.vscode-tailwindcss",
+        "github.copilot",
+        "eamodio.gitlens",
+        "prisma.prisma"
+      ]
+    }
+  },
+  "forwardPorts": [
+    3000,
+    3001,
+    "mysql:3306",
+    "es01:9200",
+    "azurite:10000",
+    "azurite:10001",
+    "azurite:10002"
+  ],
+  // "postCreateCommand": "pnpm install",
+  "remoteUser": "node"
+}
