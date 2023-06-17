@@ -30,6 +30,7 @@ import { CreateGroupItemDto } from './dto/create-group-item.dto';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { RestError } from '@azure/storage-blob';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('groups')
@@ -158,6 +159,12 @@ export class GroupsController {
       response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
       downloadBlockBlobResponse.readableStreamBody?.pipe(response);
     } catch (e) {
+      console.log(e);
+      if (e instanceof RestError) {
+        if (e.statusCode === 404) {
+          throw new NotFoundException();
+        }
+      }
       throw new InternalServerErrorException();
     }
   }
@@ -214,6 +221,11 @@ export class GroupsController {
       response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
       downloadBlockBlobResponse.readableStreamBody?.pipe(response);
     } catch (e) {
+      if (e instanceof RestError) {
+        if (e.statusCode === 404) {
+          throw new NotFoundException();
+        }
+      }
       throw new InternalServerErrorException();
     }
   }

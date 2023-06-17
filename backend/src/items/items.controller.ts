@@ -16,6 +16,7 @@ import {
   ParseIntPipe,
   BadRequestException,
   ForbiddenException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { ItemsService } from './items.service';
 import { UpdateItemDto } from './dto/update-item.dto';
@@ -25,6 +26,7 @@ import { AuthorizedRolesAny } from '../guards/jwt.roles.decorator';
 import { AzblobService } from '../azblob/azblob.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { GroupsService } from '../groups/groups.service';
+import { RestError } from '@azure/storage-blob';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('items')
@@ -211,13 +213,12 @@ export class ItemsController {
       response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
       downloadBlockBlobResponse.readableStreamBody?.pipe(response);
     } catch (e) {
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: e.message || e || 'Unknown error',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (e instanceof RestError) {
+        if (e.statusCode === 404) {
+          throw new NotFoundException();
+        }
+      }
+      throw new InternalServerErrorException();
     }
   }
 

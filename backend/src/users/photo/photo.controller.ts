@@ -3,6 +3,8 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  InternalServerErrorException,
+  NotFoundException,
   Param,
   Response,
   UseGuards,
@@ -10,6 +12,7 @@ import {
 import { AzblobService } from '../../azblob/azblob.service';
 import { JwtAuthGuard } from '../../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../../guards/jwt.roles.guard';
+import { RestError } from '@azure/storage-blob';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('/users/:id/photo')
@@ -25,13 +28,12 @@ export class PhotoController {
       response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
       downloadBlockBlobResponse.readableStreamBody?.pipe(response);
     } catch (e) {
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: e.message || e || 'Unknown error',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (e instanceof RestError) {
+        if (e.statusCode === 404) {
+          throw new NotFoundException();
+        }
+      }
+      throw new InternalServerErrorException();
     }
   }
 }
