@@ -83,6 +83,7 @@ export class DraftsController {
         user: { id: userId },
       },
       orderBy: { createdAt: 'desc' },
+      include: { user: true, group: true },
       skip,
       take,
     });

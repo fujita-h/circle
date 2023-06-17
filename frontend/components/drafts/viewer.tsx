@@ -30,14 +30,20 @@ export function Viewer({ itemId }: { itemId: string }) {
   }
 
   return (
-    <>
-      <div>
-        <Link href={`/drafts/${item.id}/edit`}>
-          <span className="border rounded-md px-2 py-1 text-center bg-blue-200">Edit</span>
-        </Link>
+    <div className="px-4 py-2">
+      <div className="flex">
+        <div className="flex-1 py-2 pl-2 text-lg font-bold">{item.title}</div>
+        <div className="flex gap-2 justify-end">
+          <Link href={`/drafts/${item.id}/edit`}>
+            <div className="ml-3 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 hover:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+              編集する
+            </div>
+          </Link>
+        </div>
       </div>
-      <div>{item.title}</div>
-      <div>{markdown}</div>
-    </>
+      <div className="border rounded-md p-2 border-gray-300">
+        <pre className="font-sans text-inherit">{markdown}</pre>
+      </div>
+    </div>
   );
 }

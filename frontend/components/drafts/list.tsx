@@ -1,29 +1,43 @@
 'use client';
 
-import { ChevronRightIcon } from '@heroicons/react/20/solid';
+import { ChevronRightIcon, UserGroupIcon } from '@heroicons/react/20/solid';
+import { BackendImage } from '@/components/backend-image';
 import { classNames } from '@/utils';
 import Link from 'next/link';
 
 type ItemData = {
   id: string;
   title: string;
+  group?: {
+    id: string;
+    name: string;
+  };
 };
 
 export function ItemList({ active, items }: { active?: string; items: ItemData[] }) {
   return (
-    <ul role="list" className="divide-y divide-gray-100">
+    <ul role="list" className="divide-y divide-gray-200">
       {items.map((item) => (
         <li
           key={item.id}
           className={classNames(
-            active === item.id ? 'bg-gray-100' : 'hover:bg-gray-50',
+            active === item.id ? 'bg-gray-50' : 'hover:bg-gray-50',
             'relative flex justify-between gap-x-6 px-4 py-3 sm:px-6 lg:px-8',
           )}
         >
           <div className="flex gap-x-4">
-            <img className="h-16 w-16 flex-none rounded-lg bg-gray-50" src={item.id} alt="" />
+            {item.group ? (
+              <BackendImage
+                src={`/groups/${item.group?.id}/photo`}
+                className="h-16 w-16 flex-none rounded-lg bg-gray-50"
+                alt="group-icon"
+                fallback={<UserGroupIcon className="h-16 w-16 flex-none rounded-lg text-gray-300 bg-gray-50" />}
+              />
+            ) : (
+              <UserGroupIcon className="h-16 w-16 flex-none rounded-lg text-gray-300 bg-gray-50" />
+            )}
             <div className="min-w-0 flex-auto">
-              <p>--group-name--here--</p>
+              <p>{item.group?.name || 'グループ未設定'}</p>
               <p className="text-sm font-semibold leading-6 text-gray-900">
                 <Link href={`/drafts/${item.id}`}>
                   <span className="absolute inset-x-0 -top-px bottom-0" />
