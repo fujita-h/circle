@@ -26,7 +26,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy-Report-Only',
-            value: `default-src 'self'; img-src 'self' ${process.env.BACKEND_ENDPOINT}  https://tailwindui.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' localhost:* https://login.microsoftonline.com `,
+            value: `default-src 'self'; img-src 'self' ${process.env.BACKEND_ENDPOINT}  https://tailwindui.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' ${process.env.BACKEND_ENDPOINT} https://login.microsoftonline.com `,
           },
           {
             key: 'Strict-Transport-Security',
