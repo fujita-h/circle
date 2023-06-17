@@ -24,7 +24,7 @@ export function Loader({ activeItemId }: { activeItemId?: string }) {
     return <div>loading...</div>;
   }
 
-  if (!items || count === undefined) {
+  if (!items || items.length === 0 || count === undefined) {
     return <div>No Item</div>;
   }
 

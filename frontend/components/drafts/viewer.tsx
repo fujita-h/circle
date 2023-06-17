@@ -10,6 +10,8 @@ export function Viewer({ itemId }: { itemId: string }) {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
+  const jsonCredFetcher = swrMsalTokenFetcher(instance, account, environment, 'json', 'include');
+  const { data: token, isLoading: isTokenLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/user/token`, jsonCredFetcher);
   const jsonFetcher = swrMsalTokenFetcher(instance, account, environment, 'json');
   const { data: item, isLoading: isItemLoading } = useSWR<any>(`${environment.BACKEND_ENDPOINT}/drafts/${itemId}`, jsonFetcher, {
     revalidateOnFocus: false,
@@ -19,7 +21,7 @@ export function Viewer({ itemId }: { itemId: string }) {
     revalidateOnFocus: false,
   });
 
-  if (isItemLoading || isMarkdownLoading) {
+  if (isTokenLoading || isItemLoading || isMarkdownLoading) {
     return <div>loading...</div>;
   }
 
