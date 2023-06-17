@@ -14,6 +14,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { UserGroupsService } from '../user-groups/user-groups.service';
 import { ItemsService } from '../items/items.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -25,6 +26,7 @@ import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
+    private readonly userGroupsService: UserGroupsService,
     private readonly itemsService: ItemsService,
   ) {}
 
@@ -77,6 +79,29 @@ export class UsersController {
   @Get('handle/:handle')
   async findOneByHandle(@Param('handle') handle: string) {
     return await this.usersService.findOne({ where: { handle } });
+  }
+
+  @Get('handle/:handle/joined/groups')
+  async findJoinedGroupsByHandle(
+    @Request() request: any,
+    @Param('handle') handle: string,
+    @Query('skip', ParseIntPipe) skip?: number,
+    @Query('take', ParseIntPipe) take?: number,
+  ) {
+    return this.userGroupsService.findMany({
+      where: { user: { handle }, role: { in: ['ADMIN', 'MEMBER'] } },
+      orderBy: { createdAt: 'asc' },
+      include: { group: true },
+      skip,
+      take,
+    });
+  }
+
+  @Get('handle/:handle/joined/groups/count')
+  async countJoinedGroupsByHandle(@Request() request: any, @Param('handle') handle: string) {
+    return this.userGroupsService.count({
+      where: { user: { handle }, role: { in: ['ADMIN', 'MEMBER'] } },
+    });
   }
 
   @Get('handle/:handle/items')
