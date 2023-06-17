@@ -1,0 +1,37 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@azure/msal-browser": "^2.37.1",
+    "@azure/msal-react": "^1.5.8",
+    "@headlessui/react": "^1.7.15",
+    "@heroicons/react": "^2.0.18",
+    "@mdx-js/mdx": "^2.3.0",
+    "@tailwindcss/forms": "^0.5.3",
+    "@types/node": "18.16.3",
+    "@types/react": "18.2.12",
+    "@types/react-dom": "18.2.5",
+    "autoprefixer": "10.4.14",
+    "eslint": "8.42.0",
+    "eslint-config-next": "13.4.5",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "next": "13.4.5",
+    "postcss": "8.4.24",
+    "prettier": "^2.8.8",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-dropzone": "^14.2.3",
+    "rehype-raw": "^6.1.1",
+    "swr": "^2.1.5",
+    "tailwindcss": "3.3.2",
+    "typescript": "5.1.3"
+  }
+}

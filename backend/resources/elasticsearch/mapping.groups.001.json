@@ -1,0 +1,30 @@
+{
+  "properties": {
+    "id": {
+      "type": "keyword"
+    },
+    "handle": {
+      "type": "keyword"
+    },
+    "name": {
+      "type": "text",
+      "fields": {
+        "raw": {
+          "type": "keyword"
+        }
+      }
+    },
+    "description": {
+      "type": "text",
+      "search_analyzer": "ja_kuromoji_search_analyzer",
+      "analyzer": "ja_kuromoji_index_analyzer",
+      "fields": {
+        "ngram": {
+          "type": "text",
+          "search_analyzer": "ja_ngram_search_analyzer",
+          "analyzer": "ja_ngram_index_analyzer"
+        }
+      }
+    }
+  }
+}

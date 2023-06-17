@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "plugin:prettier/recommended",
+    "next",
+    "next/core-web-vitals"
+  ],
+  "env": {
+    "node": true
+  },
+  "ignorePatterns": [
+    "next.config.js",
+    "next-env.d.ts"
+  ],
+  "root": true
+}

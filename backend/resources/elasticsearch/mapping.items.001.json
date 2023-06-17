@@ -1,0 +1,31 @@
+{
+  "properties": {
+    "id": {
+      "type": "keyword"
+    },
+    "title": {
+      "type": "text",
+      "search_analyzer": "ja_kuromoji_search_analyzer",
+      "analyzer": "ja_kuromoji_index_analyzer",
+      "fields": {
+        "ngram": {
+          "type": "text",
+          "search_analyzer": "ja_ngram_search_analyzer",
+          "analyzer": "ja_ngram_index_analyzer"
+        }
+      }
+    },
+    "body": {
+      "type": "text",
+      "search_analyzer": "ja_kuromoji_search_analyzer",
+      "analyzer": "ja_kuromoji_index_analyzer",
+      "fields": {
+        "ngram": {
+          "type": "text",
+          "search_analyzer": "ja_ngram_search_analyzer",
+          "analyzer": "ja_ngram_index_analyzer"
+        }
+      }
+    }
+  }
+}

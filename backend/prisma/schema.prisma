@@ -1,0 +1,134 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid()) // Automatically generated GUID for identifying user on this site. Even if user is deleted, this GUID is not changed.
+  oid       String?    @unique // AAD OID = Unique User ID. Set null if user is deleted.
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  type      UserType   @default(NORMAL)
+  status    UserStatus @default(NORMAL)
+  handle    String?    @unique // Set null if user is deleted.
+  name      String?    @db.VarChar(50)
+  email     String?    @db.VarChar(254)
+
+  joinedGroups UserGroup[]
+  comments     Comment[]
+  items        Item[]
+
+  @@map("user")
+}
+
+model Group {
+  id          String      @id @default(cuid())
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  type        GroupType   @default(OPEN)
+  status      GroupStatus @default(NORMAL)
+  handle      String?     @unique // Set null if group is deleted.
+  name        String?     @db.VarChar(50)
+  description String?     @db.Text
+
+  members UserGroup[]
+  items   Item[]
+
+  @@map("group")
+}
+
+model Item {
+  id           String     @id @default(cuid())
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  user         User       @relation(fields: [userId], references: [id])
+  userId       String
+  group        Group?     @relation(fields: [groupId], references: [id], onDelete: SetNull) // if item is dfaft, group is null.
+  groupId      String?
+  blobPointer  String?    @map("blob_pointer")
+  draftPointer String?    @map("draft_pointer")
+  type         ItemType   @default(NORMAL)
+  status       ItemStatus @default(NORMAL)
+  title        String?    @db.VarChar(255)
+  comments     Comment[]
+
+  @@map("item")
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  item      Item          @relation(fields: [itemId], references: [id])
+  itemId    String
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String
+  type      CommentType   @default(NORMAL)
+  status    CommentStatus @default(NORMAL)
+
+  @@map("comment")
+}
+
+model UserGroup {
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  group     Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String
+  role      UserGroupRole @default(MEMBER)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@id([userId, groupId])
+  @@map("user_group")
+}
+
+enum UserType {
+  NORMAL
+}
+
+enum UserStatus {
+  NORMAL
+  DELETED
+}
+
+enum GroupType {
+  OPEN
+  PUBLIC
+  PRIVATE
+}
+
+enum GroupStatus {
+  NORMAL
+  DELETED
+}
+
+enum ItemType {
+  NORMAL
+  SHARED
+}
+
+enum ItemStatus {
+  NORMAL
+  DELETED
+}
+
+enum CommentType {
+  NORMAL
+}
+
+enum CommentStatus {
+  NORMAL
+  DELETED
+}
+
+enum UserGroupRole {
+  ADMIN
+  MEMBER
+}
