@@ -28,6 +28,7 @@ model User {
   like         Like[]
   follow       Follow[]    @relation("from")
   followed     Follow[]    @relation("to")
+  Watching     Watch[]
 
   @@map("user")
 }
@@ -44,6 +45,7 @@ model Group {
 
   members UserGroup[]
   items   Item[]
+  watched Watch[]
 
   @@map("group")
 }
@@ -130,6 +132,18 @@ model Follow {
 
   @@id([userId, targetId])
   @@map("follow")
+}
+
+model Watch {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([userId, groupId])
+  @@map("watch")
 }
 
 enum UserType {
