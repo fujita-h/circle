@@ -3,10 +3,6 @@ import { LogoutButton } from '@/components/msal/buttons';
 import Link from 'next/link';
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata = {
-  title: 'Hub',
-};
-
 export default function Page() {
   const date = new Date();
   return (
