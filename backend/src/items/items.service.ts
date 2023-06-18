@@ -45,7 +45,7 @@ export class ItemsService {
       await this.blobsService.uploadBlob(this.blobContainerName, blobName, 'text/markdown', body);
 
       // create elasticsearch document
-      const esBody = { ...data, body: body };
+      const esBody = { ...item, body: body };
       const esResponse = await this.esService.create(this.esIndex, item.id.toString(), esBody);
 
       // if elasticsearch document creation failed, delete blob and throw error
@@ -153,7 +153,7 @@ export class ItemsService {
       await this.blobsService.uploadBlob(this.blobContainerName, blobName, 'text/markdown', body);
 
       // update elasticsearch document
-      const esBody = { ...data, body: body };
+      const esBody = { ...item, body: body };
       const esResponse = await this.esService.create(this.esIndex, item.id, esBody);
 
       // if elasticsearch document update failed, delete blob and throw error
