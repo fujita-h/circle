@@ -10,6 +10,7 @@ export function UpdatePhotoForm() {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
+  const [updateKey, setUpdateKey] = useState(0);
 
   const handleSelected = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!account) return;
@@ -33,6 +34,9 @@ export function UpdatePhotoForm() {
         },
         body: formData,
       });
+      if (response.ok) {
+        setUpdateKey(updateKey + 1);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -43,7 +47,12 @@ export function UpdatePhotoForm() {
       <div className="md:col-span-2">
         <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
           <div className="col-span-full flex items-center gap-x-8">
-            <BackendImage src="/user/photo" className="h-24 w-24 flex-none rounded-lg bg-gray-800 object-cover" alt="user-icon" />
+            <BackendImage
+              key={updateKey}
+              src="/user/photo"
+              className="h-24 w-24 flex-none rounded-lg bg-gray-800 object-cover"
+              alt="user-icon"
+            />
             <div>
               <button
                 type="button"
