@@ -3,6 +3,18 @@
     "id": {
       "type": "keyword"
     },
+    "userId": {
+      "type": "keyword"
+    },
+    "groupId": {
+      "type": "keyword"
+    },
+    "type": {
+      "type": "keyword"
+    },
+    "status": {
+      "type": "keyword"
+    },
     "title": {
       "type": "text",
       "search_analyzer": "ja_kuromoji_search_analyzer",
