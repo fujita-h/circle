@@ -27,6 +27,8 @@ import { AzblobService } from '../azblob/azblob.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { GroupsService } from '../groups/groups.service';
 import { RestError } from '@azure/storage-blob';
+import { EsService } from '../es/es.service';
+import { SearchRequest } from '@elastic/elasticsearch/lib/api/types';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('items')
@@ -35,6 +37,7 @@ export class ItemsController {
     private readonly itemsService: ItemsService,
     private readonly groupService: GroupsService,
     private readonly blobsService: AzblobService,
+    private readonly esService: EsService,
   ) {}
 
   @Post()
@@ -129,6 +132,39 @@ export class ItemsController {
         ],
       },
     });
+  }
+
+  @Get('search')
+  async search(
+    @Request() request: any,
+    @Query('q') q?: string,
+    @Query('skip', ParseIntPipe) skip?: number,
+    @Query('take', ParseIntPipe) take?: number,
+  ) {
+    const userId = request.user.id;
+    const groups = await this.groupService.findMany({
+      where: {
+        status: 'NORMAL',
+        handle: { not: null }, // only groups with handle
+        OR: [
+          { members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } } }, // user is member of group
+          { type: { in: ['OPEN', 'PUBLIC'] } }, // group is open or public
+        ],
+      },
+    });
+    const groupIds = groups.map((g) => g.id);
+    const body: SearchRequest = {
+      query: {
+        bool: {
+          must: [
+            { terms: { groupId: groupIds } },
+            q ? { multi_match: { query: q || '', fields: ['title', 'body'] } } : { match_all: {} },
+          ],
+        },
+      },
+    };
+    const result = await this.esService.search('item', body);
+    return result?.hits?.hits || [];
   }
 
   @Get(':id')

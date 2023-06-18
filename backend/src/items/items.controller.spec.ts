@@ -150,4 +150,10 @@ describe('ItemsController', () => {
     await expect(result).resolves.toHaveProperty('id', pre[0].id);
     await expect(result).resolves.toHaveProperty('title', 'updated-title');
   });
+
+  it('検索', async () => {
+    const req = { user: { id: testUser1.id } };
+    const result = controller.search(req, '', undefined, undefined);
+    await expect(result).resolves.toBeDefined();
+  });
 });
