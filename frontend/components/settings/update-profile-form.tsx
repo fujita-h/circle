@@ -45,6 +45,8 @@ export function UpdateProfileForm() {
           setSuccessMessage('更新が完了しました');
           setFormUpdates({});
           mutate();
+        } else {
+          setFailedMessage('更新に失敗しました');
         }
       } catch (e) {
         console.error(e);
