@@ -278,7 +278,7 @@ export class ItemsController {
     });
 
     // check item
-    if (!item || !item.user || !item.group || item.status === 'DELETED') {
+    if (!item || !item.user || item.status === 'DELETED') {
       throw new NotFoundException();
     }
 
