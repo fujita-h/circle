@@ -3,8 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { SearchRequest, SortOptions } from '@elastic/elasticsearch/lib/api/types';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { EsService } from '../es/es.service';
+import { init } from '@paralleldrive/cuid2';
 
 const prisma = new PrismaClient();
+const cuid = init({ length: 24 });
 
 @Injectable()
 export class UsersService {
@@ -29,7 +31,7 @@ export class UsersService {
     include?: Prisma.UserInclude;
   }) {
     return prisma.$transaction(async (prisma) => {
-      const user = await prisma.user.create({ data });
+      const user = await prisma.user.create({ data: { ...data, id: cuid() } });
       const esResponse = await this.esService.create(this.esIndex, user.id, { ...user });
       if (esResponse.result === 'created' || esResponse.result === 'updated') {
         return prisma.user.findUnique({ where: { id: user.id }, include });

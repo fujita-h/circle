@@ -39,7 +39,9 @@ export class ItemsService {
   }) {
     return prisma.$transaction(async (prisma) => {
       const blobCuid = cuid();
-      const item = await prisma.item.create({ data: { ...data, blobPointer: blobCuid } });
+      const item = await prisma.item.create({
+        data: { ...data, id: cuid(), blobPointer: blobCuid },
+      });
 
       // Upload blob
       const blobName = `${item.id}/${blobCuid}.md`;
@@ -70,7 +72,9 @@ export class ItemsService {
   }) {
     return prisma.$transaction(async (prisma) => {
       const blobCuid = cuid();
-      const item = await prisma.item.create({ data: { ...data, draftPointer: blobCuid } });
+      const item = await prisma.item.create({
+        data: { ...data, id: cuid(), draftPointer: blobCuid },
+      });
 
       // Upload blob
       const blobName = `${item.id}/${blobCuid}.draft.md`;
