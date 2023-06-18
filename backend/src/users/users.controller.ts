@@ -30,9 +30,16 @@ export class UsersController {
     private readonly itemsService: ItemsService,
   ) {}
 
+  checkHandle(handle: string) {
+    if (!handle || !handle.match(/^[a-zA-Z][0-9a-zA-Z\-]{2,}$/i)) {
+      throw new Error('Invalid handle');
+    }
+  }
+
   @Post()
   async create(@Body() data: CreateUserDto) {
     try {
+      this.checkHandle(data.handle);
       return await this.usersService.create({ data });
     } catch (e) {
       throw new HttpException(
@@ -160,6 +167,7 @@ export class UsersController {
   @Put(':id')
   async update(@Param('id') id: string, @Body() data: UpdateUserDto) {
     try {
+      this.checkHandle(data.handle);
       return await this.usersService.update({ where: { id }, data });
     } catch (e) {
       throw new HttpException(

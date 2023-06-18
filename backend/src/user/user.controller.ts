@@ -52,6 +52,12 @@ export class UserController {
     this.IRON_SECRET = this.configService.get<string>('IRON_SECRET') || '';
   }
 
+  checkHandle(handle: string) {
+    if (!handle || !handle.match(/^[a-zA-Z][0-9a-zA-Z\-]{2,}$/i)) {
+      throw new Error('Invalid handle');
+    }
+  }
+
   @Get()
   async findOne(@Request() request: any) {
     const userId = request.user.id;
@@ -144,6 +150,15 @@ export class UserController {
     if (!userId) {
       throw new Error('Invalid input');
     }
+
+    if (data.handle) {
+      try {
+        this.checkHandle(data.handle);
+      } catch (e) {
+        throw new NotAcceptableException();
+      }
+    }
+
     return this.usersService.update({
       where: { id: userId },
       data: {
