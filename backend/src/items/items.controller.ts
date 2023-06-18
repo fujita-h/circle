@@ -138,8 +138,8 @@ export class ItemsController {
   async search(
     @Request() request: any,
     @Query('q') q?: string,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', ParseIntPipe) skip = 0,
+    @Query('take', ParseIntPipe) take = 20,
   ) {
     const userId = request.user.id;
     const groups = await this.groupService.findMany({
@@ -162,6 +162,9 @@ export class ItemsController {
           ],
         },
       },
+      sort: [{ createdAt: 'desc' }],
+      from: skip,
+      size: take,
     };
     const result = await this.esService.search('item', body);
     return result?.hits?.hits || [];
