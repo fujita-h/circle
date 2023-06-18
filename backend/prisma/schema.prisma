@@ -24,6 +24,8 @@ model User {
   joinedGroups UserGroup[]
   comments     Comment[]
   items        Item[]
+  stocks       Stock[]
+  like         Like[]
 
   @@map("user")
 }
@@ -58,6 +60,8 @@ model Item {
   status       ItemStatus @default(NORMAL)
   title        String?    @db.VarChar(255)
   comments     Comment[]
+  stocked      Stock[]
+  liked        Like[]
 
   @@map("item")
 }
@@ -87,6 +91,31 @@ model UserGroup {
 
   @@id([userId, groupId])
   @@map("user_group")
+}
+
+model Stock {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId    String
+  label     String?  @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([userId, itemId])
+  @@map("stock")
+}
+
+model Like {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([userId, itemId])
+  @@map("like")
 }
 
 enum UserType {
