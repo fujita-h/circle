@@ -159,7 +159,6 @@ export class GroupsController {
       response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
       downloadBlockBlobResponse.readableStreamBody?.pipe(response);
     } catch (e) {
-      console.log(e);
       if (e instanceof RestError) {
         if (e.statusCode === 404) {
           throw new NotFoundException();
