@@ -30,6 +30,8 @@ model User {
   followed     Follow[]    @relation("to")
   Watching     Watch[]
 
+  @@index([type])
+  @@index([status])
   @@map("user")
 }
 
@@ -47,6 +49,8 @@ model Group {
   items   Item[]
   watched Watch[]
 
+  @@index([type])
+  @@index([status])
   @@map("group")
 }
 
@@ -67,6 +71,8 @@ model Item {
   stocked      Stock[]
   liked        Like[]
 
+  @@index([type])
+  @@index([status])
   @@map("item")
 }
 
@@ -81,6 +87,8 @@ model Comment {
   type      CommentType   @default(NORMAL)
   status    CommentStatus @default(NORMAL)
 
+  @@index([type])
+  @@index([status])
   @@map("comment")
 }
 
@@ -94,6 +102,7 @@ model UserGroup {
   updatedAt DateTime      @updatedAt @map("updated_at")
 
   @@id([userId, groupId])
+  @@index([role])
   @@map("user_group")
 }
 
