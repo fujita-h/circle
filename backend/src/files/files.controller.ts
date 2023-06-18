@@ -13,7 +13,7 @@ import {
   UseGuards,
   UnauthorizedException,
 } from '@nestjs/common';
-import * as cuid from 'cuid';
+import { init } from '@paralleldrive/cuid2';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AzblobService } from '../azblob/azblob.service';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
@@ -21,6 +21,8 @@ import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { RestError } from '@azure/storage-blob';
 import * as Iron from '@hapi/iron';
 import { ConfigService } from '@nestjs/config';
+
+const cuid = init({ length: 24 });
 
 @Controller('files')
 export class FilesController {

@@ -2,11 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SortOptions } from '@elastic/elasticsearch/lib/api/types';
 import { Prisma, PrismaClient } from '@prisma/client';
-import * as cuid from 'cuid';
+import { init } from '@paralleldrive/cuid2';
 import { AzblobService } from '../azblob/azblob.service';
 import { EsService } from '../es/es.service';
 
 const prisma = new PrismaClient();
+const cuid = init({ length: 24 });
 
 @Injectable()
 export class ItemsService {
