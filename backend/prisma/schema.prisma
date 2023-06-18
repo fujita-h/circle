@@ -21,14 +21,15 @@ model User {
   name      String?    @db.VarChar(50)
   email     String?    @db.VarChar(254)
 
-  joinedGroups UserGroup[]
-  comments     Comment[]
-  items        Item[]
-  stocks       Stock[]
-  likes        Like[]
-  following    Follow[]    @relation("from")
-  followed     Follow[]    @relation("to")
-  Watching     Watch[]
+  joinedGroups  UserGroup[]
+  comments      Comment[]
+  items         Item[]
+  stocks        Stock[]
+  likes         Like[]
+  following     Follow[]       @relation("from")
+  followed      Follow[]       @relation("to")
+  Watching      Watch[]
+  notifications Notification[]
 
   @@index([type])
   @@index([status])
@@ -155,6 +156,22 @@ model Watch {
   @@map("watch")
 }
 
+model Notification {
+  id        String             @id @default(cuid())
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  type      NotificationType   @default(NORMAL)
+  status    NotificationStatus @default(UNREAD)
+  title     String?            @db.VarChar(50)
+  message   String?            @db.VarChar(255)
+
+  @@index([type])
+  @@index([status])
+  @@map("notification")
+}
+
 enum UserType {
   NORMAL
 }
@@ -197,4 +214,14 @@ enum CommentStatus {
 enum UserGroupRole {
   ADMIN
   MEMBER
+}
+
+enum NotificationType {
+  NORMAL
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+  DELETED
 }
