@@ -75,7 +75,11 @@ describe('UserController', () => {
 
   it('should return updated user object (1)', async () => {
     const req = { user: { id: testUser.id } };
-    const result = controller.update(req, { name: testUser.name + '2', email: undefined });
+    const result = controller.update(req, {
+      handle: undefined,
+      name: testUser.name + '2',
+      email: undefined,
+    });
     await expect(result).resolves.toHaveProperty('id', testUser.id);
     await expect(result).resolves.toHaveProperty('handle', testUser.handle);
     await expect(result).resolves.toHaveProperty('name', testUser.name + '2');
@@ -84,7 +88,11 @@ describe('UserController', () => {
 
   it('should return updated user object (2)', async () => {
     const req = { user: { id: testUser.id } };
-    const result = controller.update(req, { handle: testUser.handle + '2', name: undefined });
+    const result = controller.update(req, {
+      handle: testUser.handle + '2',
+      name: undefined,
+      email: undefined,
+    });
     await expect(result).resolves.toHaveProperty('id', testUser.id);
     await expect(result).resolves.toHaveProperty('handle', testUser.handle + '2');
     await expect(result).resolves.toHaveProperty('name', testUser.name + '2');
