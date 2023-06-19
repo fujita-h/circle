@@ -137,9 +137,9 @@ export class ItemsController {
   @Get('search')
   async search(
     @Request() request: any,
-    @Query('q') q?: string,
-    @Query('skip', ParseIntPipe) skip = 0,
-    @Query('take', ParseIntPipe) take = 20,
+    @Query('q') q: string,
+    @Query('skip', ParseIntPipe) skip: number,
+    @Query('take', ParseIntPipe) take: number,
   ) {
     const userId = request.user.id;
     const groups = await this.groupService.findMany({
