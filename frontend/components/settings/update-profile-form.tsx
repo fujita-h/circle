@@ -20,7 +20,6 @@ export function UpdateProfileForm() {
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
   const { data, mutate } = useSWR(`${environment.BACKEND_ENDPOINT}/user`, fetcher, {
     revalidateOnFocus: false,
-    suspense: true,
   });
 
   const handleClick = async () => {
