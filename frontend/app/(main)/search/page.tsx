@@ -38,17 +38,25 @@ export default function Page() {
   }
 
   if (!data) {
-    return <div>No Item</div>;
+    return <div>No Item or Error</div>;
   }
 
   return (
     <div className="p-4">
       <h1>Search</h1>
       <form onSubmit={handleSubmit}>
-        <input type="text" placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <input
+          type="text"
+          placeholder="Search"
+          className="block w-full rounded-md border-0 bg-white py-1.5 px-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
       </form>
-      <p>Search page</p>
-      <ItemList items={data.map((x) => x._source)} />
+      <div className="mt-4">
+        <h2>Results:</h2>
+        <ItemList items={data.map((x) => x._source)} />
+      </div>
     </div>
   );
 }
