@@ -41,6 +41,7 @@ export class ItemsService {
       const blobCuid = cuid();
       const item = await prisma.item.create({
         data: { ...data, id: cuid(), blobPointer: blobCuid },
+        include: { user: true },
       });
 
       // Upload blob
@@ -147,6 +148,7 @@ export class ItemsService {
         where,
         // delete draftPointer if it exists
         data: { ...data, blobPointer: blobCuid, draftPointer: null },
+        include: { user: true },
       });
 
       if (!item) {
