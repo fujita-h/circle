@@ -1,6 +1,7 @@
 'use client';
 
-import { Fragment } from 'react';
+import { FormEvent, Fragment, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MagnifyingGlassIcon, UserIcon } from '@heroicons/react/20/solid';
@@ -23,6 +24,15 @@ const userNavigation = [
 ];
 
 export function NavbarWithSearch() {
+  const router = useRouter();
+  const [query, setQuery] = useState('');
+
+  const handleSearchSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    router.push(`/search?q=${query}`);
+    setQuery('');
+  };
+
   return (
     <Disclosure as="nav" className="bg-white shadow">
       {({ open }) => (
@@ -53,7 +63,7 @@ export function NavbarWithSearch() {
                   ))}
                 </div>
               </div>
-              <div className="flex flex-1 items-center justify-center px-2 lg:ml-6 lg:justify-end">
+              <form className="flex flex-1 items-center justify-center px-2 lg:ml-6 lg:justify-end" onSubmit={handleSearchSubmit}>
                 <div className="w-full max-w-lg lg:max-w-xs">
                   <label htmlFor="search" className="sr-only">
                     Search
@@ -68,10 +78,12 @@ export function NavbarWithSearch() {
                       className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       placeholder="Search"
                       type="search"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
                     />
                   </div>
                 </div>
-              </div>
+              </form>
               <div className="flex items-center lg:hidden">
                 {/* Mobile menu button */}
                 <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">

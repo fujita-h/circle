@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, Suspense, useState } from 'react';
+import { FormEvent, Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useEnvironment } from '@/components/environment/providers';
 import { useAccount, useMsal } from '@azure/msal-react';
@@ -17,6 +17,10 @@ export default function Page() {
   const searchParams = useSearchParams();
   const q = searchParams.get('q') || '';
   const [query, setQuery] = useState(q);
+
+  useEffect(() => {
+    setQuery(q);
+  }, [q]);
 
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
   const { data, isLoading, mutate } = useSWR<any[]>(`${environment.BACKEND_ENDPOINT}/items/search?q=${q}&skip=0&take=20`, fetcher, {
