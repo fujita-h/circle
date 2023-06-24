@@ -35,7 +35,6 @@ export default function Page({ params }: { params: any }) {
     return <div>loading...</div>;
   }
 
-  console.log(itemError);
   if (itemError) {
     return <div>no data</div>;
   }
