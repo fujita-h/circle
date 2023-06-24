@@ -23,7 +23,6 @@ type ItemData = {
 };
 
 export function ItemList({ items }: { items: ItemData[] }) {
-  console.log(items);
   return (
     <ul role="list" className="divide-y divide-gray-100">
       {items.map((item) => {
