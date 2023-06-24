@@ -153,16 +153,37 @@ export class ItemsController {
       },
     });
     const groupIds = groups.map((g) => g.id);
+    if (q === undefined || q === null || q === '') {
+      q = '*';
+    }
     const body: SearchRequest = {
       query: {
         bool: {
-          must: [
-            { terms: { groupId: groupIds } },
-            q ? { multi_match: { query: q || '', fields: ['title', 'body'] } } : { match_all: {} },
+          should: [
+            {
+              wildcard: {
+                title: {
+                  value: q,
+                  boost: 10,
+                },
+              },
+            },
+            {
+              wildcard: {
+                body: {
+                  value: q,
+                  boost: 7,
+                },
+              },
+            },
           ],
+          minimum_should_match: 1,
+          filter: {
+            terms: { groupId: groupIds },
+          },
         },
       },
-      sort: [{ createdAt: 'desc' }],
+      sort: [{ _score: { order: 'desc' } }, { createdAt: 'desc' }],
       from: skip,
       size: take,
     };
