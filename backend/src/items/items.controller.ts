@@ -161,10 +161,25 @@ export class ItemsController {
         bool: {
           should: [
             {
+              multi_match: {
+                query: q,
+                fields: ['title^5', 'body^5', 'title.ngram^2', 'body.ngram^2'],
+                operator: 'and',
+              },
+            },
+            {
               wildcard: {
                 title: {
                   value: q,
-                  boost: 10,
+                  boost: 5,
+                },
+              },
+            },
+            {
+              wildcard: {
+                'title.ngram': {
+                  value: q,
+                  boost: 2,
                 },
               },
             },
@@ -172,7 +187,15 @@ export class ItemsController {
               wildcard: {
                 body: {
                   value: q,
-                  boost: 7,
+                  boost: 10,
+                },
+              },
+            },
+            {
+              wildcard: {
+                'body.ngram': {
+                  value: q,
+                  boost: 5,
                 },
               },
             },
