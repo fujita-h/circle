@@ -1,28 +1,22 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Link as Scroll } from 'react-scroll';
 import { classNames } from '@/utils';
+import throttle from 'lodash/throttle';
 
 const CONTENT_ANCHOR_PREFIX = 'content-line';
 const CONTENT_ANCHOR_CLASS_NAME = 'doc-content-lines';
 
 export function ReactiveToC({ children }: { children: string }) {
   const [scrollMarker, setScrollMarker] = useState('');
-  const throrttleTimer = useRef(Date.now());
-  const throttle = useCallback((fn: () => any, delay: number) => {
-    if (throrttleTimer.current + delay < Date.now()) {
-      throrttleTimer.current = Date.now();
-      return fn();
-    }
-  }, []);
 
-  const handleScroll = (e: Event) => {
-    throttle(() => updateScrollMarker(), 100);
-  };
+  const handleScroll = throttle((e: Event) => {
+    updateScrollMarker();
+  }, 125);
 
-  const updateScrollMarker = useCallback(() => {
+  const updateScrollMarker = () => {
     const elements = Array.from(document.getElementsByClassName(CONTENT_ANCHOR_CLASS_NAME));
     const targets = elements
       .map((element) => {
@@ -32,7 +26,7 @@ export function ReactiveToC({ children }: { children: string }) {
       .sort((a, b) => b.top - a.top);
     const target = targets.find((x) => x.top < 0) ?? targets.slice(-1)[0];
     setScrollMarker(target?.id ?? '');
-  }, []);
+  };
 
   useEffect(() => {
     document.addEventListener('scroll', handleScroll, { passive: true });
@@ -45,33 +39,34 @@ export function ReactiveToC({ children }: { children: string }) {
   const H1 = useCallback(
     ({ node, ...props }: any) => {
       return (
-        <div
-          className={classNames(
-            `${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}` == scrollMarker ? 'bg-gray-200' : '',
-            'py-1 hover:cursor-pointer hover:bg-gray-300',
-          )}
-        >
-          <Scroll to={`${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}`} smooth={true} duration={600}>
+        <Scroll to={`${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}`} smooth={true} duration={400} offset={0}>
+          <div
+            className={classNames(
+              `${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}` == scrollMarker ? 'bg-gray-200' : '',
+              'py-1 hover:cursor-pointer hover:bg-gray-300',
+            )}
+          >
             {props.children}
-          </Scroll>
-        </div>
+          </div>
+        </Scroll>
       );
     },
     [scrollMarker],
   );
+
   const H2 = useCallback(
     ({ node, ...props }: any) => {
       return (
-        <div
-          className={classNames(
-            `${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}` == scrollMarker ? 'bg-gray-200' : '',
-            'py-1 pl-3 hover:cursor-pointer hover:bg-gray-300',
-          )}
-        >
-          <Scroll to={`${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}`} smooth={true} duration={600}>
+        <Scroll to={`${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}`} smooth={true} duration={400} offset={0}>
+          <div
+            className={classNames(
+              `${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}` == scrollMarker ? 'bg-gray-200' : '',
+              'py-1 pl-3 hover:cursor-pointer hover:bg-gray-300',
+            )}
+          >
             {props.children}
-          </Scroll>
-        </div>
+          </div>
+        </Scroll>
       );
     },
     [scrollMarker],
