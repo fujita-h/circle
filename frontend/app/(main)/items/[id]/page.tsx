@@ -5,10 +5,11 @@ import { useEnvironment } from '@/components/environment/providers';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import Link from 'next/link';
-import { RenderMDX } from '@/components/mdx';
 import { capitalize, classNames } from '@/utils';
 import { TypesColors } from '@/components/groups/type-colors';
-import mdxStyles from '@/components/mdx/mdx-styles.module.css';
+import mdStyles from '@/components/react-markdown/styles.module.css';
+import { Parser } from '@/components/react-markdown/parser';
+import { ReactiveToC } from '@/components/react-markdown/reactive-toc';
 
 export default function Page({ params }: { params: any }) {
   const id = params.id;
@@ -81,9 +82,14 @@ export default function Page({ params }: { params: any }) {
           )}
         </div>
       </div>
-      <div className="mt-8">
-        <div className={mdxStyles.mdx}>
-          <RenderMDX source={markdown} />
+      <div className="flex space-x-4 mt-8 mb-96">
+        <div className={classNames(mdStyles.md, 'flex-1')}>
+          <Parser addHeaderAnchor={true}>{markdown}</Parser>
+        </div>
+        <div className="my-6 w-72 h-full sticky top-0">
+          <div className="mt-6">
+            <ReactiveToC>{markdown}</ReactiveToC>
+          </div>
         </div>
       </div>
     </>
