@@ -25,7 +25,8 @@
         "dbaeumer.vscode-eslint",
         "mhutchie.git-graph",
         "bradlc.vscode-tailwindcss",
-        "github.copilot",
+        "github.copilot-nightly",
+        "github.copilot-chat",
         "eamodio.gitlens",
         "prisma.prisma"
       ]
