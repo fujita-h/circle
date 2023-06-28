@@ -2,8 +2,11 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   NotFoundException,
+  ParseIntPipe,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -45,6 +48,23 @@ export class CommentsController {
       data: { user: { connect: { id: userId } }, item: { connect: { id: itemId } } },
       body: data.body,
       include: { user: true, item: true },
+    });
+  }
+
+  @Get()
+  findComments(
+    @Request() request: any,
+    @Query('skip', ParseIntPipe) skip?: number,
+    @Query('take', ParseIntPipe) take?: number,
+  ) {
+    const userId = request.user.id;
+
+    return this.commentsService.findMany({
+      where: { user: { id: userId } },
+      orderBy: { createdAt: 'asc' },
+      include: { user: true },
+      skip,
+      take,
     });
   }
 }
