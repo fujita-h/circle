@@ -78,15 +78,16 @@ model Item {
 }
 
 model Comment {
-  id        String        @id @default(cuid())
-  createdAt DateTime      @default(now()) @map("created_at")
-  updatedAt DateTime      @updatedAt @map("updated_at")
-  item      Item          @relation(fields: [itemId], references: [id])
-  itemId    String
-  user      User          @relation(fields: [userId], references: [id])
-  userId    String
-  type      CommentType   @default(NORMAL)
-  status    CommentStatus @default(NORMAL)
+  id          String        @id @default(cuid())
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  item        Item          @relation(fields: [itemId], references: [id])
+  itemId      String
+  user        User          @relation(fields: [userId], references: [id])
+  userId      String
+  blobPointer String?       @map("blob_pointer")
+  type        CommentType   @default(NORMAL)
+  status      CommentStatus @default(NORMAL)
 
   @@index([type])
   @@index([status])
