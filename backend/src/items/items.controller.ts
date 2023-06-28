@@ -29,6 +29,7 @@ import { GroupsService } from '../groups/groups.service';
 import { RestError } from '@azure/storage-blob';
 import { EsService } from '../es/es.service';
 import { SearchRequest } from '@elastic/elasticsearch/lib/api/types';
+import { CommentsService } from '../comments/comments.service';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('items')
@@ -36,6 +37,7 @@ export class ItemsController {
   constructor(
     private readonly itemsService: ItemsService,
     private readonly groupService: GroupsService,
+    private readonly commentsService: CommentsService,
     private readonly blobsService: AzblobService,
     private readonly esService: EsService,
   ) {}
@@ -303,6 +305,22 @@ export class ItemsController {
       }
       throw new InternalServerErrorException();
     }
+  }
+
+  @Get(':id/comments')
+  async getComments(
+    @Request() request: any,
+    @Param('id') id: string,
+    @Query('skip', ParseIntPipe) skip: number,
+    @Query('take', ParseIntPipe) take: number,
+  ) {
+    return this.commentsService.findMany({
+      where: { itemId: id, status: 'NORMAL' },
+      include: { user: true },
+      orderBy: { createdAt: 'asc' },
+      skip,
+      take,
+    });
   }
 
   @Put(':id')
