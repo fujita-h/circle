@@ -11,6 +11,7 @@ import { Prisma } from '@prisma/client';
 import { CreateGroupItemDto } from './dto/create-group-item.dto';
 import { ItemsController } from '../items/items.controller';
 import { CreateItemDto } from 'src/items/dto/create-item.dto';
+import { CommentsService } from '../comments/comments.service';
 
 describe('GroupsController', () => {
   let controller: GroupsController;
@@ -82,7 +83,14 @@ describe('GroupsController', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [GroupsController, ItemsController],
-      providers: [GroupsService, UsersService, ItemsService, AzblobService, EsService],
+      providers: [
+        GroupsService,
+        UsersService,
+        ItemsService,
+        CommentsService,
+        AzblobService,
+        EsService,
+      ],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],

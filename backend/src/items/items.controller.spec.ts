@@ -11,6 +11,7 @@ import { CreateGroupDto } from '../groups/dto/create-group.dto';
 import { CreateGroupItemDto } from '../groups/dto/create-group-item.dto';
 import { GroupsController } from '../groups/groups.controller';
 import { CreateItemDto } from './dto/create-item.dto';
+import { CommentsService } from '../comments/comments.service';
 
 describe('ItemsController', () => {
   let controller: ItemsController;
@@ -18,6 +19,7 @@ describe('ItemsController', () => {
   let usersService: UsersService;
   let groupsService: GroupsService;
   let itemsService: ItemsService;
+  let commentsService: CommentsService;
 
   class CreateGroupDtoForTest extends CreateGroupDto {
     id: string;
@@ -46,7 +48,14 @@ describe('ItemsController', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ItemsController, GroupsController],
-      providers: [ItemsService, AzblobService, EsService, UsersService, GroupsService],
+      providers: [
+        ItemsService,
+        AzblobService,
+        EsService,
+        UsersService,
+        GroupsService,
+        CommentsService,
+      ],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],
