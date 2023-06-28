@@ -94,8 +94,8 @@ export default function Page({ params }: { params: any }) {
         </div>
       </div>
       <div>
-        <CommentList api={`/items/${item.id}/comments`} />
-        <CommentForm api={`/items/${item.id}/comments`} />
+        <CommentList itemId={item.id} />
+        <CommentForm itemId={item.id} />
       </div>
     </>
   );

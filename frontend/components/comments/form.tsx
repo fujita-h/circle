@@ -4,7 +4,7 @@ import { classNames } from '@/utils';
 import { Tab } from '@headlessui/react';
 import { AtSymbolIcon, CodeBracketIcon, LinkIcon } from '@heroicons/react/20/solid';
 
-export function Form({ api }: { api: string }) {
+export function Form({ itemId }: { itemId: string }) {
   return (
     <form action="#">
       <Tab.Group>
