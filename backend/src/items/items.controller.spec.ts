@@ -153,7 +153,7 @@ describe('ItemsController', () => {
 
   it('検索', async () => {
     const req = { user: { id: testUser1.id } };
-    const result = controller.search(req, '', undefined, undefined);
+    const result = controller.search(req, '', 0, 20);
     await expect(result).resolves.toBeDefined();
   });
 });
