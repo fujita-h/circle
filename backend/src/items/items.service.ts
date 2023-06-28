@@ -41,7 +41,7 @@ export class ItemsService {
       const blobCuid = cuid();
       const item = await prisma.item.create({
         data: { id: cuid(), ...data, blobPointer: blobCuid },
-        include: { user: true },
+        include: { ...include, user: true },
       });
 
       // Upload blob
