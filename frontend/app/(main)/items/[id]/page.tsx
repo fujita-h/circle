@@ -10,6 +10,7 @@ import { TypesColors } from '@/components/groups/type-colors';
 import mdStyles from '@/components/react-markdown/styles.module.css';
 import { Parser } from '@/components/react-markdown/parser';
 import { ReactiveToC } from '@/components/react-markdown/reactive-toc';
+import { CommentForm, CommentList } from '@/components/comments';
 
 export default function Page({ params }: { params: any }) {
   const id = params.id;
@@ -91,6 +92,10 @@ export default function Page({ params }: { params: any }) {
             <ReactiveToC>{markdown}</ReactiveToC>
           </div>
         </div>
+      </div>
+      <div>
+        <CommentList api={`/items/${item.id}/comments`} />
+        <CommentForm api={`/items/${item.id}/comments`} />
       </div>
     </>
   );
