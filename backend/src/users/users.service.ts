@@ -31,7 +31,7 @@ export class UsersService {
     include?: Prisma.UserInclude;
   }) {
     return prisma.$transaction(async (prisma) => {
-      const user = await prisma.user.create({ data: { ...data, id: cuid() } });
+      const user = await prisma.user.create({ data: { id: cuid(), ...data } });
       const esResponse = await this.esService.create(this.esIndex, user.id, { ...user });
       if (esResponse.result === 'created' || esResponse.result === 'updated') {
         return prisma.user.findUnique({ where: { id: user.id }, include });

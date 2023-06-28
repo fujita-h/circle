@@ -32,7 +32,7 @@ export class GroupsService {
     include?: Prisma.GroupInclude;
   }) {
     return prisma.$transaction(async (prisma) => {
-      const group = await prisma.group.create({ data: { ...data, id: cuid() } });
+      const group = await prisma.group.create({ data: { id: cuid(), ...data } });
       const esResponse = await this.esService.create(this.esGroupIndex, group.id, { ...group });
       if (esResponse.result === 'created' || esResponse.result === 'updated') {
         return prisma.group.findUnique({ where: { id: group.id }, include });

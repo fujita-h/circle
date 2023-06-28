@@ -40,7 +40,7 @@ export class ItemsService {
     return prisma.$transaction(async (prisma) => {
       const blobCuid = cuid();
       const item = await prisma.item.create({
-        data: { ...data, id: cuid(), blobPointer: blobCuid },
+        data: { id: cuid(), ...data, blobPointer: blobCuid },
         include: { user: true },
       });
 
@@ -74,7 +74,7 @@ export class ItemsService {
     return prisma.$transaction(async (prisma) => {
       const blobCuid = cuid();
       const item = await prisma.item.create({
-        data: { ...data, id: cuid(), draftPointer: blobCuid },
+        data: { id: cuid(), ...data, draftPointer: blobCuid },
       });
 
       // Upload blob
