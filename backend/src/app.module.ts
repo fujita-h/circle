@@ -17,6 +17,8 @@ import { ItemsService } from './items/items.service';
 import { GroupsService } from './groups/groups.service';
 import { UserGroupsService } from './user-groups/user-groups.service';
 import { FilesModule } from './files/files.module';
+import { CommentsService } from './comments/comments.service';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -32,6 +34,7 @@ import { FilesModule } from './files/files.module';
     UserModule,
     DraftsModule,
     FilesModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -43,6 +46,7 @@ import { FilesModule } from './files/files.module';
     ItemsService,
     GroupsService,
     UserGroupsService,
+    CommentsService,
   ],
 })
 export class AppModule {}
