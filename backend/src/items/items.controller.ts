@@ -30,6 +30,7 @@ import { RestError } from '@azure/storage-blob';
 import { EsService } from '../es/es.service';
 import { SearchRequest } from '@elastic/elasticsearch/lib/api/types';
 import { CommentsService } from '../comments/comments.service';
+import { CreateCommentDto } from '../comments/dto/create-comment.dto';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('items')
@@ -321,6 +322,44 @@ export class ItemsController {
       skip,
       take,
     });
+  }
+
+  @Post(':id/comments')
+  async createComment(
+    @Request() request: any,
+    @Param('id') id: string,
+    @Body() data: CreateCommentDto,
+  ) {
+    const userId = request.user.id;
+
+    // check item
+    const item = await this.itemsService.findOne({
+      where: { id },
+    });
+
+    if (!item || item.status === 'DELETED') {
+      throw new NotFoundException();
+    }
+
+    return this.commentsService.create({
+      data: { user: { connect: { id: userId } }, item: { connect: { id: item.id } } },
+      body: data.body.trim(),
+      include: { user: true, item: true },
+    });
+  }
+
+  @Get(':id/comments/count')
+  async countComments(@Param('id') id: string) {
+    // check item
+    const item = await this.itemsService.findOne({
+      where: { id },
+    });
+
+    if (!item || item.status === 'DELETED') {
+      throw new NotFoundException();
+    }
+
+    return this.commentsService.count({ where: { itemId: id, status: 'NORMAL' } });
   }
 
   @Put(':id')
