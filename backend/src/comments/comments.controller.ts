@@ -40,7 +40,7 @@ export class CommentsController {
       where: { id: itemId },
     });
 
-    if (!item) {
+    if (!item || item.status === 'DELETED') {
       throw new NotFoundException();
     }
 
