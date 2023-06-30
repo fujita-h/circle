@@ -1,2 +1,1 @@
-export { List as CommentList } from './list';
-export { Form as CommentForm } from './form';
+export { Comments as Comments } from './comments';
