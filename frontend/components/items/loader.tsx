@@ -6,7 +6,7 @@ import { useAccount, useMsal } from '@azure/msal-react';
 import useSWR from 'swr';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { ItemList } from './list';
-import { Pagination } from '@/components/pagination';
+import { LinkPagination } from '@/components/paginations';
 
 export function Loader({ sourcePath, countPath }: { sourcePath: string; countPath?: string }) {
   const environment = useEnvironment();
@@ -47,7 +47,7 @@ export function Loader({ sourcePath, countPath }: { sourcePath: string; countPat
   return (
     <>
       <ItemList items={items} />
-      <Pagination pathname={pathname} page={page} total={total} take={take} />
+      <LinkPagination pathname={pathname} page={page} total={total} take={take} />
     </>
   );
 }
