@@ -10,7 +10,7 @@ import { classNames } from '@/utils';
 import { Tab } from '@headlessui/react';
 import { AtSymbolIcon, CodeBracketIcon, LinkIcon } from '@heroicons/react/20/solid';
 
-export function Comments({ itemId }: { itemId: string }) {
+export function Loader({ itemId }: { itemId: string }) {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
