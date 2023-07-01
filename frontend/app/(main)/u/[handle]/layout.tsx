@@ -35,26 +35,27 @@ export default function Layout({ params, children }: { params: any; children: Re
 
   return (
     <div className="p-4 md:p-8">
-      <div className="md:flex md:items-center md:justify-between">
-        <div className="min-w-0 flex-1">
-          <div className="flex space-x-4 items-center">
-            <BackendImage
-              src={`/users/${user.id}/photo`}
-              className="h-16 w-16 rounded-full bg-gray-50"
-              alt="user-icon"
-              fallback={<UserIcon className="h-16 w-16 rounded-full bg-gray-100 text-gray-400" />}
-            />
-            <h2 className={classNames(inter.className, 'text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:tracking-tight')}>
-              {user.name}
-            </h2>
+      <div className="bg-white rounded-md p-4">
+        <div className="md:flex md:items-center md:justify-between">
+          <div className="min-w-0 flex-1">
+            <div className="flex space-x-4 items-center">
+              <BackendImage
+                src={`/users/${user.id}/photo`}
+                className="h-16 w-16 rounded-full bg-gray-50"
+                alt="user-icon"
+                fallback={<UserIcon className="h-16 w-16 rounded-full bg-gray-100 text-gray-400" />}
+              />
+              <h2 className={classNames(inter.className, 'text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:tracking-tight')}>
+                {user.name}
+              </h2>
+            </div>
           </div>
         </div>
+        <div className="my-4">
+          <CategoryHeader tabs={tabs} />
+        </div>
+        <div>{children}</div>
       </div>
-      <div className="my-4">
-        <CategoryHeader tabs={tabs} />
-      </div>
-
-      <div>{children}</div>
     </div>
   );
 }

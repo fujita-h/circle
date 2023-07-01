@@ -46,7 +46,7 @@ export default function Page({ params }: { params: any }) {
   }
 
   return (
-    <>
+    <div>
       <div>
         <div className="hidden sm:block">
           <Link className="text-sm font-medium text-gray-500 hover:text-gray-700" href={`/g/${item.group?.handle}`}>
@@ -83,7 +83,7 @@ export default function Page({ params }: { params: any }) {
           )}
         </div>
       </div>
-      <div className="flex space-x-4 mt-8 mb-96">
+      <div className="flex space-x-4 my-8 rounded-md p-4 bg-white">
         <div className={classNames(mdStyles.item, 'flex-1')}>
           <Parser addHeaderAnchor={true}>{markdown}</Parser>
         </div>
@@ -93,9 +93,9 @@ export default function Page({ params }: { params: any }) {
           </div>
         </div>
       </div>
-      <div>
+      <div className="rounded-md my-8 p-4 bg-white">
         <Comments itemId={item.id} />
       </div>
-    </>
+    </div>
   );
 }

@@ -104,7 +104,7 @@ export function Editor({
   };
 
   return (
-    <div className="h-full px-1 py-2 bg-slate-50">
+    <div className="h-full px-1 py-2 bg-slate-100">
       <div className={styles.h44}>
         <input
           type="text"
