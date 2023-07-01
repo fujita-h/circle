@@ -9,6 +9,7 @@ import useSWR from 'swr';
 import { classNames } from '@/utils';
 import { Tab } from '@headlessui/react';
 import { AtSymbolIcon, CodeBracketIcon, LinkIcon } from '@heroicons/react/20/solid';
+import { CommentList } from './list';
 
 export function Loader({ itemId }: { itemId: string }) {
   const environment = useEnvironment();
@@ -65,15 +66,17 @@ export function Loader({ itemId }: { itemId: string }) {
   }
 
   return (
-    <>
+    <div>
       <div>
-        {comments?.map((comment) => (
-          <div key={comment.id}>
-            <div>{comment.id}</div>
-          </div>
-        ))}
+        <div>
+          <h2 className="text-xl font-bold ml-1">コメント</h2>
+        </div>
+        <div className="mt-3">
+          <CommentList comments={comments} />
+        </div>
       </div>
-      <form onSubmit={handleSubmit}>
+
+      <form className="mt-8" onSubmit={handleSubmit}>
         <Tab.Group>
           {({ selectedIndex }) => (
             <>
@@ -171,6 +174,6 @@ export function Loader({ itemId }: { itemId: string }) {
           </button>
         </div>
       </form>
-    </>
+    </div>
   );
 }
