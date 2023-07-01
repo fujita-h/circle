@@ -26,7 +26,7 @@ export function ItemList({ items }: { items: ItemData[] }) {
   return (
     <ul role="list" className="divide-y divide-gray-100">
       {items.map((item) => {
-        const createdAt = new Date(item.createdAt);
+        const createdAt = new Date(item.createdAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' });
         const updatedAt = new Date(item.updatedAt);
         return (
           <li key={item.id} className="relative flex justify-between gap-x-6 px-4 py-3 hover:bg-gray-50 sm:px-6 lg:px-8">
@@ -45,7 +45,7 @@ export function ItemList({ items }: { items: ItemData[] }) {
                   </Link>
                   {item.user.name ? <span>({item.user.name})</span> : <></>}
                 </div>
-                <div className="text-sm">{`${createdAt.getFullYear()}年${createdAt.getMonth() + 1}月${createdAt.getDate()}日`}</div>
+                <div className="text-sm">{createdAt}</div>
                 <div className="text-xl font-semibold leading-6 text-gray-900">
                   <Link className="hover:underline" href={`/items/${item.id}`}>
                     <span className="absolute inset-x-0 -top-px bottom-0" />
