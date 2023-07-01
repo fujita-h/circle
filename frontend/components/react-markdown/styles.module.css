@@ -1,7 +1,7 @@
-.md {
+.item {
   overflow-wrap: break-word;
 }
-.md h1 {
+.item h1 {
   font-size: 1.8rem;
   line-height: 1.5;
   font-weight: bold;
@@ -9,7 +9,7 @@
   margin-top: 2.2rem;
   margin-bottom: 2.4rem;
 }
-.md h2 {
+.item h2 {
   font-size: 1.6rem;
   line-height: 1.5;
   font-weight: bold;
@@ -17,8 +17,20 @@
   margin-top: 2.2rem;
   margin-bottom: 2.4rem;
 }
-
-.md img {
+.item img {
   margin-top: 0.8rem;
   margin-bottom: 0.8rem;
+}
+
+.comment {
+  overflow-wrap: break-word;
+  font-size: 1.0rem;
+}
+.comment h1 {
+  font-size: 1.4rem;
+  line-height: 1.4;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+  margin-top: 1.2rem;
+  margin-bottom: 1.4rem;
 }

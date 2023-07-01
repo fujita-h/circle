@@ -84,7 +84,7 @@ export default function Page({ params }: { params: any }) {
         </div>
       </div>
       <div className="flex space-x-4 mt-8 mb-96">
-        <div className={classNames(mdStyles.md, 'flex-1')}>
+        <div className={classNames(mdStyles.item, 'flex-1')}>
           <Parser addHeaderAnchor={true}>{markdown}</Parser>
         </div>
         <div className="my-6 w-72 h-full sticky top-0">
