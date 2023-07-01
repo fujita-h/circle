@@ -3,11 +3,14 @@ import {
   Body,
   Controller,
   Get,
+  InternalServerErrorException,
   NotFoundException,
   ParseIntPipe,
   Post,
   Query,
+  Param,
   Request,
+  Response,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
@@ -16,6 +19,8 @@ import { AuthorizedRolesAny } from '../guards/jwt.roles.decorator';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { ItemsService } from '../items/items.service';
+import { AzblobService } from '../azblob/azblob.service';
+import { RestError } from '@azure/storage-blob';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('comments')
@@ -23,48 +28,43 @@ export class CommentsController {
   constructor(
     private readonly commentsService: CommentsService,
     private readonly itemsService: ItemsService,
+    private readonly blobsService: AzblobService,
   ) {}
 
-  @Post()
-  async create(@Request() request: any, @Body() data: CreateCommentDto) {
+  @Get(':id')
+  async getComment(@Request() request: any, @Param('id') id: string) {
     const userId = request.user.id;
-    const itemId = data.item.id;
-
-    // check input
-    if (!userId || !itemId) {
-      throw new BadRequestException();
-    }
-
-    // check item
-    const item = await this.itemsService.findOne({
-      where: { id: itemId },
-    });
-
-    if (!item || item.status === 'DELETED') {
-      throw new NotFoundException();
-    }
-
-    return this.commentsService.create({
-      data: { user: { connect: { id: userId } }, item: { connect: { id: itemId } } },
-      body: data.body,
-      include: { user: true, item: true },
-    });
+    // ToDo:
+    // need to check this user can read comment.
+    return this.commentsService.findOne({ where: { id }, include: { user: true } });
   }
 
-  @Get()
-  findComments(
+  @Get(':id/md')
+  async getCommentMarkdown(
     @Request() request: any,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Param('id') id: string,
+    @Response() response: any,
   ) {
     const userId = request.user.id;
+    // ToDo:
+    // need to check this user can read comment.
 
-    return this.commentsService.findMany({
-      where: { user: { id: userId } },
-      orderBy: { createdAt: 'asc' },
-      include: { user: true },
-      skip,
-      take,
-    });
+    const comment = await this.commentsService.findOne({ where: { id: id } });
+    if (!comment) throw new NotFoundException();
+    try {
+      const downloadBlockBlobResponse = await this.blobsService.downloadBlob(
+        'comment',
+        `${comment.id}/${comment.blobPointer}.md`,
+      );
+      response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
+      downloadBlockBlobResponse.readableStreamBody?.pipe(response);
+    } catch (e) {
+      if (e instanceof RestError) {
+        if (e.statusCode === 404) {
+          throw new NotFoundException();
+        }
+      }
+      throw new InternalServerErrorException();
+    }
   }
 }
