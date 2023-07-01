@@ -1,32 +1,28 @@
 'use client';
 
-import { InteractionStatus } from '@azure/msal-browser';
-import { useIsAuthenticated, useMsal } from '@azure/msal-react';
-import { loginRequest } from './requests';
-import { useEnvironment } from '@/components/environment/providers';
+import { ReactNode } from 'react';
+import { useMsal, useAccount } from '@azure/msal-react';
 
-export function LogoutButton({ className, children }: { className?: string; children: JSX.Element }): JSX.Element {
-  const { instance, accounts, inProgress } = useMsal();
-  const isAuthenticated = useIsAuthenticated();
+export function LogoutButton({ className, children }: { className?: string; children: ReactNode }) {
+  const { instance, accounts } = useMsal();
+  const account = useAccount(accounts[0] || {});
 
-  const handleLogin = (loginType: 'popup' | 'redirect') => {
-    instance
-      .acquireTokenSilent({
-        account: accounts[0],
+  const handleLogin = async (loginType: 'popup' | 'redirect') => {
+    if (!account) return;
+    try {
+      const auth = await instance.acquireTokenSilent({
+        account,
         scopes: ['openid'],
-      })
-      .then((response) => {
-        if (loginType === 'popup') {
-          instance.logoutPopup({ idTokenHint: response.idToken });
-        } else {
-          instance.logoutRedirect({ idTokenHint: response.idToken });
-        }
       });
+      if (loginType === 'popup') {
+        instance.logoutPopup({ idTokenHint: auth.idToken });
+      } else {
+        instance.logoutRedirect({ idTokenHint: auth.idToken });
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
-
-  if (!isAuthenticated || inProgress !== InteractionStatus.None) {
-    return <></>;
-  }
 
   return (
     <button

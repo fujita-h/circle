@@ -1,26 +1,25 @@
 'use client';
 
-import { InteractionStatus } from '@azure/msal-browser';
-import { useIsAuthenticated, useMsal } from '@azure/msal-react';
+import { ReactNode } from 'react';
+import { useMsal } from '@azure/msal-react';
 import { loginRequest } from './requests';
 import { useEnvironment } from '@/components/environment/providers';
 
-export function LoginButton({ className, children }: { className?: string; children: JSX.Element }): JSX.Element {
+export function LoginButton({ className, children }: { className?: string; children: ReactNode }) {
   const environment = useEnvironment();
-  const { instance, inProgress } = useMsal();
-  const isAuthenticated = useIsAuthenticated();
+  const { instance } = useMsal();
 
-  const handleLogin = (loginType: 'popup' | 'redirect') => {
-    if (loginType === 'popup') {
-      instance.loginPopup(loginRequest(environment));
-    } else {
-      instance.loginRedirect(loginRequest(environment));
+  const handleLogin = async (loginType: 'popup' | 'redirect') => {
+    try {
+      if (loginType === 'popup') {
+        instance.loginPopup(loginRequest(environment));
+      } else {
+        instance.loginRedirect(loginRequest(environment));
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
-
-  if (isAuthenticated || inProgress !== InteractionStatus.None) {
-    return <></>;
-  }
 
   return (
     <button
