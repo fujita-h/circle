@@ -1,5 +1,4 @@
 import { Inter } from 'next/font/google';
-import { LogoutButton } from '@/components/msal/buttons';
 import Link from 'next/link';
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,9 +26,6 @@ export default function Page() {
       <div>
         <Link href={'/'}>ROOT</Link>
       </div>
-      <LogoutButton>
-        <span>Logout</span>
-      </LogoutButton>
     </>
   );
 }
