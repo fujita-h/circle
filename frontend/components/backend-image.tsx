@@ -32,7 +32,7 @@ export function BackendImage({
   const fetcher = swrMsalTokenFetcher(instance, account, environment, 'blob');
   const { data, error, isLoading } = useSWR(`${environment.BACKEND_ENDPOINT}${src}`, fetcher, {
     revalidateOnFocus: false,
-    errorRetryCount: 0,
+    shouldRetryOnError: false,
   });
 
   useEffect(() => {
