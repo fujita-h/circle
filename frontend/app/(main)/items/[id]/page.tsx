@@ -11,6 +11,21 @@ import mdStyles from '@/components/react-markdown/styles.module.css';
 import { Parser } from '@/components/react-markdown/parser';
 import { ReactiveToC } from '@/components/react-markdown/reactive-toc';
 import { Comments } from '@/components/comments';
+import { BackendImage } from '@/components/backend-image';
+import { Fragment } from 'react';
+import { Menu, Transition } from '@headlessui/react';
+import {
+  EllipsisHorizontalIcon,
+  ArchiveBoxIcon,
+  ArrowRightCircleIcon,
+  DocumentDuplicateIcon,
+  HeartIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  UserPlusIcon,
+  UserIcon,
+  UserGroupIcon,
+} from '@heroicons/react/24/solid';
 
 export default function Page({ params }: { params: any }) {
   const id = params.id;
@@ -45,57 +60,239 @@ export default function Page({ params }: { params: any }) {
     return <div>no data</div>;
   }
 
+  const createdAt = new Date(item.createdAt).toLocaleString('ja-jp', { year: 'numeric', month: 'short', day: 'numeric' });
+
   return (
     <div>
-      <div>
-        <div className="hidden sm:block">
-          <Link className="text-sm font-medium text-gray-500 hover:text-gray-700" href={`/g/${item.group?.handle}`}>
-            <div>
-              <span
-                className={classNames(
-                  TypesColors[item.group.type],
-                  'rounded-md whitespace-nowrap px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset',
-                )}
-              >
-                {capitalize(item.group.type)} Group
-              </span>
-              <span className="ml-2"> {item.group?.name} </span>
+      <div className="flex space-x-1 mb-4">
+        <div className="order-0 hidden md:block w-12 print:hidden"></div>
+        <div className="order-1 flex-1">
+          <div className="mx-4 space-y-1 sm:space-y-2">
+            <div className="inline-block py-1 px-2 rounded-md bg-white ring-1 ring-gray-200">
+              <Link className="text-sm font-medium text-gray-700 hover:text-gray-500" href={`/g/${item.group?.handle}`}>
+                <div className="flex items-center">
+                  <BackendImage
+                    src={`/groups/${item.group.id}/photo`}
+                    className="w-6 h-6 rounded-md"
+                    alt="group icon"
+                    fallback={<UserGroupIcon className="w-6 h-6 rounded-md bg-gray-100 text-gray-400 ring-1 ring-gray-200" />}
+                  />
+                  <div className="ml-2 hover:underline">{item.group?.name} </div>
+                </div>
+              </Link>
             </div>
-          </Link>
-        </div>
-        {item.user.name}
-        {item.createdAt}
-      </div>
-
-      <div className="mt-2 md:flex md:items-center md:justify-between">
-        <div className="min-w-0 flex-1">
-          <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:tracking-tight"> {item.title} </h2>
-        </div>
-        <div className="mt-4 flex flex-shrink-0 md:ml-4 md:mt-0">
-          {item.canEdit ? (
-            <Link href={`/items/${item.id}/edit`}>
-              <div className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:cursor-pointer">
-                Edit
-              </div>
-            </Link>
-          ) : (
-            <></>
-          )}
-        </div>
-      </div>
-      <div className="flex space-x-4 my-8 rounded-md p-4 bg-white">
-        <div className={classNames(mdStyles.item, 'flex-1')}>
-          <Parser addHeaderAnchor={true}>{markdown}</Parser>
-        </div>
-        <div className="my-6 w-72 h-full sticky top-0">
-          <div className="mt-6">
-            <ReactiveToC>{markdown}</ReactiveToC>
+            <div className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:tracking-tight">{item.title}</div>
           </div>
         </div>
       </div>
-      <div className="rounded-md my-8 p-4 bg-white">
-        <Comments itemId={item.id} />
+      <div className="flex space-x-1">
+        <div className="order-0 hidden md:block w-12 print:hidden">
+          <div></div>
+          <div className="sticky top-0">
+            <div className="pt-5 flex flex-col gap-4">
+              <div className="w-10 h-10 rounded-full ring-1 ring-gray-300 flex items-center justify-center">
+                <HeartIcon className="w-6 h-6 text-gray-300" />
+              </div>
+              <div className="w-10 h-10 rounded-full ring-1 ring-gray-300 flex items-center justify-center">
+                <ArchiveBoxIcon className="w-6 h-6 text-gray-300" />
+              </div>
+              <div className="w-10 h-10 flex items-center justify-center">
+                <OtherMenuButton item={item} className="w-8 h-8 text-gray-700" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="order-2 hidden lg:block w-80 pl-2 print:hidden">
+          <div>
+            <div className="rounded-md bg-white ring-1 ring-gray-200 p-4 flex flex-col divide-y divide-gray-300 ">
+              <div className="pb-2">
+                <div className="mx-2">
+                  <div className="text-gray-800">{createdAt} に公開</div>
+                </div>
+              </div>
+              <div className="py-2">
+                <div className="mx-2 flex space-x-2 items-center">
+                  <div>
+                    <BackendImage
+                      src={`/groups/${item.group.id}/photo`}
+                      className="w-8 h-8 rounded-md"
+                      alt="group icon"
+                      fallback={<UserGroupIcon className="w-8 h-8 rounded-md bg-gray-100 text-gray-400 ring-1 ring-gray-200" />}
+                    />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-gray-800">{item.group.name}</div>
+                  </div>
+                </div>
+              </div>
+              <div className="pt-2">
+                <div className="mx-1 flex space-x-2 items-center">
+                  <div>
+                    <BackendImage
+                      src={`/users/${item.user.id}/photo`}
+                      className="w-10 h-10 rounded-full"
+                      alt="user icon"
+                      fallback={<UserIcon className="w-10 h-10 rounded-full bg-gray-100 text-gray-400" />}
+                    />
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-700">@{item.user.handle}</div>
+                    <div className="text-base font-bold text-gray-900">{item.user.name}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="sticky top-0">
+            <div className="pt-5">
+              <ReactiveToC>{markdown}</ReactiveToC>
+            </div>
+          </div>
+        </div>
+        <div className="order-1 flex-1">
+          <div className="bg-white rounded-md ring-1 ring-gray-200 p-4 lg:p-5">
+            <div>
+              <Parser addHeaderAnchor={true} className={mdStyles.item}>
+                {markdown}
+              </Parser>
+            </div>
+          </div>
+          <div className="rounded-md ring-1 ring-gray-200 my-8 p-4 bg-white">
+            <Comments itemId={item.id} />
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+function OtherMenuButton({ item, className }: { item: any; className?: string }) {
+  return (
+    <Menu as="div" className="relative inline-block text-left">
+      <div>
+        <Menu.Button className="">
+          <EllipsisHorizontalIcon className={className} />
+        </Menu.Button>
+      </div>
+
+      <Transition
+        as={Fragment}
+        enter="transition ease-out duration-100"
+        enterFrom="transform opacity-0 scale-95"
+        enterTo="transform opacity-100 scale-100"
+        leave="transition ease-in duration-75"
+        leaveFrom="transform opacity-100 scale-100"
+        leaveTo="transform opacity-0 scale-95"
+      >
+        <Menu.Items className="absolute left-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+          <div className="py-1">
+            <Menu.Item>
+              {({ active }) => (
+                <Link
+                  href={`/items/${item.id}/edit`}
+                  className={classNames(
+                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                    'group flex items-center px-4 py-2 text-sm',
+                  )}
+                >
+                  <PencilSquareIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
+                  Edit
+                </Link>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <a
+                  href="#"
+                  className={classNames(
+                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                    'group flex items-center px-4 py-2 text-sm',
+                  )}
+                >
+                  <DocumentDuplicateIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
+                  Duplicate
+                </a>
+              )}
+            </Menu.Item>
+          </div>
+          <div className="py-1">
+            <Menu.Item>
+              {({ active }) => (
+                <a
+                  href="#"
+                  className={classNames(
+                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                    'group flex items-center px-4 py-2 text-sm',
+                  )}
+                >
+                  <ArchiveBoxIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
+                  Archive
+                </a>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <a
+                  href="#"
+                  className={classNames(
+                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                    'group flex items-center px-4 py-2 text-sm',
+                  )}
+                >
+                  <ArrowRightCircleIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
+                  Move
+                </a>
+              )}
+            </Menu.Item>
+          </div>
+          <div className="py-1">
+            <Menu.Item>
+              {({ active }) => (
+                <a
+                  href="#"
+                  className={classNames(
+                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                    'group flex items-center px-4 py-2 text-sm',
+                  )}
+                >
+                  <UserPlusIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
+                  Share
+                </a>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <a
+                  href="#"
+                  className={classNames(
+                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                    'group flex items-center px-4 py-2 text-sm',
+                  )}
+                >
+                  <HeartIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
+                  Add to favorites
+                </a>
+              )}
+            </Menu.Item>
+          </div>
+          <div className="py-1">
+            <Menu.Item>
+              {({ active }) => (
+                <a
+                  href="#"
+                  className={classNames(
+                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                    'group flex items-center px-4 py-2 text-sm',
+                  )}
+                >
+                  <TrashIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
+                  Delete
+                </a>
+              )}
+            </Menu.Item>
+          </div>
+        </Menu.Items>
+      </Transition>
+    </Menu>
   );
 }

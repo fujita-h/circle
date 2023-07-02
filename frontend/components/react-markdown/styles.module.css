@@ -6,16 +6,22 @@
   line-height: 1.5;
   font-weight: bold;
   border-bottom: 2px solid #eee;
-  margin-top: 2.2rem;
-  margin-bottom: 2.4rem;
+  margin-top: 1.8rem;
+  margin-bottom: 1.6rem;
+}
+.item h1:first-child {
+  margin-top: 0rem;
 }
 .item h2 {
   font-size: 1.6rem;
   line-height: 1.5;
   font-weight: bold;
   border-bottom: 2px solid #eee;
-  margin-top: 2.2rem;
-  margin-bottom: 2.4rem;
+  margin-top: 1.6rem;
+  margin-bottom: 1.4rem;
+}
+.item h2:first-child {
+  margin-top: 0rem;
 }
 .item img {
   margin-top: 0.8rem;

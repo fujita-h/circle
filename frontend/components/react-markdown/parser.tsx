@@ -10,7 +10,15 @@ import { Schema } from 'hast-util-sanitize';
 const CONTENT_ANCHOR_PREFIX = 'content-line';
 const CONTENT_ANCHOR_CLASS_NAME = 'doc-content-lines';
 
-export function Parser({ children, addHeaderAnchor = false }: { children: string; addHeaderAnchor?: boolean }) {
+export function Parser({
+  children,
+  className,
+  addHeaderAnchor = false,
+}: {
+  children: string;
+  className?: string;
+  addHeaderAnchor?: boolean;
+}) {
   const mySchema: Schema = { ...defaultSchema };
 
   const H1 = ({ node, ...props }: any) => (
@@ -26,7 +34,7 @@ export function Parser({ children, addHeaderAnchor = false }: { children: string
 
   return (
     <ReactMarkdown
-      className="markdown"
+      className={className}
       remarkPlugins={[gfm]}
       rehypePlugins={[rehypeRaw, [rehypeSanitize, mySchema]]}
       unwrapDisallowed={false}

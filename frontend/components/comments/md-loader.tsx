@@ -24,9 +24,5 @@ export function MarkdownLoader({ commentId }: { commentId: string }) {
     return <div>loading...</div>;
   }
 
-  return (
-    <div className={mdStyles.comment}>
-      <ReactMarkdownParser>{markdown}</ReactMarkdownParser>
-    </div>
-  );
+  return <ReactMarkdownParser className={mdStyles.comment}>{markdown}</ReactMarkdownParser>;
 }

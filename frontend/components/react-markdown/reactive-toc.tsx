@@ -43,7 +43,7 @@ export function ReactiveToC({ children }: { children: string }) {
           <div
             className={classNames(
               `${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}` == scrollMarker ? 'bg-gray-200' : '',
-              'py-1 hover:cursor-pointer hover:bg-gray-300',
+              'py-1 px-1 hover:cursor-pointer hover:bg-gray-300',
             )}
           >
             {props.children}
@@ -61,7 +61,7 @@ export function ReactiveToC({ children }: { children: string }) {
           <div
             className={classNames(
               `${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}` == scrollMarker ? 'bg-gray-200' : '',
-              'py-1 pl-3 hover:cursor-pointer hover:bg-gray-300',
+              'py-1 pl-3 pr-1 hover:cursor-pointer hover:bg-gray-300',
             )}
           >
             {props.children}
