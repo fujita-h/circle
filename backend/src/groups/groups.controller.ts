@@ -31,6 +31,7 @@ import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RestError } from '@azure/storage-blob';
+import * as jdenticon from 'jdenticon';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('groups')
@@ -151,6 +152,10 @@ export class GroupsController {
 
   @Get(':id/photo')
   async getPhoto(@Param('id') id: string, @Response() response: any) {
+    const group = await this.groupsService.findOne({ where: { id } });
+    if (!group) {
+      throw new NotFoundException();
+    }
     try {
       const downloadBlockBlobResponse = await this.blobsService.downloadBlob(
         'group',
@@ -161,7 +166,14 @@ export class GroupsController {
     } catch (e) {
       if (e instanceof RestError) {
         if (e.statusCode === 404) {
-          throw new NotFoundException();
+          const png = jdenticon.toPng(group.id, 256, {
+            padding: 0.08,
+            backColor: '#F0F0F0',
+            saturation: { color: 0.25 },
+          });
+          response.setHeader('Content-Type', 'image/png');
+          response.setHeader('Content-Length', png.length);
+          response.send(png);
         }
       }
       throw new InternalServerErrorException();
@@ -222,7 +234,14 @@ export class GroupsController {
     } catch (e) {
       if (e instanceof RestError) {
         if (e.statusCode === 404) {
-          throw new NotFoundException();
+          const png = jdenticon.toPng(group.id, 256, {
+            padding: 0.08,
+            backColor: '#F0F0F0',
+            saturation: { color: 0.25 },
+          });
+          response.setHeader('Content-Type', 'image/png');
+          response.setHeader('Content-Length', png.length);
+          response.send(png);
         }
       }
       throw new InternalServerErrorException();

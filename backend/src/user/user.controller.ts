@@ -32,6 +32,7 @@ import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { RestError } from '@azure/storage-blob';
+import * as jdenticon from 'jdenticon';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('user')
@@ -179,7 +180,14 @@ export class UserController {
     } catch (e) {
       if (e instanceof RestError) {
         if (e.statusCode === 404) {
-          throw new NotFoundException();
+          const png = jdenticon.toPng(request.user.id, 256, {
+            padding: 0.15,
+            backColor: '#F0F0F0',
+            saturation: { color: 0.75 },
+          });
+          response.setHeader('Content-Type', 'image/png');
+          response.setHeader('Content-Length', png.length);
+          response.send(png);
         }
       }
       throw new InternalServerErrorException();

@@ -25,6 +25,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { RestError } from '@azure/storage-blob';
+import * as jdenticon from 'jdenticon';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('users')
@@ -93,6 +94,10 @@ export class UsersController {
 
   @Get(':id/photo')
   async getPhoto(@Param('id') id: string, @Response() response: any) {
+    const user = await this.usersService.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException();
+    }
     try {
       const downloadBlockBlobResponse = await this.blobsService.downloadBlob('user', `${id}/photo`);
       response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
@@ -100,7 +105,14 @@ export class UsersController {
     } catch (e) {
       if (e instanceof RestError) {
         if (e.statusCode === 404) {
-          throw new NotFoundException();
+          const png = jdenticon.toPng(user.id, 256, {
+            padding: 0.15,
+            backColor: '#F0F0F0',
+            saturation: { color: 0.75 },
+          });
+          response.setHeader('Content-Type', 'image/png');
+          response.setHeader('Content-Length', png.length);
+          response.send(png);
         }
       }
       throw new InternalServerErrorException();
