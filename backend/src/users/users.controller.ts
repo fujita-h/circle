@@ -1,6 +1,7 @@
 import {
   Controller,
   Request,
+  Response,
   Get,
   Post,
   Put,
@@ -12,14 +13,18 @@ import {
   HttpStatus,
   Query,
   ParseIntPipe,
+  NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserGroupsService } from '../user-groups/user-groups.service';
 import { ItemsService } from '../items/items.service';
+import { AzblobService } from '../azblob/azblob.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
+import { RestError } from '@azure/storage-blob';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('users')
@@ -28,7 +33,10 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly userGroupsService: UserGroupsService,
     private readonly itemsService: ItemsService,
-  ) {}
+    private readonly blobsService: AzblobService,
+  ) {
+    this.blobsService.init('user');
+  }
 
   checkHandle(handle: string) {
     if (!handle || !handle.match(/^[a-zA-Z][0-9a-zA-Z\-]{2,}$/i)) {
@@ -80,6 +88,22 @@ export class UsersController {
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  @Get(':id/photo')
+  async getPhoto(@Param('id') id: string, @Response() response: any) {
+    try {
+      const downloadBlockBlobResponse = await this.blobsService.downloadBlob('user', `${id}/photo`);
+      response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
+      downloadBlockBlobResponse.readableStreamBody?.pipe(response);
+    } catch (e) {
+      if (e instanceof RestError) {
+        if (e.statusCode === 404) {
+          throw new NotFoundException();
+        }
+      }
+      throw new InternalServerErrorException();
     }
   }
 
