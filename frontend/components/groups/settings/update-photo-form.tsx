@@ -46,7 +46,7 @@ export function UpdatePhotoForm({ groupId }: { groupId: string }) {
           <div className="col-span-full flex items-center gap-x-8">
             <BackendImage
               src={`/groups/${groupId}/photo`}
-              className="h-24 w-24 flex-none rounded-lg bg-gray-800 object-cover"
+              className="h-24 w-24 flex-none rounded-md bg-gray-800 object-cover"
               alt="user-icon"
               fallback={<PhotoIcon className="h-24 w-24 text-gray-300" />}
             />

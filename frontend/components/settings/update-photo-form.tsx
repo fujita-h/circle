@@ -50,7 +50,7 @@ export function UpdatePhotoForm() {
             <BackendImage
               key={updateKey}
               src="/user/photo"
-              className="h-24 w-24 flex-none rounded-lg bg-gray-800 object-cover"
+              className="h-24 w-24 flex-none rounded-full bg-gray-800 object-cover"
               alt="user-icon"
             />
             <div>

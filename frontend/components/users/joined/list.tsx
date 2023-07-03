@@ -26,7 +26,7 @@ export function CardList({ joinedGroups }: { joinedGroups: JoinedGroupData[] }) 
           <div className="flex gap-x-4">
             <BackendImage
               src={`/groups/${joined.group.id}/photo`}
-              className="h-16 w-16 flex-none rounded-lg bg-gray-50"
+              className="h-16 w-16 flex-none rounded-md bg-gray-50"
               alt="group-icon"
               fallback={<UserGroupIcon className="h-16 w-16 flex-none rounded-lg text-gray-300 bg-gray-50" />}
             />
