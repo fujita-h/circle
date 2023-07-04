@@ -7,7 +7,7 @@ export function LogoutButton({ className, children }: { className?: string; chil
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
 
-  const handleLogin = async (loginType: 'popup' | 'redirect') => {
+  const handleLogout = async (loginType: 'popup' | 'redirect') => {
     if (!account) return;
     try {
       const auth = await instance.acquireTokenSilent({
@@ -28,7 +28,7 @@ export function LogoutButton({ className, children }: { className?: string; chil
     <button
       className={className}
       onClick={() => {
-        handleLogin('redirect');
+        handleLogout('redirect');
       }}
     >
       {children}
