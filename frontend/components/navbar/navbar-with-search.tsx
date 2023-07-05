@@ -20,7 +20,6 @@ const navigation = [
 const userNavigation = [
   { name: 'Drafts', href: '/drafts' },
   { name: 'Settings', href: '/settings' },
-  { name: 'Sign out', href: '/' },
 ];
 
 export function NavbarWithSearch() {
