@@ -12,7 +12,7 @@ import {
   HttpException,
   HttpStatus,
   Query,
-  Put,
+  Patch,
   ParseIntPipe,
   NotAcceptableException,
   ForbiddenException,
@@ -413,20 +413,33 @@ export class GroupsController {
     });
   }
 
-  @Put(':id')
-  async update(@Param('id') id: string, @Body() data: UpdateGroupDto) {
-    try {
-      this.checkHandle(data.handle);
-      return await this.groupsService.update({ where: { id }, data: { ...data, type: undefined } });
-    } catch (e) {
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: e.message || e || 'Unknown error',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+  @Patch(':id')
+  async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateGroupDto) {
+    const userId = request.user.id;
+
+    // check permissions
+    const group = await this.groupsService.findOne({ where: { id }, include: { members: true } });
+    if (!group || group.status === 'DELETED') {
+      throw new NotFoundException();
     }
+    if (!group.members) {
+      throw new InternalServerErrorException();
+    }
+
+    const member = group.members.find((m) => m.userId === userId);
+    if (!member || member.role !== 'ADMIN') {
+      throw new ForbiddenException();
+    }
+
+    if (data.handle) {
+      try {
+        this.checkHandle(data.handle);
+      } catch (e) {
+        throw new NotAcceptableException();
+      }
+    }
+
+    return await this.groupsService.update({ where: { id }, data: { ...data, type: undefined } });
   }
 
   @Delete(':id')
