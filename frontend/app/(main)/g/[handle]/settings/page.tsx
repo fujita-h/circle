@@ -5,7 +5,7 @@ import { useAccount, useMsal } from '@azure/msal-react';
 import { useEnvironment } from '@/components/environment/providers';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import useSWR from 'swr';
-import { UpdatePhotoForm } from '@/components/groups/settings';
+import { UpdatePhotoForm, UpdateGroupForm } from '@/components/groups/settings';
 
 export default function Page({ params }: { params: any }) {
   const handle = params.handle;
@@ -36,6 +36,16 @@ export default function Page({ params }: { params: any }) {
           <Suspense fallback={<div>Loading...</div>}>
             <UpdatePhotoForm groupId={data.id} />
           </Suspense>
+        </div>
+      </div>
+
+      <div className="divide-y divide-white/5">
+        <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
+          <div>
+            <h2 className="text-base font-semibold leading-7 text-gray-900">グループ設定</h2>
+            <p className="mt-1 text-sm leading-6 text-gray-400">グループの設定を変更します。</p>
+          </div>
+          <UpdateGroupForm groupId={data.id} />
         </div>
       </div>
     </>
