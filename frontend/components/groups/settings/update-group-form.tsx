@@ -10,22 +10,40 @@ import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { SuccessAlert, FailedAlert } from './alert';
 import { RadioGroupOption } from './radio-group-option';
 
-const conditionJoinGroups = [
-  { name: '誰でも参加できる', description: '誰でもグループに参加できます。', value: 'NOT_REQUIRED' },
+type RadioGroupOptionItem = {
+  name: string;
+  description: string;
+  value: string;
+};
+
+const conditionJoinGroups: RadioGroupOptionItem[] = [
   {
     name: '管理者の承認が必要',
     description: '参加を希望したユーザーは参加保留状態になります。管理者が承認するとグループに参加できます。',
     value: 'REQUIRE_ADMIN_APPROVAL',
   },
+  { name: '誰でも参加できる', description: '誰でもグループに参加できます。', value: 'NOT_REQUIRED' },
 ];
 
-const ConditionWriteItems = [
-  { name: 'メンバーは誰でも投稿できる', description: 'メンバーはグループに投稿できます。', value: 'NOT_REQUIRED' },
+const ConditionWriteItems: RadioGroupOptionItem[] = [
   {
     name: '管理者の承認が必要',
     description: '投稿は保留状態になります。管理者が承認すると記事が投稿されます。',
     value: 'REQUIRE_ADMIN_APPROVAL',
   },
+  { name: '投稿はすぐに反映', description: '投稿はすぐに公開されます。', value: 'NOT_REQUIRED' },
+];
+
+const PermissionWriteItems: RadioGroupOptionItem[] = [
+  { name: 'グループ管理者のみ', description: 'グループの管理者のみアイテムを投稿できます。', value: 'ADMIN' },
+  { name: 'グループメンバー', description: 'グループのメンバーがアイテムを投稿できます。', value: 'GROUP_MEMBER' },
+  { name: '誰でも', description: '誰でもこのグループにアイテムを投稿できます。', value: 'ALL' },
+];
+
+const PermissionReadItems: RadioGroupOptionItem[] = [
+  { name: 'グループ管理者のみ', description: 'グループの管理者のみアイテムを閲覧できます。', value: 'ADMIN' },
+  { name: 'グループメンバー', description: 'グループのメンバーがアイテムを閲覧できます。', value: 'GROUP_MEMBER' },
+  { name: '誰でも', description: '誰でもこのグループにアイテムを閲覧できます。', value: 'ALL' },
 ];
 
 export function UpdateGroupForm({ groupId }: { groupId: string }) {
@@ -113,10 +131,10 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
   return (
     <>
       <div className="md:col-span-2">
-        <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-          <div className="col-span-full">
-            <label htmlFor="handle" className="block text-sm font-medium leading-6 text-gray-900">
-              Handle
+        <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:max-w-xl sm:grid-cols-6 lg:max-w-3xl">
+          <div className="col-span-full lg:max-w-xl">
+            <label htmlFor="handle" className="block text-base font-medium leading-6 text-gray-900">
+              ハンドル
             </label>
             <div className="mt-2">
               <input
@@ -143,8 +161,8 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
             </div>
           </div>
 
-          <div className="col-span-full">
-            <label htmlFor="name" className="block text-sm font-medium leading-6 text-gray-900">
+          <div className="col-span-full lg:max-w-xl">
+            <label htmlFor="name" className="block text-base font-medium leading-6 text-gray-900">
               グループ名
             </label>
             <div className="mt-2">
@@ -161,7 +179,7 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
           </div>
 
           <div className="col-span-full">
-            <label htmlFor="description" className="block text-sm font-medium leading-6 text-gray-900">
+            <label htmlFor="description" className="block text-base font-medium leading-6 text-gray-900">
               グループの説明
             </label>
             <div className="mt-2">
@@ -190,10 +208,32 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
 
           <div className="col-span-full">
             <RadioGroupOption
-              label="アイテムの投稿"
+              label="アイテムの投稿条件"
               name="writeItemCondition"
               values={ConditionWriteItems}
               value={formState?.writeItemCondition}
+              disabled={formLocked}
+              onChange={handleRadioChange}
+            />
+          </div>
+
+          <div className="col-span-full">
+            <RadioGroupOption
+              label="アイテムの投稿制限"
+              name="writeItemPermission"
+              values={PermissionWriteItems}
+              value={formState?.writeItemPermission}
+              disabled={formLocked}
+              onChange={handleRadioChange}
+            />
+          </div>
+
+          <div className="col-span-full">
+            <RadioGroupOption
+              label="アイテムの閲覧制限"
+              name="readItemPermission"
+              values={PermissionReadItems}
+              value={formState?.readItemPermission}
               disabled={formLocked}
               onChange={handleRadioChange}
             />

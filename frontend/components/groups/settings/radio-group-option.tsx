@@ -27,8 +27,8 @@ export function RadioGroupOption({
         onChange(name, e);
       }}
     >
-      <RadioGroup.Label className="block text-sm font-medium leading-6 text-gray-900">{label}</RadioGroup.Label>
-      <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
+      <RadioGroup.Label className="block text-base font-medium leading-6 text-gray-900">{label}</RadioGroup.Label>
+      <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 xl:grid-cols-3 sm:gap-x-4">
         {values.map((v: any) => (
           <RadioGroup.Option
             key={v.value}
