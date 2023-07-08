@@ -17,13 +17,16 @@ type RadioGroupOptionItem = {
   value: string;
 };
 
-const conditionJoinGroups: RadioGroupOptionItem[] = [
-  {
-    name: '管理者の承認が必要',
-    description: '参加を希望したユーザーは参加保留状態になります。管理者が承認するとグループに参加できます。',
-    value: 'REQUIRE_ADMIN_APPROVAL',
-  },
-  { name: '誰でも参加できる', description: '誰でもグループに参加できます。', value: 'NOT_REQUIRED' },
+const PermissionReadItems: RadioGroupOptionItem[] = [
+  { name: 'グループ管理者のみ', description: 'グループの管理者のみアイテムを閲覧できます。', value: 'ADMIN' },
+  { name: 'グループメンバー', description: 'グループのメンバーがアイテムを閲覧できます。', value: 'GROUP_MEMBER' },
+  { name: '誰でも', description: '誰でもこのグループのアイテムを閲覧できます。', value: 'ALL' },
+];
+
+const PermissionWriteItems: RadioGroupOptionItem[] = [
+  { name: 'グループ管理者のみ', description: 'グループの管理者のみアイテムを投稿できます。', value: 'ADMIN' },
+  { name: 'グループメンバー', description: 'グループのメンバーがアイテムを投稿できます。', value: 'GROUP_MEMBER' },
+  { name: '誰でも', description: '誰でもこのグループにアイテムを投稿できます。', value: 'ALL' },
 ];
 
 const ConditionWriteItems: RadioGroupOptionItem[] = [
@@ -35,16 +38,13 @@ const ConditionWriteItems: RadioGroupOptionItem[] = [
   { name: '投稿はすぐに反映', description: '投稿はすぐに公開されます。', value: 'NOT_REQUIRED' },
 ];
 
-const PermissionWriteItems: RadioGroupOptionItem[] = [
-  { name: 'グループ管理者のみ', description: 'グループの管理者のみアイテムを投稿できます。', value: 'ADMIN' },
-  { name: 'グループメンバー', description: 'グループのメンバーがアイテムを投稿できます。', value: 'GROUP_MEMBER' },
-  { name: '誰でも', description: '誰でもこのグループにアイテムを投稿できます。', value: 'ALL' },
-];
-
-const PermissionReadItems: RadioGroupOptionItem[] = [
-  { name: 'グループ管理者のみ', description: 'グループの管理者のみアイテムを閲覧できます。', value: 'ADMIN' },
-  { name: 'グループメンバー', description: 'グループのメンバーがアイテムを閲覧できます。', value: 'GROUP_MEMBER' },
-  { name: '誰でも', description: '誰でもこのグループにアイテムを閲覧できます。', value: 'ALL' },
+const conditionJoinGroups: RadioGroupOptionItem[] = [
+  {
+    name: '管理者の承認が必要',
+    description: '参加を希望したユーザーは参加保留状態になります。管理者が承認するとグループに参加できます。',
+    value: 'REQUIRE_ADMIN_APPROVAL',
+  },
+  { name: '誰でも参加できる', description: '誰でもグループに参加できます。', value: 'NOT_REQUIRED' },
 ];
 
 export function UpdateGroupForm({ groupId }: { groupId: string }) {
@@ -205,21 +205,10 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
 
           <div className="col-span-full">
             <RadioGroupOption
-              label="メンバーの加入設定"
-              name={'joinCondition'}
-              values={conditionJoinGroups}
-              value={formState?.joinCondition}
-              disabled={formLocked}
-              onChange={handleRadioChange}
-            />
-          </div>
-
-          <div className="col-span-full">
-            <RadioGroupOption
-              label="アイテムの投稿条件"
-              name="writeItemCondition"
-              values={ConditionWriteItems}
-              value={formState?.writeItemCondition}
+              label="アイテムの閲覧制限"
+              name="readItemPermission"
+              values={PermissionReadItems}
+              value={formState?.readItemPermission}
               disabled={formLocked}
               onChange={handleRadioChange}
             />
@@ -238,10 +227,21 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
 
           <div className="col-span-full">
             <RadioGroupOption
-              label="アイテムの閲覧制限"
-              name="readItemPermission"
-              values={PermissionReadItems}
-              value={formState?.readItemPermission}
+              label="アイテムの投稿条件"
+              name="writeItemCondition"
+              values={ConditionWriteItems}
+              value={formState?.writeItemCondition}
+              disabled={formLocked}
+              onChange={handleRadioChange}
+            />
+          </div>
+
+          <div className="col-span-full">
+            <RadioGroupOption
+              label="メンバーの加入設定"
+              name={'joinCondition'}
+              values={conditionJoinGroups}
+              value={formState?.joinCondition}
               disabled={formLocked}
               onChange={handleRadioChange}
             />
