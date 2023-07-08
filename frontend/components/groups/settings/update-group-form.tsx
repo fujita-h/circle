@@ -4,7 +4,8 @@ import { useEnvironment } from '@/components/environment/providers';
 import { apiRequest } from '@/components/msal/requests';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { ChangeEvent, useEffect, useState } from 'react';
-import useSWR from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
+import { useRouter } from 'next/navigation';
 import { ExclamationTriangleIcon } from '@heroicons/react/20/solid';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { SuccessAlert, FailedAlert } from './alert';
@@ -47,6 +48,7 @@ const PermissionReadItems: RadioGroupOptionItem[] = [
 ];
 
 export function UpdateGroupForm({ groupId }: { groupId: string }) {
+  const router = useRouter();
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
@@ -56,8 +58,9 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
   const [successMessage, setSuccessMessage] = useState('');
   const [failedMessage, setFailedMessage] = useState('');
 
+  const { mutate } = useSWRConfig();
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
-  const { data, isLoading, mutate } = useSWR(`${environment.BACKEND_ENDPOINT}/groups/${groupId}`, fetcher, {
+  const { data, isLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/groups/${groupId}`, fetcher, {
     revalidateOnFocus: false,
   });
 
@@ -89,7 +92,12 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
         if (response.ok) {
           setSuccessMessage('更新が完了しました');
           setFormUpdates({});
-          mutate();
+          mutate(`${environment.BACKEND_ENDPOINT}/groups/${groupId}`);
+          if (data.handle !== formState.handle) {
+            router.replace(`/g/${formState.handle}/settings`);
+          } else {
+            mutate(`${environment.BACKEND_ENDPOINT}/groups/handle/${data.handle}`);
+          }
         } else {
           setFailedMessage('更新に失敗しました');
         }
