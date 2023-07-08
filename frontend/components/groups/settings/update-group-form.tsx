@@ -6,9 +6,8 @@ import { useAccount, useMsal } from '@azure/msal-react';
 import { ChangeEvent, useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useRouter } from 'next/navigation';
-import { ExclamationTriangleIcon } from '@heroicons/react/20/solid';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
-import { SuccessAlert, FailedAlert } from './alert';
+import { SuccessAlert, FailedAlert, WarningWithAccent } from './alert';
 import { RadioGroupOption } from './radio-group-option';
 
 type RadioGroupOptionItem = {
@@ -136,6 +135,11 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
     return <div>loading...</div>;
   }
 
+  const permissionMissmatch =
+    (formState?.readItemPermission === 'ADMIN' && formState?.writeItemPermission == 'GROUP_MEMBER') ||
+    (formState?.readItemPermission === 'ADMIN' && formState?.writeItemPermission == 'ALL') ||
+    (formState?.readItemPermission === 'GROUP_MEMBER' && formState?.writeItemPermission == 'ALL');
+
   return (
     <>
       <div className="md:col-span-2">
@@ -155,17 +159,8 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
                 className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-slate-400/40 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6 disabled:bg-slate-100"
               />
             </div>
-            <div className="mt-2 border-l-4 border-yellow-400 bg-yellow-50 p-3">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-yellow-700">
-                    ハンドルを変更すると、グループのURLが変更されます。グループのリンクを共有している場合は、再度共有する必要があります。
-                  </p>
-                </div>
-              </div>
+            <div className="mt-2">
+              <WarningWithAccent message="ハンドルを変更すると、グループのURLが変更されます。グループのリンクを共有している場合は、再度共有する必要があります。" />
             </div>
           </div>
 
@@ -223,6 +218,13 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
               disabled={formLocked}
               onChange={handleRadioChange}
             />
+            {permissionMissmatch ? (
+              <div className="mt-2">
+                <WarningWithAccent message="アイテムの投稿制限が閲覧制限よりも弱く設定されています。" />
+              </div>
+            ) : (
+              <> </>
+            )}
           </div>
 
           <div className="col-span-full">
