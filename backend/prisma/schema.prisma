@@ -45,10 +45,10 @@ model Group {
   handle              String?             @unique // Set null if group is deleted.
   name                String?             @db.VarChar(50)
   description         String?             @db.Text
-  joinCondition       ConditionJoinGroup  @default(REQUIRE_ADMIN_APPROVAL) @map("join_condition")
-  writeItemCondition  ConditionWriteItem  @default(REQUIRE_ADMIN_APPROVAL) @map("write_item_condition")
-  writeItemPermission PermissionWriteItem @default(ADMIN) @map("write_item_permission")
   readItemPermission  PermissionReadItem  @default(ADMIN) @map("read_item_permission")
+  writeItemPermission PermissionWriteItem @default(ADMIN) @map("write_item_permission")
+  writeItemCondition  ConditionWriteItem  @default(REQUIRE_ADMIN_APPROVAL) @map("write_item_condition")
+  joinCondition       ConditionJoinGroup  @default(REQUIRE_ADMIN_APPROVAL) @map("join_condition")
 
   members UserGroup[]
   items   Item[]
