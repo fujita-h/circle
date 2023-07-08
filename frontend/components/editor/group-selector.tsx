@@ -7,7 +7,7 @@ import { useAccount, useMsal } from '@azure/msal-react';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { Listbox, Transition } from '@headlessui/react';
 import { classNames } from '@/utils';
-import { TypesColors } from '@/components/groups/type-colors';
+import { ReadItemPermissionBadge, WriteItemConditionBadge } from '@/components/groups/badges';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 
 export function GroupSelector({ groupId, onChange }: { groupId?: string; onChange?: Function }) {
@@ -46,20 +46,10 @@ export function GroupSelector({ groupId, onChange }: { groupId?: string; onChang
         <>
           <div className="relative">
             <Listbox.Button className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
-              <span className="block truncate">
-                {selected.type ? (
-                  <span
-                    className={classNames(
-                      TypesColors[selected.type],
-                      'rounded-md whitespace-nowrap mr-2 px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset',
-                    )}
-                  >
-                    {selected.type}
-                  </span>
-                ) : (
-                  <></>
-                )}
-                {selected?.name || selected?.id || 'グループ未設定'}
+              <span className="block truncate space-x-2">
+                <span>{selected?.name || selected?.id || 'グループ未設定'}</span>
+                <ReadItemPermissionBadge permission={selected.readItemPermission} />
+                <WriteItemConditionBadge condition={selected.writeItemCondition} />
               </span>
               <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                 <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -104,18 +94,11 @@ export function GroupSelector({ groupId, onChange }: { groupId?: string; onChang
                   >
                     {({ selected, active }) => (
                       <>
-                        <span className={classNames(selected ? 'font-semibold' : 'font-normal', 'block truncate')}>
-                          <span
-                            className={classNames(
-                              TypesColors[group.type],
-                              'rounded-md whitespace-nowrap mr-2 px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset',
-                            )}
-                          >
-                            {group.type}
-                          </span>
-                          {group.name || group.id}
+                        <span className={classNames(selected ? 'font-semibold' : 'font-normal', 'block truncate space-x-2')}>
+                          <span>{group.name || group.id}</span>
+                          <ReadItemPermissionBadge permission={group.readItemPermission} />
+                          <WriteItemConditionBadge condition={group.writeItemCondition} />
                         </span>
-
                         {selected ? (
                           <span
                             className={classNames(

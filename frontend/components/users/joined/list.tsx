@@ -1,8 +1,8 @@
 'use client';
+
 import { ChevronRightIcon, UserGroupIcon } from '@heroicons/react/20/solid';
-import { classNames } from '@/utils';
 import { BackendImage } from '@/components/backend-image';
-import { TypesColors } from '@/components/groups/type-colors';
+import { ReadItemPermissionBadge, WriteItemPermissionBadge, WriteItemConditionBadge, JoinConditionBadge } from '@/components/groups/badges';
 import Link from 'next/link';
 
 type JoinedGroupData = {
@@ -11,7 +11,10 @@ type JoinedGroupData = {
   role: string;
   group: {
     id: string;
-    type: 'OPEN' | 'PUBLIC' | 'PRIVATE';
+    readItemPermission: string;
+    writeItemPermission: string;
+    writeItemCondition: string;
+    joinCondition: string;
     name: string;
     handle: string;
     description: string;
@@ -31,14 +34,12 @@ export function CardList({ joinedGroups }: { joinedGroups: JoinedGroupData[] }) 
               fallback={<UserGroupIcon className="h-16 w-16 flex-none rounded-lg text-gray-300 bg-gray-50" />}
             />
             <div className="min-w-0 flex-auto">
-              <span
-                className={classNames(
-                  TypesColors[joined.group.type],
-                  'rounded-md whitespace-nowrap px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset',
-                )}
-              >
-                {joined.group.type}
-              </span>
+              <div className="flex flex-wrap gap-2">
+                <ReadItemPermissionBadge permission={joined.group.readItemPermission} />
+                <WriteItemPermissionBadge permission={joined.group.writeItemPermission} />
+                <WriteItemConditionBadge condition={joined.group.writeItemCondition} />
+                <JoinConditionBadge condition={joined.group.joinCondition} />
+              </div>
               <p className="text-sm font-semibold leading-6 text-gray-900">
                 <Link href={`/g/${joined.group.handle}`}>
                   <span className="absolute inset-x-0 -top-px bottom-0" />

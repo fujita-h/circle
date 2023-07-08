@@ -9,7 +9,7 @@ import { CategoryHeader } from '@/components/category-header';
 import { TabItem } from '@/components/category-header.types';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import useSWR from 'swr';
-import { TypesColors } from '@/components/groups/type-colors';
+import { ReadItemPermissionBadge, WriteItemPermissionBadge, WriteItemConditionBadge, JoinConditionBadge } from '@/components/groups/badges';
 import { apiRequest } from '@/components/msal/requests';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -75,15 +75,11 @@ export default function Layout({ params, children }: { params: any; children: Re
       <div className="bg-white rounded-md p-4">
         <div className="md:flex md:items-center md:justify-between">
           <div className="min-w-0 flex-1">
-            <div className="mb-1">
-              <span
-                className={classNames(
-                  TypesColors[group.type],
-                  'rounded-md whitespace-nowrap px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset',
-                )}
-              >
-                {capitalize(group.type)} Group
-              </span>
+            <div className="mb-1 flex flex-wrap gap-2">
+              <ReadItemPermissionBadge permission={group.readItemPermission} />
+              <WriteItemPermissionBadge permission={group.writeItemPermission} />
+              <WriteItemConditionBadge condition={group.writeItemCondition} />
+              <JoinConditionBadge condition={group.joinCondition} />
             </div>
             <h2 className={classNames(inter.className, 'text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:tracking-tight')}>
               {group.name}
