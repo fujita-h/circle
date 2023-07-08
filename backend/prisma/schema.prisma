@@ -46,9 +46,9 @@ model Group {
   name                String?             @db.VarChar(50)
   description         String?             @db.Text
   joinCondition       ConditionJoinGroup  @default(REQUIRE_ADMIN_APPROVAL) @map("join_condition")
-  writeItemCondition  ConditionWriteItem  @default(NOT_REQUIRED) @map("write_item_condition")
-  writeItemPermission PermissionWriteItem @default(GROUP_MEMBER) @map("write_item_permission")
-  readItemPermission  PermissionReadItem  @default(GROUP_MEMBER) @map("read_item_permission")
+  writeItemCondition  ConditionWriteItem  @default(REQUIRE_ADMIN_APPROVAL) @map("write_item_condition")
+  writeItemPermission PermissionWriteItem @default(ADMIN) @map("write_item_permission")
+  readItemPermission  PermissionReadItem  @default(ADMIN) @map("read_item_permission")
 
   members UserGroup[]
   items   Item[]
@@ -195,8 +195,8 @@ enum GroupType {
 }
 
 enum ConditionJoinGroup {
-  NOT_REQUIRED
   REQUIRE_ADMIN_APPROVAL
+  NOT_REQUIRED
 }
 
 enum PermissionReadItem {
@@ -206,8 +206,8 @@ enum PermissionReadItem {
 }
 
 enum ConditionWriteItem {
-  NOT_REQUIRED
   REQUIRE_ADMIN_APPROVAL
+  NOT_REQUIRED
 }
 
 enum PermissionWriteItem {
