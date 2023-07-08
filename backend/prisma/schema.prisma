@@ -236,6 +236,8 @@ enum ItemStatus {
   NORMAL
   DELETED
   PENDING_APPROVAL
+  REJECTED_BY_ADMIN
+  EXCLUDED_BY_ADMIN
 }
 
 enum CommentType {
