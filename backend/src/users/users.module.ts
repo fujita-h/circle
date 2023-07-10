@@ -3,11 +3,10 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { EsService } from '../es/es.service';
 import { AzblobService } from '../azblob/azblob.service';
-import { ItemsService } from '../items/items.service';
-import { UserGroupsService } from '../user-groups/user-groups.service';
-
+import { NotesService } from '../notes/notes.service';
+import { MembershipsService } from '../memberships/memberships.service';
 @Module({
   controllers: [UsersController],
-  providers: [UsersService, UserGroupsService, ItemsService, EsService, AzblobService],
+  providers: [UsersService, MembershipsService, NotesService, EsService, AzblobService],
 })
 export class UsersModule {}

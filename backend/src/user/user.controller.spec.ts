@@ -5,8 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { EsService } from '../es/es.service';
 import { AzblobService } from '../azblob/azblob.service';
-import { GroupsService } from '../groups/groups.service';
-import { UserGroupsService } from '../user-groups/user-groups.service';
+import { CirclesService } from '../circles/circles.service';
+import { MembershipsService } from '../memberships/memberships.service';
 
 class CreateUserDtoForTest extends CreateUserDto {
   id: string;
@@ -28,7 +28,7 @@ describe('UserController', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UserController],
-      providers: [UsersService, EsService, AzblobService, GroupsService, UserGroupsService],
+      providers: [UsersService, EsService, AzblobService, CirclesService, MembershipsService],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],

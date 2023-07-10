@@ -19,51 +19,52 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
-import { ItemsService } from '../items/items.service';
-import { GroupsService } from '../groups/groups.service';
+import { NotesService } from '../notes/notes.service';
+import { CirclesService } from '../circles/circles.service';
 import { AzblobService } from '../azblob/azblob.service';
-import { CreateItemDto } from '../items/dto/create-item.dto';
-import { UpdateItemDto } from '../items/dto/update-item.dto';
+import { CreateNoteDto } from '../notes/dto/create-note.dto';
+import { UpdateNoteDto } from '../notes/dto/update-note.dto';
 import { RestError } from '@azure/storage-blob';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('drafts')
 export class DraftsController {
+  private blobContainerName = 'note';
   constructor(
-    private readonly itemsService: ItemsService,
-    private readonly groupsService: GroupsService,
+    private readonly notesService: NotesService,
+    private readonly circlesService: CirclesService,
     private readonly blobsService: AzblobService,
   ) {}
 
   @Post()
-  async create(@Request() request: any, @Body() data: CreateItemDto) {
+  async create(@Request() request: any, @Body() data: CreateNoteDto) {
     const userId = request.user.id;
-    const groupId = data.group.id;
+    const circleId = data.circle.id;
 
-    // some checks if group is exists
-    if (groupId) {
-      const group = await this.groupsService.findOne({
-        where: { id: groupId },
+    // some checks if circle is exists
+    if (circleId) {
+      const circle = await this.circlesService.findOne({
+        where: { id: circleId },
         include: { members: true },
       });
 
-      // if group is not exists, throw error
-      if (!group) {
+      // if circle is not exists, throw error
+      if (!circle) {
         throw new BadRequestException();
       }
 
-      // if group is private or public, check if user is member
-      if (group.type === 'PUBLIC' || group.type === 'PRIVATE') {
-        if (group.members?.filter((m) => m.userId === userId).length === 0) {
+      // if circle is private or public, check if user is member
+      if (circle.type === 'PUBLIC' || circle.type === 'PRIVATE') {
+        if (circle.members?.filter((m) => m.userId === userId).length === 0) {
           throw new BadRequestException();
         }
       }
     }
 
-    return await this.itemsService.createDraft({
+    return await this.notesService.createDraft({
       data: {
         user: { connect: { id: userId } },
-        group: groupId ? { connect: { id: groupId } } : undefined,
+        circle: circleId ? { connect: { id: circleId } } : undefined,
         title: data.title,
         status: data.status,
       },
@@ -78,14 +79,14 @@ export class DraftsController {
     @Query('take', ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
-    return this.itemsService.findMany({
+    return this.notesService.findMany({
       where: {
         status: 'NORMAL',
-        draftPointer: { not: null },
+        draftBlobPointer: { not: null },
         user: { id: userId },
       },
       orderBy: { createdAt: 'desc' },
-      include: { user: true, group: true },
+      include: { user: true, circle: true },
       skip,
       take,
     });
@@ -94,10 +95,10 @@ export class DraftsController {
   @Get('count')
   count(@Request() request: any) {
     const userId = request.user.id;
-    return this.itemsService.count({
+    return this.notesService.count({
       where: {
         status: 'NORMAL',
-        draftPointer: { not: null },
+        draftBlobPointer: { not: null },
         user: { id: userId },
       },
     });
@@ -106,14 +107,14 @@ export class DraftsController {
   @Get(':id')
   async findOne(@Request() request: any, @Param('id') id: string) {
     const userId = request.user.id;
-    const result = await this.itemsService.findFirst({
+    const result = await this.notesService.findFirst({
       where: {
         id: id,
         status: 'NORMAL',
-        draftPointer: { not: null },
+        draftBlobPointer: { not: null },
         user: { id: userId },
       },
-      include: { user: true, group: true },
+      include: { user: true, circle: true },
     });
     if (!result) {
       throw new NotFoundException();
@@ -125,21 +126,21 @@ export class DraftsController {
   async getMarkdown(@Request() request: any, @Param('id') id: string, @Response() response: any) {
     const userId = request.user.id;
     try {
-      const item = await this.itemsService.findFirst({
+      const note = await this.notesService.findFirst({
         where: {
           id,
           status: 'NORMAL',
-          draftPointer: { not: null },
+          draftBlobPointer: { not: null },
           user: { id: userId },
         },
       });
 
-      if (!item) {
-        throw new Error('Item not found');
+      if (!note) {
+        throw new Error('Note not found');
       }
       const downloadBlockBlobResponse = await this.blobsService.downloadBlob(
-        'item',
-        `${item.id}/${item.draftPointer}.draft.md`,
+        this.blobContainerName,
+        `${note.id}/${note.draftBlobPointer}.draft.md`,
       );
       response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
       downloadBlockBlobResponse.readableStreamBody?.pipe(response);
@@ -154,7 +155,7 @@ export class DraftsController {
   }
 
   @Put(':id')
-  async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateItemDto) {
+  async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateNoteDto) {
     const userId = request.user.id;
 
     //check input
@@ -162,27 +163,27 @@ export class DraftsController {
       throw new BadRequestException();
     }
 
-    //check if item exists
-    const item = await this.itemsService.findFirst({
+    //check if note exists
+    const note = await this.notesService.findFirst({
       where: {
         id,
         user: { id: userId }, // user is owner
       },
-      include: { user: true, group: true },
+      include: { user: true, circle: true },
     });
 
-    if (!item || !item.user) {
+    if (!note || !note.user) {
       throw new NotFoundException();
     }
 
-    //update item
-    const group = data.group?.id ? { connect: { id: data.group.id } } : { disconnect: true };
-    return await this.itemsService.updateDraft({
+    //update note
+    const circle = data.circle?.id ? { connect: { id: data.circle.id } } : { disconnect: true };
+    return await this.notesService.updateDraft({
       where: { id },
       data: {
         title: data.title,
         user: { connect: { id: userId } },
-        group: group,
+        circle: circle,
         status: data.status,
       },
       body: data.body,

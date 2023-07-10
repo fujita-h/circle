@@ -1,4 +1,4 @@
-export class CreateGroupDto {
+export class CreateCircleDto {
   handle: string;
   name: string;
   description?: string;

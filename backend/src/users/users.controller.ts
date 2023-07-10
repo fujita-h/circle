@@ -17,8 +17,8 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UserGroupsService } from '../user-groups/user-groups.service';
-import { ItemsService } from '../items/items.service';
+import { MembershipsService } from '../memberships/memberships.service';
+import { NotesService } from '../notes/notes.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -32,8 +32,8 @@ import * as jdenticon from 'jdenticon';
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly userGroupsService: UserGroupsService,
-    private readonly itemsService: ItemsService,
+    private readonly membershipsService: MembershipsService,
+    private readonly notesService: NotesService,
     private readonly blobsService: AzblobService,
   ) {
     this.blobsService.init('user');
@@ -124,77 +124,77 @@ export class UsersController {
     return await this.usersService.findOne({ where: { handle } });
   }
 
-  @Get('handle/:handle/joined/groups')
-  async findJoinedGroupsByHandle(
+  @Get('handle/:handle/joined/circles')
+  async findJoinedCirclesByHandle(
     @Request() request: any,
     @Param('handle') handle: string,
     @Query('skip', ParseIntPipe) skip?: number,
     @Query('take', ParseIntPipe) take?: number,
   ) {
-    return this.userGroupsService.findMany({
+    return this.membershipsService.findMany({
       where: { user: { handle }, role: { in: ['ADMIN', 'MEMBER'] } },
       orderBy: { createdAt: 'asc' },
-      include: { group: true },
+      include: { circle: true },
       skip,
       take,
     });
   }
 
-  @Get('handle/:handle/joined/groups/count')
-  async countJoinedGroupsByHandle(@Request() request: any, @Param('handle') handle: string) {
-    return this.userGroupsService.count({
+  @Get('handle/:handle/joined/circles/count')
+  async countJoinedCirclesByHandle(@Request() request: any, @Param('handle') handle: string) {
+    return this.membershipsService.count({
       where: { user: { handle }, role: { in: ['ADMIN', 'MEMBER'] } },
     });
   }
 
-  @Get('handle/:handle/items')
-  async findItemsByHandle(
+  @Get('handle/:handle/notes')
+  async findNotesByHandle(
     @Request() request: any,
     @Param('handle') handle: string,
     @Query('skip', ParseIntPipe) skip?: number,
     @Query('take', ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
-    return this.itemsService.findMany({
+    return this.notesService.findMany({
       where: {
         user: { handle, status: 'NORMAL' },
         status: 'NORMAL',
-        blobPointer: { not: null }, // only items with blobPointer
-        group: { handle: { not: null }, status: 'NORMAL' }, // only items in existing groups
+        blobPointer: { not: null }, // only notes with blobPointer
+        circle: { handle: { not: null }, status: 'NORMAL' }, // only notes in existing circles
         OR: [
           {
-            // user is member of group
-            group: {
+            // user is member of circle
+            circle: {
               members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
             },
           },
-          { group: { type: { in: ['OPEN', 'PUBLIC'] } } }, // group is open or public
+          { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
         ],
       },
-      include: { user: true, group: true },
+      include: { user: true, circle: true },
       orderBy: { createdAt: 'desc' },
       skip,
       take,
     });
   }
 
-  @Get('handle/:handle/items/count')
-  async countItemsByHandle(@Request() request: any, @Param('handle') handle: string) {
+  @Get('handle/:handle/notes/count')
+  async countNotesByHandle(@Request() request: any, @Param('handle') handle: string) {
     const userId = request.user.id;
-    return this.itemsService.count({
+    return this.notesService.count({
       where: {
         user: { handle, status: 'NORMAL' },
         status: 'NORMAL',
-        blobPointer: { not: null }, // only items with blobPointer
-        group: { handle: { not: null }, status: 'NORMAL' }, // only items in existing groups
+        blobPointer: { not: null }, // only notes with blobPointer
+        circle: { handle: { not: null }, status: 'NORMAL' }, // only notes in existing circles
         OR: [
           {
-            // user is member of group
-            group: {
+            // user is member of circle
+            circle: {
               members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
             },
           },
-          { group: { type: { in: ['OPEN', 'PUBLIC'] } } }, // group is open or public
+          { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
         ],
       },
     });
@@ -222,7 +222,7 @@ export class UsersController {
       // soft delete
       return await this.usersService.update({
         where: { id },
-        data: { oid: null, handle: null, status: 'DELETED', joinedGroups: { set: [] } },
+        data: { oid: null, handle: null, status: 'DELETED', joined: { set: [] } },
       });
     } catch (e) {
       console.error(e);

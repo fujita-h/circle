@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserGroupsService } from './user-groups.service';
+import { MembershipsService } from './memberships.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
-import { GroupsService } from '../groups/groups.service';
+import { CirclesService } from '../circles/circles.service';
 import { EsService } from '../es/es.service';
 
-describe('UserGroupsService', () => {
-  let service: UserGroupsService;
+describe('MembershipsService', () => {
+  let service: MembershipsService;
   let usersService: UsersService;
-  let groupsService: GroupsService;
+  let circlesService: CirclesService;
 
   const testPrefix = 'x-ug-svc-';
   const testUser = {
@@ -16,7 +16,7 @@ describe('UserGroupsService', () => {
     handle: testPrefix + 'handle',
     name: testPrefix + 'name',
   };
-  const testGroup = {
+  const testCircle = {
     id: testPrefix + '9876-543210',
     handle: testPrefix + 'handle',
     name: testPrefix + 'name',
@@ -24,7 +24,7 @@ describe('UserGroupsService', () => {
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UserGroupsService, ConfigService, UsersService, GroupsService, EsService],
+      providers: [MembershipsService, ConfigService, UsersService, CirclesService, EsService],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],
@@ -32,9 +32,9 @@ describe('UserGroupsService', () => {
       ],
     }).compile();
 
-    service = module.get<UserGroupsService>(UserGroupsService);
+    service = module.get<MembershipsService>(MembershipsService);
     usersService = module.get<UsersService>(UsersService);
-    groupsService = module.get<GroupsService>(GroupsService);
+    circlesService = module.get<CirclesService>(CirclesService);
 
     // delete test user if exists
     await usersService.findOne({ where: { id: testUser.id } }).then(async (result) => {
@@ -42,10 +42,10 @@ describe('UserGroupsService', () => {
         await usersService.remove({ where: { id: result.id } });
       }
     });
-    // delete test group if exists
-    await groupsService.findOne({ where: { id: testGroup.id } }).then(async (result) => {
+    // delete test circle if exists
+    await circlesService.findOne({ where: { id: testCircle.id } }).then(async (result) => {
       if (result && result.id) {
-        await groupsService.remove({ where: { id: result.id } });
+        await circlesService.remove({ where: { id: result.id } });
       }
     });
   });
@@ -66,43 +66,43 @@ describe('UserGroupsService', () => {
   });
 
   it('グループを作成', async () => {
-    const result = groupsService.create({ data: testGroup });
-    await expect(result).resolves.toHaveProperty('id', testGroup.id);
-    await expect(result).resolves.toHaveProperty('name', testGroup.name);
-    await expect(result).resolves.toHaveProperty('handle', testGroup.handle);
+    const result = circlesService.create({ data: testCircle });
+    await expect(result).resolves.toHaveProperty('id', testCircle.id);
+    await expect(result).resolves.toHaveProperty('name', testCircle.name);
+    await expect(result).resolves.toHaveProperty('handle', testCircle.handle);
   });
 
   it('ユーザーをグループに追加', async () => {
     const result = service.createIfNotExists({
       userId: testUser.id,
-      groupId: testGroup.id,
+      circleId: testCircle.id,
     });
     await expect(result).resolves.toHaveProperty('userId', testUser.id);
-    await expect(result).resolves.toHaveProperty('groupId', testGroup.id);
+    await expect(result).resolves.toHaveProperty('circleId', testCircle.id);
   });
 
   it('ユーザーをグループに追加(2)', async () => {
     const result = service.createIfNotExists({
       userId: testUser.id,
-      groupId: testGroup.id,
+      circleId: testCircle.id,
     });
     await expect(result).resolves.toHaveProperty('userId', testUser.id);
-    await expect(result).resolves.toHaveProperty('groupId', testGroup.id);
+    await expect(result).resolves.toHaveProperty('circleId', testCircle.id);
   });
 
   it('ユーザーをグループから削除', async () => {
     const result = service.removeIfExists({
       userId: testUser.id,
-      groupId: testGroup.id,
+      circleId: testCircle.id,
     });
     await expect(result).resolves.toHaveProperty('userId', testUser.id);
-    await expect(result).resolves.toHaveProperty('groupId', testGroup.id);
+    await expect(result).resolves.toHaveProperty('circleId', testCircle.id);
   });
 
   it('ユーザーをグループから削除(2)', async () => {
     const result = service.removeIfExists({
       userId: testUser.id,
-      groupId: testGroup.id,
+      circleId: testCircle.id,
     });
     await expect(result).resolves.toBeNull();
   });

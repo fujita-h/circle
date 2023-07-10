@@ -23,8 +23,8 @@ import {
 } from '@nestjs/common';
 import * as Iron from '@hapi/iron';
 import { UsersService } from '../users/users.service';
-import { GroupsService } from '../groups/groups.service';
-import { UserGroupsService } from '../user-groups/user-groups.service';
+import { CirclesService } from '../circles/circles.service';
+import { MembershipsService } from '../memberships/memberships.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
@@ -42,8 +42,8 @@ export class UserController {
   constructor(
     private readonly configService: ConfigService,
     private readonly usersService: UsersService,
-    private readonly groupsService: GroupsService,
-    private readonly userGroupsService: UserGroupsService,
+    private readonly circlesService: CirclesService,
+    private readonly membershipsService: MembershipsService,
     private readonly blobsService: AzblobService,
   ) {
     if (!this.configService.get<string>('IRON_SECRET')) {
@@ -81,51 +81,51 @@ export class UserController {
     return {};
   }
 
-  @Get('/joined/groups')
-  async findJoinedGroups(
+  @Get('/joined/circles')
+  async findJoinedCircles(
     @Request() request: any,
     @Query('skip', ParseIntPipe) skip?: number,
     @Query('take', ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
-    return await this.userGroupsService.findMany({
+    return await this.membershipsService.findMany({
       where: { userId, role: { in: ['ADMIN', 'MEMBER'] } },
       orderBy: { createdAt: 'asc' },
-      include: { group: true },
+      include: { circle: true },
       skip,
       take,
     });
   }
 
-  @Get('/joined/groups/count')
-  async countJoinedGroups(@Request() request: any) {
+  @Get('/joined/circles/count')
+  async countJoinedCircles(@Request() request: any) {
     const userId = request.user.id;
-    return await this.userGroupsService.count({
+    return await this.membershipsService.count({
       where: { userId, role: { in: ['ADMIN', 'MEMBER'] } },
     });
   }
 
-  @Get('/joined/groups/handle/:handle')
-  async findJoinedGroupByHandle(@Request() request: any, @Param('handle') handle: string) {
+  @Get('/joined/circles/handle/:handle')
+  async findJoinedCircleByHandle(@Request() request: any, @Param('handle') handle: string) {
     const userId = request.user.id;
-    return await this.userGroupsService.findFirst({
-      where: { userId, role: { in: ['ADMIN', 'MEMBER'] }, group: { handle } },
+    return await this.membershipsService.findFirst({
+      where: { userId, role: { in: ['ADMIN', 'MEMBER'] }, circle: { handle } },
     });
   }
 
-  @Put('joined/groups/:groupId')
-  joinGroup(@Request() request: any, @Param('groupId') groupId: string) {
+  @Put('joined/circles/:circleId')
+  joinCircle(@Request() request: any, @Param('circleId') circleId: string) {
     const userId = request.user.id;
-    return this.userGroupsService.createIfNotExists({ userId, groupId });
+    return this.membershipsService.createIfNotExists({ userId, circleId });
   }
 
-  @Delete('joined/groups/:groupId')
-  leaveGroup(@Request() request: any, @Param('groupId') groupId: string) {
+  @Delete('joined/circles/:circleId')
+  leaveCircle(@Request() request: any, @Param('circleId') circleId: string) {
     const userId = request.user.id;
-    return this.userGroupsService.removeIfExists({ userId, groupId });
+    return this.membershipsService.removeIfExists({ userId, circleId });
   }
 
-  @Get('/groups/postable')
+  @Get('/circles/postable')
   async findPostable(@Request() request: any) {
     const userId = request.user.id;
 
@@ -134,7 +134,7 @@ export class UserController {
       throw new Error('Invalid input');
     }
 
-    return await this.groupsService.findMany({
+    return await this.circlesService.findMany({
       where: {
         status: 'NORMAL',
         handle: { not: null },

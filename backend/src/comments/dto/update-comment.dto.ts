@@ -5,7 +5,7 @@ export class UpdateCommentDto {
   user: {
     id: string;
   };
-  item: {
+  note: {
     id: string;
   };
   body: string;

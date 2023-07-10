@@ -4,7 +4,7 @@ export class CreateCommentDto {
   user: {
     id: string;
   };
-  item: {
+  note: {
     id: string;
   };
   body: string;

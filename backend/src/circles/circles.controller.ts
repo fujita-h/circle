@@ -21,12 +21,11 @@ import {
   UseInterceptors,
   UploadedFile,
 } from '@nestjs/common';
-import { GroupsService } from './groups.service';
-import { ItemsService } from '../items/items.service';
+import { CirclesService } from './circles.service';
+import { NotesService } from '../notes/notes.service';
 import { AzblobService } from '../azblob/azblob.service';
-import { CreateGroupDto } from './dto/create-group.dto';
-import { UpdateGroupDto } from './dto/update-group.dto';
-import { CreateGroupItemDto } from './dto/create-group-item.dto';
+import { CreateCircleDto } from './dto/create-circle.dto';
+import { UpdateCircleDto } from './dto/update-circle.dto';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -34,16 +33,18 @@ import { RestError } from '@azure/storage-blob';
 import * as jdenticon from 'jdenticon';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
-@Controller('groups')
-export class GroupsController {
-  private logger = new Logger(GroupsController.name);
+@Controller('circles')
+export class CirclesController {
+  private logger = new Logger(CirclesController.name);
+  private blobContainerName = 'circle';
 
   constructor(
-    private readonly groupsService: GroupsService,
-    private readonly itemsService: ItemsService,
+    private readonly circlesService: CirclesService,
+    private readonly notesService: NotesService,
     private readonly blobsService: AzblobService,
   ) {
-    this.blobsService.init('group');
+    this.logger.log('Initializing Circles Controller...');
+    this.blobsService.init(this.blobContainerName);
   }
 
   checkHandle(handle: string) {
@@ -53,11 +54,11 @@ export class GroupsController {
   }
 
   @Post()
-  async create(@Request() request: any, @Body() data: CreateGroupDto) {
+  async create(@Request() request: any, @Body() data: CreateCircleDto) {
     try {
       this.checkHandle(data.handle);
       const userId = request.user.id;
-      return await this.groupsService.create({
+      return await this.circlesService.create({
         data: {
           ...data,
           members: { create: { user: { connect: { id: userId } }, role: 'ADMIN' } },
@@ -76,12 +77,12 @@ export class GroupsController {
 
   @Get()
   findMany(@Query('take', ParseIntPipe) take?: number, @Query('skip', ParseIntPipe) skip?: number) {
-    return this.groupsService.findMany({ where: { handle: { not: null } }, take, skip });
+    return this.circlesService.findMany({ where: { handle: { not: null } }, take, skip });
   }
 
   @Get('count')
   count() {
-    return this.groupsService.count({ where: { handle: { not: null } } });
+    return this.circlesService.count({ where: { handle: { not: null } } });
   }
 
   @Get('types/open')
@@ -89,7 +90,7 @@ export class GroupsController {
     @Query('take', ParseIntPipe) take?: number,
     @Query('skip', ParseIntPipe) skip?: number,
   ) {
-    return this.groupsService.findMany({
+    return this.circlesService.findMany({
       where: { type: 'OPEN', handle: { not: null } },
       take,
       skip,
@@ -98,7 +99,7 @@ export class GroupsController {
 
   @Get('types/open/count')
   countOpen() {
-    return this.groupsService.count({ where: { type: 'OPEN', handle: { not: null } } });
+    return this.circlesService.count({ where: { type: 'OPEN', handle: { not: null } } });
   }
 
   @Get('/types/public')
@@ -106,7 +107,7 @@ export class GroupsController {
     @Query('take', ParseIntPipe) take?: number,
     @Query('skip', ParseIntPipe) skip?: number,
   ) {
-    return this.groupsService.findMany({
+    return this.circlesService.findMany({
       where: { type: 'PUBLIC', handle: { not: null } },
       take,
       skip,
@@ -115,7 +116,7 @@ export class GroupsController {
 
   @Get('/types/public/count')
   countPublic() {
-    return this.groupsService.count({ where: { type: 'PUBLIC', handle: { not: null } } });
+    return this.circlesService.count({ where: { type: 'PUBLIC', handle: { not: null } } });
   }
 
   @Get('/types/private')
@@ -123,7 +124,7 @@ export class GroupsController {
     @Query('take', ParseIntPipe) take?: number,
     @Query('skip', ParseIntPipe) skip?: number,
   ) {
-    return this.groupsService.findMany({
+    return this.circlesService.findMany({
       where: { type: 'PRIVATE', handle: { not: null } },
       take,
       skip,
@@ -132,13 +133,13 @@ export class GroupsController {
 
   @Get('/types/private/count')
   countPrivate() {
-    return this.groupsService.count({ where: { type: 'PRIVATE', handle: { not: null } } });
+    return this.circlesService.count({ where: { type: 'PRIVATE', handle: { not: null } } });
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
-      return await this.groupsService.findFirst({ where: { id, handle: { not: null } } });
+      return await this.circlesService.findFirst({ where: { id, handle: { not: null } } });
     } catch (e) {
       throw new HttpException(
         {
@@ -152,13 +153,13 @@ export class GroupsController {
 
   @Get(':id/photo')
   async getPhoto(@Param('id') id: string, @Response() response: any) {
-    const group = await this.groupsService.findOne({ where: { id } });
-    if (!group) {
+    const circle = await this.circlesService.findOne({ where: { id } });
+    if (!circle) {
       throw new NotFoundException();
     }
     try {
       const downloadBlockBlobResponse = await this.blobsService.downloadBlob(
-        'group',
+        this.blobContainerName,
         `${id}/photo`,
       );
       response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
@@ -166,7 +167,7 @@ export class GroupsController {
     } catch (e) {
       if (e instanceof RestError) {
         if (e.statusCode === 404) {
-          const png = jdenticon.toPng(group.id, 256, {
+          const png = jdenticon.toPng(circle.id, 256, {
             padding: 0.08,
             backColor: '#F0F0F0',
             saturation: { color: 0.25 },
@@ -187,8 +188,8 @@ export class GroupsController {
     @Request() request: any,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const group = await this.groupsService.findFirst({ where: { id } });
-    if (!group || !group.handle || group.status === 'DELETED') {
+    const circle = await this.circlesService.findFirst({ where: { id } });
+    if (!circle || !circle.handle || circle.status === 'DELETED') {
       throw new NotFoundException();
     }
     if (
@@ -202,7 +203,12 @@ export class GroupsController {
       throw new NotAcceptableException('File too large');
     }
     try {
-      return this.blobsService.uploadBlob('group', `${id}/photo`, file.mimetype, file.buffer);
+      return this.blobsService.uploadBlob(
+        this.blobContainerName,
+        `${id}/photo`,
+        file.mimetype,
+        file.buffer,
+      );
     } catch (e) {
       throw new InternalServerErrorException();
     }
@@ -210,23 +216,23 @@ export class GroupsController {
 
   @Get('handle/:handle')
   async FindOneByHandle(@Param('handle') handle: string) {
-    const group = await this.groupsService.findOne({ where: { handle } });
-    if (!group || group.status === 'DELETED') {
+    const circle = await this.circlesService.findOne({ where: { handle } });
+    if (!circle || circle.status === 'DELETED') {
       throw new NotFoundException();
     }
-    return group;
+    return circle;
   }
 
   @Get('handle/:handle/photo')
   async getPhotoByHandle(@Param('handle') handle: string, @Response() response: any) {
-    const group = await this.FindOneByHandle(handle);
-    if (!group || !group.id) {
+    const circle = await this.FindOneByHandle(handle);
+    if (!circle || !circle.id) {
       throw new NotFoundException();
     }
-    const id = group.id;
+    const id = circle.id;
     try {
       const downloadBlockBlobResponse = await this.blobsService.downloadBlob(
-        'group',
+        this.blobContainerName,
         `${id}/photo`,
       );
       response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
@@ -234,7 +240,7 @@ export class GroupsController {
     } catch (e) {
       if (e instanceof RestError) {
         if (e.statusCode === 404) {
-          const png = jdenticon.toPng(group.id, 256, {
+          const png = jdenticon.toPng(circle.id, 256, {
             padding: 0.08,
             backColor: '#F0F0F0',
             saturation: { color: 0.25 },
@@ -248,8 +254,8 @@ export class GroupsController {
     }
   }
 
-  @Get(':id/items')
-  async findItems(
+  @Get(':id/notes')
+  async findNotes(
     @Request() request: any,
     @Param('id') id: string,
     @Query('skip') skip?: number,
@@ -257,23 +263,23 @@ export class GroupsController {
   ) {
     const userId = request.user.id;
     try {
-      return await this.itemsService.findMany({
+      return await this.notesService.findMany({
         where: {
           status: 'NORMAL',
-          group: {
-            id: id, // item belongs to the group
-            handle: { not: null }, // group has a handle (not deleted)
+          circle: {
+            id: id, // note belongs to the circle
+            handle: { not: null }, // circle has a handle (not deleted)
           },
-          user: { handle: { not: null } }, // item belongs to an existing user
+          user: { handle: { not: null } }, // note belongs to an existing user
           OR: [
             { user: { id: userId } }, // you are owner
             {
-              // you are member of the group
-              group: {
+              // you are member of the circle
+              circle: {
                 members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
               },
             },
-            { group: { type: { in: ['OPEN', 'PUBLIC'] } } }, // group is open or public
+            { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
           ],
         },
         orderBy: { createdAt: 'desc' },
@@ -291,8 +297,8 @@ export class GroupsController {
     }
   }
 
-  @Get('handle/:handle/items')
-  async findItemsByHandle(
+  @Get('handle/:handle/notes')
+  async findNotesByHandle(
     @Request() request: any,
     @Param('handle') handle: string,
     @Query('skip', ParseIntPipe) skip?: number,
@@ -303,60 +309,60 @@ export class GroupsController {
       throw new NotAcceptableException('Invalid handle');
     }
 
-    const check = await this.groupsService.findFirst({
+    const check = await this.circlesService.findFirst({
       where: {
         handle,
         OR: [
-          { members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } } }, // you are member of the group
-          { type: { in: ['OPEN', 'PUBLIC'] } }, // group is open or public
+          { members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } } }, // you are member of the circle
+          { type: { in: ['OPEN', 'PUBLIC'] } }, // circle is open or public
         ],
       },
     });
 
     if (!check) {
-      throw new ForbiddenException('You are not allowed to access this group items');
+      throw new ForbiddenException('You are not allowed to access this circle notes');
     }
 
-    return this.itemsService.findMany({
+    return this.notesService.findMany({
       where: {
         status: 'NORMAL',
         blobPointer: { not: null },
-        group: { handle: handle },
-        user: { handle: { not: null } }, // item belongs to an existing user
+        circle: { handle: handle },
+        user: { handle: { not: null } }, // note belongs to an existing user
         OR: [
           {
-            // you are member of the group
-            group: {
+            // you are member of the circle
+            circle: {
               members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
             },
           },
-          { group: { type: { in: ['OPEN', 'PUBLIC'] } } }, // group is open or public
+          { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
         ],
       },
-      include: { user: true, group: true },
+      include: { user: true, circle: true },
       orderBy: { createdAt: 'desc' },
       skip,
       take,
     });
   }
 
-  @Get('handle/:handle/items/count')
-  async countItemsByHandle(@Request() request: any, @Param('handle') handle: string) {
+  @Get('handle/:handle/notes/count')
+  async countNotesByHandle(@Request() request: any, @Param('handle') handle: string) {
     const userId = request.user.id;
-    return this.itemsService.count({
+    return this.notesService.count({
       where: {
         status: 'NORMAL',
         blobPointer: { not: null },
-        group: { handle: handle },
-        user: { handle: { not: null } }, // item belongs to an existing user
+        circle: { handle: handle },
+        user: { handle: { not: null } }, // note belongs to an existing user
         OR: [
           {
-            // you are member of the group
-            group: {
+            // you are member of the circle
+            circle: {
               members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
             },
           },
-          { group: { type: { in: ['OPEN', 'PUBLIC'] } } }, // group is open or public
+          { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
         ],
       },
     });
@@ -374,14 +380,14 @@ export class GroupsController {
       throw new NotAcceptableException('Invalid handle');
     }
 
-    return this.groupsService.findMembers({
+    return this.circlesService.findMembers({
       where: {
-        group: {
+        circle: {
           handle,
           status: 'NORMAL',
           OR: [
-            { members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } } }, // you are member of the group
-            { type: { in: ['OPEN', 'PUBLIC'] } }, // group is open or public
+            { members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } } }, // you are member of the circle
+            { type: { in: ['OPEN', 'PUBLIC'] } }, // circle is open or public
           ],
         },
       },
@@ -399,14 +405,14 @@ export class GroupsController {
       throw new NotAcceptableException('Invalid handle');
     }
 
-    return this.groupsService.countMembers({
+    return this.circlesService.countMembers({
       where: {
-        group: {
+        circle: {
           handle,
           status: 'NORMAL',
           OR: [
-            { members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } } }, // you are member of the group
-            { type: { in: ['OPEN', 'PUBLIC'] } }, // group is open or public
+            { members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } } }, // you are member of the circle
+            { type: { in: ['OPEN', 'PUBLIC'] } }, // circle is open or public
           ],
         },
       },
@@ -414,19 +420,19 @@ export class GroupsController {
   }
 
   @Patch(':id')
-  async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateGroupDto) {
+  async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateCircleDto) {
     const userId = request.user.id;
 
     // check permissions
-    const group = await this.groupsService.findOne({ where: { id }, include: { members: true } });
-    if (!group || group.status === 'DELETED') {
+    const circle = await this.circlesService.findOne({ where: { id }, include: { members: true } });
+    if (!circle || circle.status === 'DELETED') {
       throw new NotFoundException();
     }
-    if (!group.members) {
+    if (!circle.members) {
       throw new InternalServerErrorException();
     }
 
-    const member = group.members.find((m) => m.userId === userId);
+    const member = circle.members.find((m) => m.userId === userId);
     if (!member || member.role !== 'ADMIN') {
       throw new ForbiddenException();
     }
@@ -439,14 +445,14 @@ export class GroupsController {
       }
     }
 
-    return await this.groupsService.update({ where: { id }, data: { ...data, type: undefined } });
+    return await this.circlesService.update({ where: { id }, data: { ...data, type: undefined } });
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
       // soft delete
-      return await this.groupsService.update({
+      return await this.circlesService.update({
         where: { id },
         data: { handle: null, status: 'DELETED' },
       });

@@ -18,7 +18,7 @@ import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { AuthorizedRolesAny } from '../guards/jwt.roles.decorator';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { ItemsService } from '../items/items.service';
+import { NotesService } from '../notes/notes.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { RestError } from '@azure/storage-blob';
 
@@ -27,7 +27,7 @@ import { RestError } from '@azure/storage-blob';
 export class CommentsController {
   constructor(
     private readonly commentsService: CommentsService,
-    private readonly itemsService: ItemsService,
+    private readonly notesService: NotesService,
     private readonly blobsService: AzblobService,
   ) {}
 

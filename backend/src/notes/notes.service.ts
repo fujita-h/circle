@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SortOptions } from '@elastic/elasticsearch/lib/api/types';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { init } from '@paralleldrive/cuid2';
 import { AzblobService } from '../azblob/azblob.service';
@@ -10,17 +9,17 @@ const prisma = new PrismaClient();
 const cuid = init({ length: 24 });
 
 @Injectable()
-export class ItemsService {
-  private logger = new Logger(ItemsService.name);
-  private blobContainerName = 'item';
-  private esIndex = 'item';
+export class NotesService {
+  private logger = new Logger(NotesService.name);
+  private blobContainerName = 'note';
+  private esIndex = 'note';
 
   constructor(
     private readonly configService: ConfigService,
     private readonly blobsService: AzblobService,
     private readonly esService: EsService,
   ) {
-    this.logger.log('Initializing Items Service...');
+    this.logger.log('Initializing Notes Service...');
 
     // Initialize users index
     this.esService.init(this.esIndex);
@@ -33,28 +32,28 @@ export class ItemsService {
     body,
     include = { _count: false },
   }: {
-    data: Prisma.ItemCreateInput;
+    data: Prisma.NoteCreateInput;
     body: string;
-    include?: Prisma.ItemInclude;
+    include?: Prisma.NoteInclude;
   }) {
     return prisma.$transaction(async (prisma) => {
       const blobCuid = cuid();
-      const item = await prisma.item.create({
+      const note = await prisma.note.create({
         data: { id: cuid(), ...data, blobPointer: blobCuid },
         include: { ...include, user: true },
       });
 
       // Upload blob
-      const blobName = `${item.id}/${blobCuid}.md`;
+      const blobName = `${note.id}/${blobCuid}.md`;
       await this.blobsService.uploadBlob(this.blobContainerName, blobName, 'text/markdown', body);
 
       // create elasticsearch document
-      const esBody = { ...item, body: body };
-      const esResponse = await this.esService.create(this.esIndex, item.id.toString(), esBody);
+      const esBody = { ...note, body: body };
+      const esResponse = await this.esService.create(this.esIndex, note.id.toString(), esBody);
 
       // if elasticsearch document creation failed, delete blob and throw error
       if (esResponse.result === 'created' || esResponse.result === 'updated') {
-        return prisma.item.findUnique({ where: { id: item.id }, include });
+        return prisma.note.findUnique({ where: { id: note.id }, include });
       } else {
         await this.blobsService.deleteBlob(this.blobContainerName, blobName);
         throw new Error('Failed to create elasticsearch document');
@@ -67,36 +66,36 @@ export class ItemsService {
     body,
     include = { _count: false },
   }: {
-    data: Prisma.ItemCreateInput;
+    data: Prisma.NoteCreateInput;
     body: string;
-    include?: Prisma.ItemInclude;
+    include?: Prisma.NoteInclude;
   }) {
     return prisma.$transaction(async (prisma) => {
       const blobCuid = cuid();
-      const item = await prisma.item.create({
-        data: { id: cuid(), ...data, draftPointer: blobCuid },
+      const note = await prisma.note.create({
+        data: { id: cuid(), ...data, draftBlobPointer: blobCuid },
       });
 
       // Upload blob
-      const blobName = `${item.id}/${blobCuid}.draft.md`;
+      const blobName = `${note.id}/${blobCuid}.draft.md`;
       await this.blobsService.uploadBlob(this.blobContainerName, blobName, 'text/markdown', body);
 
-      return prisma.item.findUnique({ where: { id: item.id }, include });
+      return prisma.note.findUnique({ where: { id: note.id }, include });
     });
   }
 
-  findAll({ include = { _count: false } }: { include?: Prisma.ItemInclude } = {}) {
-    return prisma.item.findMany({ include });
+  findAll({ include = { _count: false } }: { include?: Prisma.NoteInclude } = {}) {
+    return prisma.note.findMany({ include });
   }
 
   findOne({
     where,
     include = { _count: false },
   }: {
-    where: Prisma.ItemWhereUniqueInput;
-    include?: Prisma.ItemInclude;
+    where: Prisma.NoteWhereUniqueInput;
+    include?: Prisma.NoteInclude;
   }) {
-    return prisma.item.findUnique({ where, include });
+    return prisma.note.findUnique({ where, include });
   }
 
   findFirst({
@@ -104,11 +103,11 @@ export class ItemsService {
     orderBy,
     include = { _count: false },
   }: {
-    where: Prisma.ItemWhereInput;
-    orderBy?: Prisma.Enumerable<Prisma.ItemOrderByWithRelationInput>;
-    include?: Prisma.ItemInclude;
+    where: Prisma.NoteWhereInput;
+    orderBy?: Prisma.Enumerable<Prisma.NoteOrderByWithRelationInput>;
+    include?: Prisma.NoteInclude;
   }) {
-    return prisma.item.findFirst({ where, orderBy, include });
+    return prisma.note.findFirst({ where, orderBy, include });
   }
 
   findMany({
@@ -118,17 +117,17 @@ export class ItemsService {
     take,
     skip,
   }: {
-    where: Prisma.ItemWhereInput;
-    orderBy?: Prisma.Enumerable<Prisma.ItemOrderByWithRelationInput>;
-    include?: Prisma.ItemInclude;
+    where: Prisma.NoteWhereInput;
+    orderBy?: Prisma.Enumerable<Prisma.NoteOrderByWithRelationInput>;
+    include?: Prisma.NoteInclude;
     skip?: number;
     take?: number;
   }) {
-    return prisma.item.findMany({ where, orderBy, include, skip, take });
+    return prisma.note.findMany({ where, orderBy, include, skip, take });
   }
 
-  count({ where }: { where: Prisma.ItemWhereInput }) {
-    return prisma.item.count({ where });
+  count({ where }: { where: Prisma.NoteWhereInput }) {
+    return prisma.note.count({ where });
   }
 
   update({
@@ -137,35 +136,35 @@ export class ItemsService {
     body,
     include = { _count: false },
   }: {
-    where: Prisma.ItemWhereUniqueInput;
-    data: Prisma.ItemUpdateInput;
+    where: Prisma.NoteWhereUniqueInput;
+    data: Prisma.NoteUpdateInput;
     body: string;
-    include?: Prisma.ItemInclude;
+    include?: Prisma.NoteInclude;
   }) {
     return prisma.$transaction(async (prisma) => {
       const blobCuid = cuid();
-      const item = await prisma.item.update({
+      const note = await prisma.note.update({
         where,
-        // delete draftPointer if it exists
-        data: { ...data, blobPointer: blobCuid, draftPointer: null },
+        // delete draftBlobPointer if it exists
+        data: { ...data, blobPointer: blobCuid, draftBlobPointer: null },
         include: { user: true },
       });
 
-      if (!item) {
-        throw new Error('Item not found');
+      if (!note) {
+        throw new Error('Note not found');
       }
 
       // Upload blob
-      const blobName = `${item.id}/${blobCuid}.md`;
+      const blobName = `${note.id}/${blobCuid}.md`;
       await this.blobsService.uploadBlob(this.blobContainerName, blobName, 'text/markdown', body);
 
       // update elasticsearch document
-      const esBody = { ...item, body: body };
-      const esResponse = await this.esService.create(this.esIndex, item.id, esBody);
+      const esBody = { ...note, body: body };
+      const esResponse = await this.esService.create(this.esIndex, note.id, esBody);
 
       // if elasticsearch document update failed, delete blob and throw error
       if (esResponse.result === 'created' || esResponse.result === 'updated') {
-        return prisma.item.findUnique({ where: { id: item.id }, include });
+        return prisma.note.findUnique({ where: { id: note.id }, include });
       } else {
         await this.blobsService.deleteBlob(this.blobContainerName, blobName);
         throw new Error('Failed to update elasticsearch document');
@@ -179,49 +178,52 @@ export class ItemsService {
     body,
     include = { _count: false },
   }: {
-    where: Prisma.ItemWhereUniqueInput;
-    data: Prisma.ItemUpdateInput;
+    where: Prisma.NoteWhereUniqueInput;
+    data: Prisma.NoteUpdateInput;
     body: string;
-    include?: Prisma.ItemInclude;
+    include?: Prisma.NoteInclude;
   }) {
     return prisma.$transaction(async (prisma) => {
-      const current = await prisma.item.findUnique({ where });
+      const current = await prisma.note.findUnique({ where });
 
       if (!current) {
-        throw new Error('Item not found');
+        throw new Error('Note not found');
       }
 
-      // if draftPointer exists, use same blob. otherwise, create new blob
-      const blobCuid = current.draftPointer || cuid();
-      const item = await prisma.item.update({ where, data: { ...data, draftPointer: blobCuid } });
+      // if draftBlobPointer exists, use same blob. otherwise, create new blob
+      const blobCuid = current.draftBlobPointer || cuid();
+      const note = await prisma.note.update({
+        where,
+        data: { ...data, draftBlobPointer: blobCuid },
+      });
 
-      if (!item) {
-        throw new Error('Item not found');
+      if (!note) {
+        throw new Error('Note not found');
       }
 
       // Upload blob
-      const blobName = `${item.id}/${blobCuid}.draft.md`;
+      const blobName = `${note.id}/${blobCuid}.draft.md`;
       await this.blobsService.uploadBlob(this.blobContainerName, blobName, 'text/markdown', body);
 
-      return prisma.item.findUnique({ where: { id: item.id }, include });
+      return prisma.note.findUnique({ where: { id: note.id }, include });
     });
   }
 
   // update method required to both data and body, so we need a separate method for soft delete.
-  softRemove({ where }: { where: Prisma.ItemWhereUniqueInput }) {
+  softRemove({ where }: { where: Prisma.NoteWhereUniqueInput }) {
     return prisma.$transaction(async (prisma) => {
-      const item = await prisma.item.update({
+      const note = await prisma.note.update({
         where,
         data: { status: 'DELETED' },
       });
-      if (!item) {
-        throw new Error('Item not found');
+      if (!note) {
+        throw new Error('Note not found');
       }
-      const esResponse = await this.esService.delete(this.esIndex, item.id);
+      const esResponse = await this.esService.delete(this.esIndex, note.id);
       if (esResponse.result === 'deleted' || esResponse.result === 'not_found') {
-        return item;
+        return note;
       } else {
-        throw new Error('Failed to delete group in Elasticsearch');
+        throw new Error('Failed to delete circle in Elasticsearch');
       }
     });
   }
@@ -230,16 +232,16 @@ export class ItemsService {
     where,
     include = { _count: false },
   }: {
-    where: Prisma.ItemWhereUniqueInput;
-    include?: Prisma.ItemInclude;
+    where: Prisma.NoteWhereUniqueInput;
+    include?: Prisma.NoteInclude;
   }) {
     return prisma.$transaction(async (prisma) => {
-      const item = await prisma.item.delete({ where, include });
-      const esResponse = await this.esService.delete(this.esIndex, item.id);
+      const note = await prisma.note.delete({ where, include });
+      const esResponse = await this.esService.delete(this.esIndex, note.id);
       if (esResponse.result === 'deleted' || esResponse.result === 'not_found') {
-        return item;
+        return note;
       } else {
-        throw new Error('Failed to delete group in Elasticsearch');
+        throw new Error('Failed to delete circle in Elasticsearch');
       }
     });
   }

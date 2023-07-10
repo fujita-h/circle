@@ -18,14 +18,14 @@ import {
   ForbiddenException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { ItemsService } from './items.service';
-import { UpdateItemDto } from './dto/update-item.dto';
+import { NotesService } from './notes.service';
+import { UpdateNoteDto } from './dto/update-note.dto';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { AuthorizedRolesAny } from '../guards/jwt.roles.decorator';
 import { AzblobService } from '../azblob/azblob.service';
-import { CreateItemDto } from './dto/create-item.dto';
-import { GroupsService } from '../groups/groups.service';
+import { CreateNoteDto } from './dto/create-note.dto';
+import { CirclesService } from '../circles/circles.service';
 import { RestError } from '@azure/storage-blob';
 import { EsService } from '../es/es.service';
 import { SearchRequest } from '@elastic/elasticsearch/lib/api/types';
@@ -33,49 +33,52 @@ import { CommentsService } from '../comments/comments.service';
 import { CreateCommentDto } from '../comments/dto/create-comment.dto';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
-@Controller('items')
-export class ItemsController {
+@Controller('notes')
+export class NotesController {
+  private blobContainerName = 'note';
+  private esIndex = 'note';
+
   constructor(
-    private readonly itemsService: ItemsService,
-    private readonly groupService: GroupsService,
+    private readonly notesService: NotesService,
+    private readonly circlesService: CirclesService,
     private readonly commentsService: CommentsService,
     private readonly blobsService: AzblobService,
     private readonly esService: EsService,
   ) {}
 
   @Post()
-  async create(@Request() request: any, @Body() data: CreateItemDto) {
+  async create(@Request() request: any, @Body() data: CreateNoteDto) {
     const userId = request.user.id;
-    const groupId = data.group.id;
+    const circleId = data.circle.id;
 
     // check input
-    if (!userId || !groupId) {
+    if (!userId || !circleId) {
       throw new BadRequestException();
     }
 
-    // check group
-    const group = await this.groupService.findOne({
-      where: { id: groupId },
+    // check circle
+    const circle = await this.circlesService.findOne({
+      where: { id: circleId },
       include: { members: true },
     });
 
-    // if group is not exists, throw error
-    if (!group) {
+    // if circle is not exists, throw error
+    if (!circle) {
       throw new BadRequestException();
     }
 
     // check if user is member
     if (
-      group.members === undefined ||
-      group.members.filter((m) => m.userId === userId).length === 0
+      circle.members === undefined ||
+      circle.members.filter((m) => m.userId === userId).length === 0
     ) {
-      throw new ForbiddenException("You're not allowed to create items in this group");
+      throw new ForbiddenException("You're not allowed to create notes in this circle");
     }
 
-    return await this.itemsService.create({
+    return await this.notesService.create({
       data: {
         user: { connect: { id: userId } },
-        group: { connect: { id: groupId } },
+        circle: { connect: { id: circleId } },
         title: data.title,
         status: data.status,
       },
@@ -84,30 +87,30 @@ export class ItemsController {
   }
 
   @Get()
-  findItems(
+  findNotes(
     @Request() request: any,
     @Query('skip', ParseIntPipe) skip?: number,
     @Query('take', ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
-    return this.itemsService.findMany({
+    return this.notesService.findMany({
       where: {
         status: 'NORMAL',
-        blobPointer: { not: null }, // only items with blobPointer
-        group: { handle: { not: null }, status: 'NORMAL' }, // only items in existing groups
-        user: { handle: { not: null }, status: 'NORMAL' }, // only items of existing users
+        blobPointer: { not: null }, // only notes with blobPointer
+        circle: { handle: { not: null }, status: 'NORMAL' }, // only notes in existing circles
+        user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
         OR: [
           { user: { id: userId } }, // user is owner
           {
-            // user is member of group
-            group: {
+            // user is member of circle
+            circle: {
               members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
             },
           },
-          { group: { type: { in: ['OPEN', 'PUBLIC'] } } }, // group is open or public
+          { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
         ],
       },
-      include: { user: true, group: true },
+      include: { user: true, circle: true },
       orderBy: { createdAt: 'desc' },
       skip,
       take,
@@ -115,23 +118,23 @@ export class ItemsController {
   }
 
   @Get('count')
-  async countItems(@Request() request: any) {
+  async countNotes(@Request() request: any) {
     const userId = request.user.id;
-    return this.itemsService.count({
+    return this.notesService.count({
       where: {
         status: 'NORMAL',
-        blobPointer: { not: null }, // only items with blobPointer
-        group: { handle: { not: null }, status: 'NORMAL' }, // only items in existing groups
-        user: { handle: { not: null }, status: 'NORMAL' }, // only items of existing users
+        blobPointer: { not: null }, // only notes with blobPointer
+        circle: { handle: { not: null }, status: 'NORMAL' }, // only notes in existing circles
+        user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
         OR: [
           { user: { id: userId } }, // user is owner
           {
-            // user is member of group
-            group: {
+            // user is member of circle
+            circle: {
               members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
             },
           },
-          { group: { type: { in: ['OPEN', 'PUBLIC'] } } }, // group is open or public
+          { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
         ],
       },
     });
@@ -145,17 +148,17 @@ export class ItemsController {
     @Query('take', ParseIntPipe) take: number,
   ) {
     const userId = request.user.id;
-    const groups = await this.groupService.findMany({
+    const circles = await this.circlesService.findMany({
       where: {
         status: 'NORMAL',
-        handle: { not: null }, // only groups with handle
+        handle: { not: null }, // only circles with handle
         OR: [
-          { members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } } }, // user is member of group
-          { type: { in: ['OPEN', 'PUBLIC'] } }, // group is open or public
+          { members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } } }, // user is member of circle
+          { type: { in: ['OPEN', 'PUBLIC'] } }, // circle is open or public
         ],
       },
     });
-    const groupIds = groups.map((g) => g.id);
+    const circleIds = circles.map((g) => g.id);
     if (q === undefined || q === null || q === '') {
       q = '*';
     }
@@ -205,7 +208,7 @@ export class ItemsController {
           ],
           minimum_should_match: 1,
           filter: {
-            terms: { groupId: groupIds },
+            terms: { circleId: circleIds },
           },
         },
       },
@@ -213,7 +216,7 @@ export class ItemsController {
       from: skip,
       size: take,
     };
-    const result = await this.esService.search('item', body);
+    const result = await this.esService.search(this.esIndex, body);
     return result?.hits?.hits || [];
   }
 
@@ -226,75 +229,75 @@ export class ItemsController {
       throw new BadRequestException();
     }
 
-    // retrieve item
-    const item = await this.itemsService.findOne({
+    // retrieve note
+    const note = await this.notesService.findOne({
       where: { id },
-      include: { user: true, group: true },
+      include: { user: true, circle: true },
     });
 
-    // check item
+    // check note
     if (
-      !item ||
-      !item.user ||
-      item.user.handle === null ||
-      item.user.status === 'DELETED' ||
-      !item.group ||
-      item.group.handle === null ||
-      item.group.status === 'DELETED' ||
-      item.status === 'DELETED' ||
-      item.blobPointer === null
+      !note ||
+      !note.user ||
+      note.user.handle === null ||
+      note.user.status === 'DELETED' ||
+      !note.circle ||
+      note.circle.handle === null ||
+      note.circle.status === 'DELETED' ||
+      note.status === 'DELETED' ||
+      note.blobPointer === null
     ) {
       throw new NotFoundException();
     }
 
-    // retrieve group
-    const group = await this.groupService.findOne({
-      where: { id: item.group.id },
+    // retrieve circle
+    const circle = await this.circlesService.findOne({
+      where: { id: note.circle.id },
       include: { members: true },
     });
 
-    // check group
-    if (!group || group.status === 'DELETED' || group.handle === null) {
+    // check circle
+    if (!circle || circle.status === 'DELETED' || circle.handle === null) {
       throw new NotFoundException();
     }
 
     // allow access if user is owner
-    if (item.user.id === userId) {
-      if (group.members?.find((m) => m.userId === userId)) {
-        // allow edit if user is owner and user is member of group
-        return { ...item, canEdit: true };
+    if (note.user.id === userId) {
+      if (circle.members?.find((m) => m.userId === userId)) {
+        // allow edit if user is owner and user is member of circle
+        return { ...note, canEdit: true };
       } else {
-        return item;
+        return note;
       }
     }
 
-    // allow access if group is open or public
-    if (item.group.type === 'OPEN' || item.group.type === 'PUBLIC') {
-      return item;
+    // allow access if circle is open or public
+    if (note.circle.type === 'OPEN' || note.circle.type === 'PUBLIC') {
+      return note;
     }
 
-    // allow access if user is member of private group
-    if (item.group.type === 'PRIVATE') {
-      if (group.members?.find((m) => m.userId === userId)) {
-        return item;
+    // allow access if user is member of private circle
+    if (note.circle.type === 'PRIVATE') {
+      if (circle.members?.find((m) => m.userId === userId)) {
+        return note;
       }
     }
 
     // if none of the above, throw exception
-    throw new ForbiddenException("You're not allowed to view this item");
+    throw new ForbiddenException("You're not allowed to view this note");
   }
 
   @Get(':id/md')
   async getMarkdown(@Request() request: any, @Param('id') id: string, @Response() response: any) {
-    const item = await this.findOne(request, id);
-    if (!item) {
-      throw new Error('Item not found');
+    const note = await this.findOne(request, id);
+    if (!note) {
+      throw new Error('Note not found');
     }
 
     try {
       const downloadBlockBlobResponse = await this.blobsService.downloadBlob(
-        'item',
-        `${item.id}/${item.blobPointer}.md`,
+        this.blobContainerName,
+        `${note.id}/${note.blobPointer}.md`,
       );
       response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
       downloadBlockBlobResponse.readableStreamBody?.pipe(response);
@@ -316,7 +319,7 @@ export class ItemsController {
     @Query('take', ParseIntPipe) take: number,
   ) {
     return this.commentsService.findMany({
-      where: { itemId: id, status: 'NORMAL' },
+      where: { noteId: id, status: 'NORMAL' },
       include: { user: true },
       orderBy: { createdAt: 'asc' },
       skip,
@@ -332,88 +335,88 @@ export class ItemsController {
   ) {
     const userId = request.user.id;
 
-    // check item
-    const item = await this.itemsService.findOne({
+    // check note
+    const note = await this.notesService.findOne({
       where: { id },
     });
 
-    if (!item || item.status === 'DELETED') {
+    if (!note || note.status === 'DELETED') {
       throw new NotFoundException();
     }
 
     return this.commentsService.create({
-      data: { user: { connect: { id: userId } }, item: { connect: { id: item.id } } },
+      data: { user: { connect: { id: userId } }, note: { connect: { id: note.id } } },
       body: data.body.trim(),
-      include: { user: true, item: true },
+      include: { user: true, note: true },
     });
   }
 
   @Get(':id/comments/count')
   async countComments(@Param('id') id: string) {
-    // check item
-    const item = await this.itemsService.findOne({
+    // check note
+    const note = await this.notesService.findOne({
       where: { id },
     });
 
-    if (!item || item.status === 'DELETED') {
+    if (!note || note.status === 'DELETED') {
       throw new NotFoundException();
     }
 
-    return this.commentsService.count({ where: { itemId: id, status: 'NORMAL' } });
+    return this.commentsService.count({ where: { noteId: id, status: 'NORMAL' } });
   }
 
   @Put(':id')
-  async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateItemDto) {
+  async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateNoteDto) {
     const userId = request.user.id;
-    const groupId = data.group.id;
+    const circleId = data.circle.id;
 
     //check input
-    if (!id || !userId || !groupId) {
+    if (!id || !userId || !circleId) {
       throw new BadRequestException();
     }
 
-    // retrieve item
-    const item = await this.itemsService.findOne({
+    // retrieve note
+    const note = await this.notesService.findOne({
       where: { id },
-      include: { user: true, group: true },
+      include: { user: true, circle: true },
     });
 
-    // check item
-    if (!item || !item.user || item.status === 'DELETED') {
+    // check note
+    if (!note || !note.user || note.status === 'DELETED') {
       throw new NotFoundException();
     }
 
     // check if user is owner
-    if (item.userId !== userId) {
-      throw new ForbiddenException("You're not allowed to update this item");
+    if (note.userId !== userId) {
+      throw new ForbiddenException("You're not allowed to update this note");
     }
 
-    // check group
-    const group = await this.groupService.findOne({
-      where: { id: groupId },
+    // check circle
+    const circle = await this.circlesService.findOne({
+      where: { id: circleId },
       include: { members: true },
     });
 
-    // if group is not exists, throw error
-    if (!group) {
+    // if circle is not exists, throw error
+    if (!circle) {
       throw new BadRequestException();
     }
 
     // check if user is member
     if (
-      group.members === undefined ||
-      group.members.filter((m) => m.userId === userId).length === 0
+      circle.members === undefined ||
+      circle.members.filter((m) => m.userId === userId).length === 0
     ) {
-      throw new ForbiddenException("You're not allowed to create items in this group");
+      throw new ForbiddenException("You're not allowed to create notes in this circle");
     }
 
-    //update item
-    return await this.itemsService.update({
+    //update note
+    return await this.notesService.update({
       where: { id },
       data: {
         title: data.title,
         user: { connect: { id: userId } },
-        group: { connect: { id: groupId } },
+        circle: { connect: { id: circleId } },
         status: data.status,
       },
       body: data.body,
@@ -429,14 +432,14 @@ export class ItemsController {
       throw new BadRequestException();
     }
 
-    // retrieve item
-    const item = await this.itemsService.findOne({
+    // retrieve note
+    const note = await this.notesService.findOne({
       where: { id },
-      include: { user: true, group: true },
+      include: { user: true, circle: true },
     });
 
-    // check item
-    if (!item || !item.user || !item.group || item.status === 'DELETED') {
+    // check note
+    if (!note || !note.user || !note.circle || note.status === 'DELETED') {
       throw new NotFoundException();
     }
 
@@ -444,15 +447,15 @@ export class ItemsController {
     let allowUpdate = false;
 
     // allow access if user is owner
-    if (item.user.id === userId) {
+    if (note.user.id === userId) {
       allowUpdate = true;
     }
 
     // throw exception if not allowed
     if (!allowUpdate) {
-      throw new ForbiddenException("You're not allowed to delete this item");
+      throw new ForbiddenException("You're not allowed to delete this note");
     }
 
-    return this.itemsService.softRemove({ where: { id: item.id } });
+    return this.notesService.softRemove({ where: { id: note.id } });
   }
 }

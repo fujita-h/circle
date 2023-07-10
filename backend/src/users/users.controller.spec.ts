@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { ItemsService } from '../items/items.service';
+import { NotesService } from '../notes/notes.service';
 import { ConfigModule } from '@nestjs/config';
 import { CreateUserDto } from './dto/create-user.dto';
 import { EsService } from '../es/es.service';
 import { AzblobService } from '../azblob/azblob.service';
-import { UserGroupsService } from '../user-groups/user-groups.service';
+import { MembershipsService } from '../memberships/memberships.service';
 
 //const sleep = (msec: number) => new Promise((resolve) => setTimeout(resolve, msec));
 
@@ -29,7 +29,7 @@ describe('UsersController', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
-      providers: [UsersService, UserGroupsService, ItemsService, EsService, AzblobService],
+      providers: [UsersService, MembershipsService, NotesService, EsService, AzblobService],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],

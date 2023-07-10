@@ -3,7 +3,7 @@ import { CommentsController } from './comments.controller';
 import { CommentsService } from './comments.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { ConfigService } from '@nestjs/config';
-import { ItemsService } from '../items/items.service';
+import { NotesService } from '../notes/notes.service';
 import { EsService } from '../es/es.service';
 
 describe('CommentsController', () => {
@@ -12,7 +12,7 @@ describe('CommentsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CommentsController],
-      providers: [CommentsService, ConfigService, ItemsService, EsService, AzblobService],
+      providers: [CommentsService, ConfigService, NotesService, EsService, AzblobService],
     }).compile();
 
     controller = module.get<CommentsController>(CommentsController);
