@@ -11,7 +11,7 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(cuid()) // Automatically generated GUID for identifying user on this site. Even if user is deleted, this GUID is not changed.
+  id        String     @id @default(cuid()) // Automatically generated CUID for identifying user on this site. Even if user is deleted, this CUID is not changed.
   oid       String?    @unique // AAD OID = Unique User ID. Set null if user is deleted.
   createdAt DateTime   @default(now()) @map("created_at")
   updatedAt DateTime   @updatedAt @map("updated_at")
@@ -21,9 +21,9 @@ model User {
   name      String?    @db.VarChar(50)
   email     String?    @db.VarChar(254)
 
-  joinedGroups  UserGroup[]
+  joined        Membership[]
   comments      Comment[]
-  items         Item[]
+  notes         Note[]
   stocks        Stock[]
   likes         Like[]
   following     Follow[]       @relation("from")
@@ -36,42 +36,42 @@ model User {
   @@map("user")
 }
 
-model Group {
+model Circle {
   id                  String              @id @default(cuid())
   createdAt           DateTime            @default(now()) @map("created_at")
   updatedAt           DateTime            @updatedAt @map("updated_at")
-  type                GroupType           @default(OPEN)
-  status              GroupStatus         @default(NORMAL)
-  handle              String?             @unique // Set null if group is deleted.
+  type                CircleType          @default(OPEN)
+  status              CircleStatus        @default(NORMAL)
+  handle              String?             @unique // Set null if the circle is deleted.
   name                String?             @db.VarChar(50)
   description         String?             @db.Text
-  readItemPermission  PermissionReadItem  @default(ADMIN) @map("read_item_permission")
-  writeItemPermission PermissionWriteItem @default(ADMIN) @map("write_item_permission")
-  writeItemCondition  ConditionWriteItem  @default(REQUIRE_ADMIN_APPROVAL) @map("write_item_condition")
-  joinCondition       ConditionJoinGroup  @default(REQUIRE_ADMIN_APPROVAL) @map("join_condition")
+  readNotePermission  PermissionReadNote  @default(ADMIN) @map("read_note_permission")
+  writeNotePermission PermissionWriteNote @default(ADMIN) @map("write_note_permission")
+  writeNoteCondition  ConditionWriteNote  @default(REQUIRE_ADMIN_APPROVAL) @map("write_note_condition")
+  joinCircleCondition ConditionJoinCircle @default(REQUIRE_ADMIN_APPROVAL) @map("join_circle_condition")
 
-  members UserGroup[]
-  items   Item[]
+  members Membership[]
+  notes   Note[]
   watched Watch[]
 
   @@index([type])
   @@index([status])
-  @@map("group")
+  @@map("circle")
 }
 
-model Item {
+model Note {
   id                     String                 @id @default(cuid())
   createdAt              DateTime               @default(now()) @map("created_at")
   updatedAt              DateTime               @updatedAt @map("updated_at")
   user                   User                   @relation(fields: [userId], references: [id])
-  userId                 String
-  group                  Group?                 @relation(fields: [groupId], references: [id], onDelete: SetNull) // if item is dfaft, group is null.
-  groupId                String?
-  title                  String?                @db.VarChar(255)
+  userId                 String                 @map("user_id")
+  circle                 Circle?                @relation(fields: [circleId], references: [id], onDelete: SetNull) // circle is null if the note is drafted.
+  circleId               String?                @map("circle_id")
+  title                  String?                @db.VarChar(250)
   blobPointer            String?                @map("blob_pointer")
-  draftPointer           String?                @map("draft_pointer")
-  type                   ItemType               @default(NORMAL)
-  status                 ItemStatus             @default(NORMAL)
+  draftBlobPointer       String?                @map("draft_blob_pointer")
+  type                   NoteType               @default(NORMAL)
+  status                 NoteStatus             @default(NORMAL)
   writeCommentPermission PermissionWriteComment @default(ALL) @map("write_comment_permission")
 
   comments Comment[]
@@ -80,17 +80,17 @@ model Item {
 
   @@index([type])
   @@index([status])
-  @@map("item")
+  @@map("note")
 }
 
 model Comment {
   id          String        @id @default(cuid())
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
-  item        Item          @relation(fields: [itemId], references: [id])
-  itemId      String
+  note        Note          @relation(fields: [noteId], references: [id])
+  noteId      String        @map("note_id")
   user        User          @relation(fields: [userId], references: [id])
-  userId      String
+  userId      String        @map("user_id")
   blobPointer String?       @map("blob_pointer")
   type        CommentType   @default(NORMAL)
   status      CommentStatus @default(NORMAL)
@@ -100,66 +100,66 @@ model Comment {
   @@map("comment")
 }
 
-model UserGroup {
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  group     Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId   String
-  role      UserGroupRole @default(MEMBER)
-  createdAt DateTime      @default(now()) @map("created_at")
-  updatedAt DateTime      @updatedAt @map("updated_at")
+model Membership {
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String         @map("user_id")
+  circle    Circle         @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  circleId  String         @map("circle_id")
+  role      MembershipRole @default(MEMBER)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
 
-  @@id([userId, groupId])
+  @@id([userId, circleId])
   @@index([role])
-  @@map("user_group")
+  @@map("membership")
 }
 
 model Stock {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  itemId    String
+  userId    String   @map("user_id")
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId    String   @map("note_id")
   label     String?  @db.VarChar(50)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@id([userId, itemId])
+  @@id([userId, noteId])
   @@map("stock")
 }
 
 model Like {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  itemId    String
+  userId    String   @map("user_id")
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId    String   @map("note_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@id([userId, itemId])
+  @@id([userId, noteId])
   @@map("like")
 }
 
 model Follow {
-  user      User     @relation("from", fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  target    User     @relation("to", fields: [targetId], references: [id], onDelete: Cascade)
-  targetId  String
+  from      User     @relation("from", fields: [fromId], references: [id], onDelete: Cascade)
+  fromId    String   @map("from_id")
+  to        User     @relation("to", fields: [toId], references: [id], onDelete: Cascade)
+  toId      String   @map("to_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@id([userId, targetId])
+  @@id([fromId, toId])
   @@map("follow")
 }
 
 model Watch {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId   String
+  userId    String   @map("user_id")
+  circle    Circle   @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  circleId  String   @map("circle_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@id([userId, groupId])
+  @@id([userId, circleId])
   @@map("watch")
 }
 
@@ -168,11 +168,11 @@ model Notification {
   createdAt DateTime           @default(now()) @map("created_at")
   updatedAt DateTime           @updatedAt @map("updated_at")
   user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
+  userId    String             @map("user_id")
   type      NotificationType   @default(NORMAL)
   status    NotificationStatus @default(UNREAD)
   title     String?            @db.VarChar(50)
-  message   String?            @db.VarChar(255)
+  message   String?            @db.Text
 
   @@index([type])
   @@index([status])
@@ -188,51 +188,51 @@ enum UserStatus {
   DELETED
 }
 
-enum GroupType {
+enum CircleType {
   OPEN
   PUBLIC
   PRIVATE
 }
 
-enum ConditionJoinGroup {
+enum PermissionReadNote {
+  ADMIN
+  MEMBER
+  ALL
+}
+
+enum PermissionWriteNote {
+  ADMIN
+  MEMBER
+  ALL
+}
+
+enum ConditionWriteNote {
   REQUIRE_ADMIN_APPROVAL
   NOT_REQUIRED
 }
 
-enum PermissionReadItem {
-  ADMIN
-  GROUP_MEMBER
-  ALL
-}
-
-enum ConditionWriteItem {
+enum ConditionJoinCircle {
   REQUIRE_ADMIN_APPROVAL
   NOT_REQUIRED
-}
-
-enum PermissionWriteItem {
-  ADMIN
-  GROUP_MEMBER
-  ALL
 }
 
 enum PermissionWriteComment {
   OWNER
-  GROUP_MEMBER
+  MEMBER
   ALL
 }
 
-enum GroupStatus {
+enum CircleStatus {
   NORMAL
   DELETED
 }
 
-enum ItemType {
+enum NoteType {
   NORMAL
   SHARED
 }
 
-enum ItemStatus {
+enum NoteStatus {
   NORMAL
   DELETED
   PENDING_APPROVAL
@@ -249,7 +249,7 @@ enum CommentStatus {
   DELETED
 }
 
-enum UserGroupRole {
+enum MembershipRole {
   ADMIN
   MEMBER
 }
