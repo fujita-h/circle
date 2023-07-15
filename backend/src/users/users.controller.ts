@@ -1,5 +1,6 @@
 import {
   Controller,
+  Logger,
   Request,
   Response,
   Get,
@@ -15,6 +16,9 @@ import {
   ParseIntPipe,
   NotFoundException,
   InternalServerErrorException,
+  NotAcceptableException,
+  UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { MembershipsService } from '../memberships/memberships.service';
@@ -30,12 +34,15 @@ import * as jdenticon from 'jdenticon';
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('users')
 export class UsersController {
+  private logger = new Logger(UsersController.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly membershipsService: MembershipsService,
     private readonly notesService: NotesService,
     private readonly blobsService: AzblobService,
   ) {
+    this.logger.log('Initializing Users Controller...');
     this.blobsService.init('user');
   }
 
@@ -49,52 +56,79 @@ export class UsersController {
   async create(@Body() data: CreateUserDto) {
     try {
       this.checkHandle(data.handle);
-      return await this.usersService.create({ data });
     } catch (e) {
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: e.message || e || 'Unknown error',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.logger.error(e);
+      throw new NotAcceptableException();
     }
+
+    let user;
+    try {
+      user = await this.usersService.create({ data });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    return user;
   }
 
   @Get()
   findMany(@Query('take', ParseIntPipe) take?: number, @Query('skip', ParseIntPipe) skip?: number) {
-    return this.usersService.findMany({
-      where: { OR: [{ handle: { not: null } }, { status: 'NORMAL' }] },
-      take,
-      skip,
-    });
+    let users;
+    try {
+      users = this.usersService.findMany({
+        where: { handle: { not: null }, status: 'NORMAL' },
+        orderBy: { handle: 'asc' },
+        take,
+        skip,
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return users;
   }
 
   @Get('count')
   async count() {
-    return this.usersService.count({
-      where: { OR: [{ handle: { not: null } }, { status: 'NORMAL' }] },
-    });
+    let count;
+    try {
+      count = await this.usersService.count({
+        where: { handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return count;
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
+    let user;
     try {
-      return await this.usersService.findOne({ where: { id } });
+      user = await this.usersService.findFirst({
+        where: { id, handle: { not: null }, status: 'NORMAL' },
+      });
     } catch (e) {
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: e.message || e || 'Unknown error',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.logger.error(e);
+      throw new InternalServerErrorException();
     }
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user;
   }
 
   @Get(':id/photo')
   async getPhoto(@Param('id') id: string, @Response() response: any) {
-    const user = await this.usersService.findOne({ where: { id } });
+    let user;
+    try {
+      user = await this.usersService.findFirst({
+        where: { id, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
     if (!user) {
       throw new NotFoundException();
     }
@@ -119,56 +153,92 @@ export class UsersController {
     }
   }
 
-  @Get('handle/:handle')
-  async findOneByHandle(@Param('handle') handle: string) {
-    return await this.usersService.findOne({ where: { handle } });
-  }
-
-  @Get('handle/:handle/joined/circles')
-  async findJoinedCirclesByHandle(
-    @Request() request: any,
-    @Param('handle') handle: string,
+  @Get(':id/joined/circles')
+  async findJoinedCircles(
+    @Param('id') id: string,
     @Query('skip', ParseIntPipe) skip?: number,
     @Query('take', ParseIntPipe) take?: number,
   ) {
-    return this.membershipsService.findMany({
-      where: { user: { handle }, role: { in: ['ADMIN', 'MEMBER'] } },
-      orderBy: { createdAt: 'asc' },
-      include: { circle: true },
-      skip,
-      take,
-    });
+    let memberships;
+    try {
+      memberships = await this.membershipsService.findMany({
+        where: { userId: id, role: { in: ['ADMIN', 'MEMBER'] } },
+        orderBy: { createdAt: 'asc' },
+        include: { circle: true },
+        skip,
+        take,
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return memberships;
   }
 
-  @Get('handle/:handle/joined/circles/count')
-  async countJoinedCirclesByHandle(@Request() request: any, @Param('handle') handle: string) {
-    return this.membershipsService.count({
-      where: { user: { handle }, role: { in: ['ADMIN', 'MEMBER'] } },
-    });
+  @Get(':id/joined/circles/count')
+  async countJoinedCircles(@Param('id') id: string) {
+    let count;
+    try {
+      count = await this.membershipsService.count({
+        where: { userId: id, role: { in: ['ADMIN', 'MEMBER'] } },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return count;
   }
 
-  @Get('handle/:handle/notes')
-  async findNotesByHandle(
+  @Get(':id/notes')
+  async findNotes(
     @Request() request: any,
-    @Param('handle') handle: string,
+    @Param('id') id: string,
     @Query('skip', ParseIntPipe) skip?: number,
     @Query('take', ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let user;
+    try {
+      user = await this.usersService.findFirst({
+        where: { id, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!user) {
+      throw new NotFoundException();
+    }
+
     return this.notesService.findMany({
       where: {
-        user: { handle, status: 'NORMAL' },
-        status: 'NORMAL',
         blobPointer: { not: null }, // only notes with blobPointer
+        userId: id, // only notes of existing users
         circle: { handle: { not: null }, status: 'NORMAL' }, // only notes in existing circles
         OR: [
+          { userId: userId }, // user is owner
           {
-            // user is member of circle
+            status: 'NORMAL',
             circle: {
-              members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
+              readNotePermission: 'ADMIN',
+              members: { some: { userId: userId, role: 'ADMIN' } },
             },
-          },
-          { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
+          }, // readNotePermission is ADMIN and user is admin of circle
+          {
+            status: 'NORMAL',
+            circle: {
+              readNotePermission: 'MEMBER',
+              members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+            },
+          }, // readNotePermission is MEMBER and user is member of circle
+          {
+            status: 'NORMAL',
+            circle: { readNotePermission: 'ALL' },
+          }, // readNotePermission is ALL
         ],
       },
       include: { user: true, circle: true },
@@ -178,61 +248,206 @@ export class UsersController {
     });
   }
 
+  @Get(':id/notes/count')
+  async countNotes(@Request() request: any, @Param('id') id: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let user;
+    try {
+      user = await this.usersService.findFirst({
+        where: { id, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    let count;
+    try {
+      count = await this.notesService.count({
+        where: {
+          blobPointer: { not: null }, // only notes with blobPointer
+          userId: id, // only notes of existing users
+          circle: { handle: { not: null }, status: 'NORMAL' }, // only notes in existing circles
+          OR: [
+            { userId: userId }, // user is owner
+            {
+              status: 'NORMAL',
+              circle: {
+                readNotePermission: 'ADMIN',
+                members: { some: { userId: userId, role: 'ADMIN' } },
+              },
+            }, // readNotePermission is ADMIN and user is admin of circle
+            {
+              status: 'NORMAL',
+              circle: {
+                readNotePermission: 'MEMBER',
+                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+              },
+            }, // readNotePermission is MEMBER and user is member of circle
+            {
+              status: 'NORMAL',
+              circle: { readNotePermission: 'ALL' },
+            }, // readNotePermission is ALL
+          ],
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return count;
+  }
+
+  @Get('handle/:handle')
+  async findOneByHandle(@Param('handle') handle: string) {
+    let user;
+    try {
+      user = await this.usersService.findFirst({
+        where: { handle, status: 'NORMAL' },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user;
+  }
+
+  @Get('handle/:handle/joined/circles')
+  async findJoinedCirclesByHandle(
+    @Param('handle') handle: string,
+    @Query('skip', ParseIntPipe) skip?: number,
+    @Query('take', ParseIntPipe) take?: number,
+  ) {
+    let user;
+    try {
+      user = await this.usersService.findOne({ where: { handle } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return this.findJoinedCircles(user.id, skip, take);
+  }
+
+  @Get('handle/:handle/joined/circles/count')
+  async countJoinedCirclesByHandle(@Param('handle') handle: string) {
+    let user;
+    try {
+      user = await this.usersService.findOne({ where: { handle } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return this.countJoinedCircles(user.id);
+  }
+
+  @Get('handle/:handle/notes')
+  async findNotesByHandle(
+    @Request() request: any,
+    @Param('handle') handle: string,
+    @Query('skip', ParseIntPipe) skip?: number,
+    @Query('take', ParseIntPipe) take?: number,
+  ) {
+    let id;
+    try {
+      id = await this.usersService.findOne({ where: { handle } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!id) {
+      throw new NotFoundException();
+    }
+    return this.findNotes(request, id.id, skip, take);
+  }
+
   @Get('handle/:handle/notes/count')
   async countNotesByHandle(@Request() request: any, @Param('handle') handle: string) {
-    const userId = request.user.id;
-    return this.notesService.count({
-      where: {
-        user: { handle, status: 'NORMAL' },
-        status: 'NORMAL',
-        blobPointer: { not: null }, // only notes with blobPointer
-        circle: { handle: { not: null }, status: 'NORMAL' }, // only notes in existing circles
-        OR: [
-          {
-            // user is member of circle
-            circle: {
-              members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
-            },
-          },
-          { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
-        ],
-      },
-    });
+    let id;
+    try {
+      id = await this.usersService.findOne({ where: { handle } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!id) {
+      throw new NotFoundException();
+    }
+    return this.countNotes(request, id.id);
   }
 
   @Put(':id')
   async update(@Param('id') id: string, @Body() data: UpdateUserDto) {
     try {
       this.checkHandle(data.handle);
-      return await this.usersService.update({ where: { id }, data });
     } catch (e) {
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: e.message || e || 'Unknown error',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.logger.error(e);
+      throw new NotAcceptableException();
     }
+
+    let user;
+    try {
+      user = await this.usersService.update({ where: { id }, data });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user;
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Request() request: any, @Param('id') id: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let user;
+    try {
+      user = await this.usersService.findFirst({
+        where: { id, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    if (user.id !== userId) {
+      throw new ForbiddenException();
+    }
+
     try {
       // soft delete
-      return await this.usersService.update({
+      user = await this.usersService.update({
         where: { id },
         data: { oid: null, handle: null, status: 'DELETED', joined: { set: [] } },
       });
     } catch (e) {
-      console.error(e);
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: e.message || e || 'Unknown error',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException();
     }
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user;
   }
 }

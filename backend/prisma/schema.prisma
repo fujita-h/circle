@@ -40,7 +40,6 @@ model Circle {
   id                  String              @id @default(cuid())
   createdAt           DateTime            @default(now()) @map("created_at")
   updatedAt           DateTime            @updatedAt @map("updated_at")
-  type                CircleType          @default(OPEN)
   status              CircleStatus        @default(NORMAL)
   handle              String?             @unique // Set null if the circle is deleted.
   name                String?             @db.VarChar(50)
@@ -54,7 +53,6 @@ model Circle {
   notes   Note[]
   watched Watch[]
 
-  @@index([type])
   @@index([status])
   @@map("circle")
 }
@@ -186,12 +184,6 @@ enum UserType {
 enum UserStatus {
   NORMAL
   DELETED
-}
-
-enum CircleType {
-  OPEN
-  PUBLIC
-  PRIVATE
 }
 
 enum PermissionReadNote {

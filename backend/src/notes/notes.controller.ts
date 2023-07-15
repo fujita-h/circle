@@ -1,5 +1,6 @@
 import {
   Controller,
+  Logger,
   UseGuards,
   Request,
   Response,
@@ -17,6 +18,7 @@ import {
   BadRequestException,
   ForbiddenException,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { NotesService } from './notes.service';
 import { UpdateNoteDto } from './dto/update-note.dto';
@@ -35,6 +37,7 @@ import { CreateCommentDto } from '../comments/dto/create-comment.dto';
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('notes')
 export class NotesController {
+  private logger = new Logger(NotesController.name);
   private blobContainerName = 'note';
   private esIndex = 'note';
 
@@ -44,7 +47,10 @@ export class NotesController {
     private readonly commentsService: CommentsService,
     private readonly blobsService: AzblobService,
     private readonly esService: EsService,
-  ) {}
+  ) {
+    this.logger.log('Initializing Circles Controller...');
+    this.blobsService.init(this.blobContainerName);
+  }
 
   @Post()
   async create(@Request() request: any, @Body() data: CreateNoteDto) {
@@ -57,87 +63,582 @@ export class NotesController {
     }
 
     // check circle
-    const circle = await this.circlesService.findOne({
-      where: { id: circleId },
-      include: { members: true },
-    });
+    let circle;
+    try {
+      circle = await this.circlesService.findOne({ where: { id: circleId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
 
     // if circle is not exists, throw error
     if (!circle) {
-      throw new BadRequestException();
+      throw new NotFoundException();
     }
 
-    // check if user is member
-    if (
-      circle.members === undefined ||
-      circle.members.filter((m) => m.userId === userId).length === 0
-    ) {
+    try {
+      circle = await this.circlesService.findFirst({
+        where: {
+          id: circleId,
+          status: 'NORMAL',
+          handle: { not: null }, // only circles with handle
+          OR: [
+            {
+              writeNotePermission: 'ADMIN',
+              members: { some: { userId: userId, role: 'ADMIN' } },
+            }, // writeNotePermission is ADMIN and user is admin of circle
+            {
+              writeNotePermission: 'MEMBER',
+              members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+            }, // writeNotePermission is MEMBER and user is member of circle
+            { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
+          ],
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+
+    // if circle is not exists, throw error
+    if (!circle) {
       throw new ForbiddenException("You're not allowed to create notes in this circle");
     }
 
-    return await this.notesService.create({
-      data: {
-        user: { connect: { id: userId } },
-        circle: { connect: { id: circleId } },
-        title: data.title,
-        status: data.status,
-      },
-      body: data.body,
-    });
+    let note;
+    try {
+      note = await this.notesService.create({
+        data: {
+          user: { connect: { id: userId } },
+          circle: { connect: { id: circleId } },
+          title: data.title,
+          status:
+            circle.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL' ? 'PENDING_APPROVAL' : 'NORMAL',
+          writeCommentPermission: data.writeCommentPermission,
+        },
+        body: data.body,
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    return note;
   }
 
   @Get()
-  findNotes(
+  async findNotes(
     @Request() request: any,
     @Query('skip', ParseIntPipe) skip?: number,
     @Query('take', ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
-    return this.notesService.findMany({
-      where: {
-        status: 'NORMAL',
-        blobPointer: { not: null }, // only notes with blobPointer
-        circle: { handle: { not: null }, status: 'NORMAL' }, // only notes in existing circles
-        user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
-        OR: [
-          { user: { id: userId } }, // user is owner
-          {
-            // user is member of circle
-            circle: {
-              members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
-            },
-          },
-          { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
-        ],
-      },
-      include: { user: true, circle: true },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take,
-    });
+
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let notes;
+    try {
+      notes = await this.notesService.findMany({
+        where: {
+          blobPointer: { not: null }, // only notes with blobPointer
+          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+          OR: [
+            { userId: userId }, // user is owner
+            {
+              status: 'NORMAL',
+              circle: {
+                handle: { not: null },
+                status: 'NORMAL',
+                readNotePermission: 'ADMIN',
+                members: { some: { userId: userId, role: 'ADMIN' } },
+              },
+            }, // readNotePermission is ADMIN and user is admin of circle
+            {
+              status: 'NORMAL',
+              circle: {
+                handle: { not: null },
+                status: 'NORMAL',
+                readNotePermission: 'MEMBER',
+                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+              },
+            }, // readNotePermission is MEMBER and user is member of circle
+            {
+              status: 'NORMAL',
+              circle: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+            }, // readNotePermission is ALL
+          ],
+        },
+        include: { user: true, circle: true },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+
+    return notes;
   }
 
   @Get('count')
   async countNotes(@Request() request: any) {
     const userId = request.user.id;
-    return this.notesService.count({
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let count;
+    try {
+      count = this.notesService.count({
+        where: {
+          blobPointer: { not: null }, // only notes with blobPointer
+          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+          OR: [
+            { userId: userId }, // user is owner
+            {
+              status: 'NORMAL',
+              circle: {
+                handle: { not: null },
+                status: 'NORMAL',
+                readNotePermission: 'ADMIN',
+                members: { some: { userId: userId, role: 'ADMIN' } },
+              },
+            }, // readNotePermission is ADMIN and user is admin of circle
+            {
+              status: 'NORMAL',
+              circle: {
+                handle: { not: null },
+                status: 'NORMAL',
+                readNotePermission: 'MEMBER',
+                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+              },
+            }, // readNotePermission is MEMBER and user is member of circle
+            {
+              status: 'NORMAL',
+              circle: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+            }, // readNotePermission is ALL
+          ],
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return count;
+  }
+
+  private async _getNote(userId: string, noteId: string) {
+    return this.notesService.findFirst({
       where: {
-        status: 'NORMAL',
+        id: noteId,
         blobPointer: { not: null }, // only notes with blobPointer
-        circle: { handle: { not: null }, status: 'NORMAL' }, // only notes in existing circles
         user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
         OR: [
-          { user: { id: userId } }, // user is owner
+          { userId: userId }, // user is owner
           {
-            // user is member of circle
+            status: 'NORMAL',
             circle: {
-              members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
+              handle: { not: null },
+              status: 'NORMAL',
+              readNotePermission: 'ADMIN',
+              members: { some: { userId: userId, role: 'ADMIN' } },
             },
-          },
-          { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
+          }, // readNotePermission is ADMIN and user is admin of circle
+          {
+            status: 'NORMAL',
+            circle: {
+              handle: { not: null },
+              status: 'NORMAL',
+              readNotePermission: 'MEMBER',
+              members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+            },
+          }, // readNotePermission is MEMBER and user is member of circle
+          {
+            status: 'NORMAL',
+            circle: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+          }, // readNotePermission is ALL
         ],
       },
+      include: { user: true, circle: true },
     });
+  }
+
+  @Get(':id')
+  async findOne(@Request() request: any, @Param('id') id: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let note;
+    try {
+      note = await this.notesService.findFirst({
+        where: {
+          id,
+          blobPointer: { not: null }, // only notes with blobPointer
+          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+    try {
+      note = await this._getNote(userId, id);
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new ForbiddenException();
+    }
+    return note;
+  }
+
+  @Get(':id/md')
+  async getMarkdown(@Request() request: any, @Param('id') id: string, @Response() response: any) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let note;
+    try {
+      note = await this.notesService.findFirst({
+        where: {
+          id,
+          blobPointer: { not: null }, // only notes with blobPointer
+          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+    try {
+      note = await this._getNote(userId, id);
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new ForbiddenException();
+    }
+
+    try {
+      const downloadBlockBlobResponse = await this.blobsService.downloadBlob(
+        this.blobContainerName,
+        `${note.id}/${note.blobPointer}.md`,
+      );
+      response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
+      downloadBlockBlobResponse.readableStreamBody?.pipe(response);
+    } catch (e) {
+      if (e instanceof RestError) {
+        if (e.statusCode === 404) {
+          throw new NotFoundException();
+        }
+      }
+      throw new InternalServerErrorException();
+    }
+  }
+
+  @Get(':id/comments')
+  async getComments(
+    @Request() request: any,
+    @Param('id') id: string,
+    @Query('skip', ParseIntPipe) skip: number,
+    @Query('take', ParseIntPipe) take: number,
+  ) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let note;
+    try {
+      note = await this.notesService.findFirst({
+        where: {
+          id,
+          blobPointer: { not: null }, // only notes with blobPointer
+          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+    try {
+      note = await this._getNote(userId, id);
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new ForbiddenException();
+    }
+
+    let comments;
+    try {
+      comments = await this.commentsService.findMany({
+        where: { noteId: note.id, status: 'NORMAL' },
+        include: { user: true },
+        orderBy: { createdAt: 'asc' },
+        skip,
+        take,
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!comments) {
+      throw new NotFoundException();
+    }
+    return comments;
+  }
+
+  @Get(':id/comments/count')
+  async countComments(@Request() request: any, @Param('id') id: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let note;
+    try {
+      note = await this.notesService.findFirst({
+        where: {
+          id,
+          blobPointer: { not: null }, // only notes with blobPointer
+          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+    try {
+      note = await this._getNote(userId, id);
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new ForbiddenException();
+    }
+
+    let count;
+    try {
+      count = await this.commentsService.count({
+        where: { noteId: note.id, status: 'NORMAL' },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return count;
+  }
+
+  @Post(':id/comments')
+  async createComment(
+    @Request() request: any,
+    @Param('id') id: string,
+    @Body() data: CreateCommentDto,
+  ) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let note;
+    try {
+      note = await this.notesService.findFirst({
+        where: {
+          id,
+          blobPointer: { not: null }, // only notes with blobPointer
+          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+    try {
+      note = await this.notesService.findFirst({
+        where: {
+          id: id,
+          blobPointer: { not: null }, // only notes with blobPointer
+          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+          OR: [
+            {
+              userId: userId,
+              writeCommentPermission: 'OWNER',
+            }, // writeCommentPermission is OWNER
+            {
+              writeCommentPermission: 'MEMBER',
+              status: 'NORMAL',
+              circle: {
+                handle: { not: null },
+                status: 'NORMAL',
+                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+              },
+            }, // writeCommentPermission is MEMBER and user is member of circle
+            {
+              writeCommentPermission: 'ALL',
+              status: 'NORMAL',
+              circle: { handle: { not: null }, status: 'NORMAL' },
+            }, // writeCommentPermission is ALL
+          ],
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new ForbiddenException();
+    }
+
+    let comment;
+    try {
+      comment = await this.commentsService.create({
+        data: { user: { connect: { id: userId } }, note: { connect: { id: note.id } } },
+        body: data.body.trim(),
+        include: { user: true, note: true },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    return comment;
+  }
+
+  @Put(':id')
+  async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateNoteDto) {
+    const userId = request.user.id;
+    const circleId = data.circle.id;
+
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    if (!circleId) {
+      throw new BadRequestException();
+    }
+
+    let note;
+    try {
+      note = await this.notesService.findFirst({
+        where: { id, userId, status: 'NORMAL', blobPointer: { not: null } },
+        include: { user: true, circle: true },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+
+    let circle;
+    try {
+      circle = await this.circlesService.findFirst({
+        where: {
+          id: circleId,
+          status: 'NORMAL',
+          handle: { not: null }, // only circles with handle
+          OR: [
+            {
+              writeNotePermission: 'ADMIN',
+              members: { some: { userId: userId, role: 'ADMIN' } },
+            }, // writeNotePermission is ADMIN and user is admin of circle
+            {
+              writeNotePermission: 'MEMBER',
+              members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+            }, // writeNotePermission is MEMBER and user is member of circle
+            { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
+          ],
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!circle) {
+      throw new ForbiddenException("You're not allowed to create notes in this circle");
+    }
+
+    //update note
+    let updatedNote;
+    try {
+      updatedNote = await this.notesService.update({
+        where: { id },
+        data: {
+          title: data.title,
+          user: { connect: { id: userId } },
+          circle: { connect: { id: circleId } },
+          status:
+            circle.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL' ? 'PENDING_APPROVAL' : 'NORMAL',
+          writeCommentPermission: data.writeCommentPermission,
+        },
+        body: data.body,
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    return updatedNote;
+  }
+
+  @Delete(':id')
+  async remove(@Request() request: any, @Param('id') id: string) {
+    const userId = request.user.id;
+
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let note;
+    try {
+      note = await this.notesService.findOne({
+        where: { id },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+    try {
+      note = await this.notesService.findFirst({
+        where: { id, userId, status: 'NORMAL', blobPointer: { not: null } },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new ForbiddenException();
+    }
+
+    try {
+      note = this.notesService.softRemove({ where: { id: note.id } });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    return note;
   }
 
   @Get('search')
@@ -153,8 +654,15 @@ export class NotesController {
         status: 'NORMAL',
         handle: { not: null }, // only circles with handle
         OR: [
-          { members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } } }, // user is member of circle
-          { type: { in: ['OPEN', 'PUBLIC'] } }, // circle is open or public
+          {
+            readNotePermission: 'ADMIN',
+            members: { some: { userId: userId, role: 'ADMIN' } },
+          }, // readNotePermission is ADMIN and user is admin of circle
+          {
+            readNotePermission: 'MEMBER',
+            members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+          }, // readNotePermission is MEMBER and user is member of circle
+          { readNotePermission: 'ALL' }, // readNotePermission is ALL
         ],
       },
     });
@@ -218,244 +726,5 @@ export class NotesController {
     };
     const result = await this.esService.search(this.esIndex, body);
     return result?.hits?.hits || [];
-  }
-
-  @Get(':id')
-  async findOne(@Request() request: any, @Param('id') id: string) {
-    const userId = request.user.id;
-
-    // check input
-    if (!id || !userId) {
-      throw new BadRequestException();
-    }
-
-    // retrieve note
-    const note = await this.notesService.findOne({
-      where: { id },
-      include: { user: true, circle: true },
-    });
-
-    // check note
-    if (
-      !note ||
-      !note.user ||
-      note.user.handle === null ||
-      note.user.status === 'DELETED' ||
-      !note.circle ||
-      note.circle.handle === null ||
-      note.circle.status === 'DELETED' ||
-      note.status === 'DELETED' ||
-      note.blobPointer === null
-    ) {
-      throw new NotFoundException();
-    }
-
-    // retrieve circle
-    const circle = await this.circlesService.findOne({
-      where: { id: note.circle.id },
-      include: { members: true },
-    });
-
-    // check circle
-    if (!circle || circle.status === 'DELETED' || circle.handle === null) {
-      throw new NotFoundException();
-    }
-
-    // allow access if user is owner
-    if (note.user.id === userId) {
-      if (circle.members?.find((m) => m.userId === userId)) {
-        // allow edit if user is owner and user is member of circle
-        return { ...note, canEdit: true };
-      } else {
-        return note;
-      }
-    }
-
-    // allow access if circle is open or public
-    if (note.circle.type === 'OPEN' || note.circle.type === 'PUBLIC') {
-      return note;
-    }
-
-    // allow access if user is member of private circle
-    if (note.circle.type === 'PRIVATE') {
-      if (circle.members?.find((m) => m.userId === userId)) {
-        return note;
-      }
-    }
-
-    // if none of the above, throw exception
-    throw new ForbiddenException("You're not allowed to view this note");
-  }
-
-  @Get(':id/md')
-  async getMarkdown(@Request() request: any, @Param('id') id: string, @Response() response: any) {
-    const note = await this.findOne(request, id);
-    if (!note) {
-      throw new Error('Note not found');
-    }
-
-    try {
-      const downloadBlockBlobResponse = await this.blobsService.downloadBlob(
-        this.blobContainerName,
-        `${note.id}/${note.blobPointer}.md`,
-      );
-      response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
-      downloadBlockBlobResponse.readableStreamBody?.pipe(response);
-    } catch (e) {
-      if (e instanceof RestError) {
-        if (e.statusCode === 404) {
-          throw new NotFoundException();
-        }
-      }
-      throw new InternalServerErrorException();
-    }
-  }
-
-  @Get(':id/comments')
-  async getComments(
-    @Request() request: any,
-    @Param('id') id: string,
-    @Query('skip', ParseIntPipe) skip: number,
-    @Query('take', ParseIntPipe) take: number,
-  ) {
-    return this.commentsService.findMany({
-      where: { noteId: id, status: 'NORMAL' },
-      include: { user: true },
-      orderBy: { createdAt: 'asc' },
-      skip,
-      take,
-    });
-  }
-
-  @Post(':id/comments')
-  async createComment(
-    @Request() request: any,
-    @Param('id') id: string,
-    @Body() data: CreateCommentDto,
-  ) {
-    const userId = request.user.id;
-
-    // check note
-    const note = await this.notesService.findOne({
-      where: { id },
-    });
-
-    if (!note || note.status === 'DELETED') {
-      throw new NotFoundException();
-    }
-
-    return this.commentsService.create({
-      data: { user: { connect: { id: userId } }, note: { connect: { id: note.id } } },
-      body: data.body.trim(),
-      include: { user: true, note: true },
-    });
-  }
-
-  @Get(':id/comments/count')
-  async countComments(@Param('id') id: string) {
-    // check note
-    const note = await this.notesService.findOne({
-      where: { id },
-    });
-
-    if (!note || note.status === 'DELETED') {
-      throw new NotFoundException();
-    }
-
-    return this.commentsService.count({ where: { noteId: id, status: 'NORMAL' } });
-  }
-
-  @Put(':id')
-  async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateNoteDto) {
-    const userId = request.user.id;
-    const circleId = data.circle.id;
-
-    //check input
-    if (!id || !userId || !circleId) {
-      throw new BadRequestException();
-    }
-
-    // retrieve note
-    const note = await this.notesService.findOne({
-      where: { id },
-      include: { user: true, circle: true },
-    });
-
-    // check note
-    if (!note || !note.user || note.status === 'DELETED') {
-      throw new NotFoundException();
-    }
-
-    // check if user is owner
-    if (note.userId !== userId) {
-      throw new ForbiddenException("You're not allowed to update this note");
-    }
-
-    // check circle
-    const circle = await this.circlesService.findOne({
-      where: { id: circleId },
-      include: { members: true },
-    });
-
-    // if circle is not exists, throw error
-    if (!circle) {
-      throw new BadRequestException();
-    }
-
-    // check if user is member
-    if (
-      circle.members === undefined ||
-      circle.members.filter((m) => m.userId === userId).length === 0
-    ) {
-      throw new ForbiddenException("You're not allowed to create notes in this circle");
-    }
-
-    //update note
-    return await this.notesService.update({
-      where: { id },
-      data: {
-        title: data.title,
-        user: { connect: { id: userId } },
-        circle: { connect: { id: circleId } },
-        status: data.status,
-      },
-      body: data.body,
-    });
-  }
-
-  @Delete(':id')
-  async remove(@Request() request: any, @Param('id') id: string) {
-    const userId = request.user.id;
-
-    // check input
-    if (!id || !userId) {
-      throw new BadRequestException();
-    }
-
-    // retrieve note
-    const note = await this.notesService.findOne({
-      where: { id },
-      include: { user: true, circle: true },
-    });
-
-    // check note
-    if (!note || !note.user || !note.circle || note.status === 'DELETED') {
-      throw new NotFoundException();
-    }
-
-    // check permissions
-    let allowUpdate = false;
-
-    // allow access if user is owner
-    if (note.user.id === userId) {
-      allowUpdate = true;
-    }
-
-    // throw exception if not allowed
-    if (!allowUpdate) {
-      throw new ForbiddenException("You're not allowed to delete this note");
-    }
-
-    return this.notesService.softRemove({ where: { id: note.id } });
   }
 }

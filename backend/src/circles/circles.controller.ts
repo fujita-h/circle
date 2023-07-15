@@ -20,8 +20,10 @@ import {
   InternalServerErrorException,
   UseInterceptors,
   UploadedFile,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CirclesService } from './circles.service';
+import { MembershipsService } from '../memberships/memberships.service';
 import { NotesService } from '../notes/notes.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { CreateCircleDto } from './dto/create-circle.dto';
@@ -40,6 +42,7 @@ export class CirclesController {
 
   constructor(
     private readonly circlesService: CirclesService,
+    private readonly membershipsService: MembershipsService,
     private readonly notesService: NotesService,
     private readonly blobsService: AzblobService,
   ) {
@@ -55,9 +58,16 @@ export class CirclesController {
 
   @Post()
   async create(@Request() request: any, @Body() data: CreateCircleDto) {
+    const userId: string = request?.user?.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
     try {
       this.checkHandle(data.handle);
-      const userId = request.user.id;
+    } catch (e) {
+      throw new NotAcceptableException();
+    }
+    try {
       return await this.circlesService.create({
         data: {
           ...data,
@@ -65,95 +75,66 @@ export class CirclesController {
         },
       });
     } catch (e) {
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: e.message || e || 'Unknown error',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException();
     }
   }
 
   @Get()
-  findMany(@Query('take', ParseIntPipe) take?: number, @Query('skip', ParseIntPipe) skip?: number) {
-    return this.circlesService.findMany({ where: { handle: { not: null } }, take, skip });
+  async findMany(
+    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', ParseIntPipe) skip?: number,
+  ) {
+    let circles;
+    try {
+      circles = await this.circlesService.findMany({
+        where: { handle: { not: null } },
+        take,
+        skip,
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return circles;
   }
 
   @Get('count')
-  count() {
-    return this.circlesService.count({ where: { handle: { not: null } } });
-  }
-
-  @Get('types/open')
-  findOpenMany(
-    @Query('take', ParseIntPipe) take?: number,
-    @Query('skip', ParseIntPipe) skip?: number,
-  ) {
-    return this.circlesService.findMany({
-      where: { type: 'OPEN', handle: { not: null } },
-      take,
-      skip,
-    });
-  }
-
-  @Get('types/open/count')
-  countOpen() {
-    return this.circlesService.count({ where: { type: 'OPEN', handle: { not: null } } });
-  }
-
-  @Get('/types/public')
-  findPublicMany(
-    @Query('take', ParseIntPipe) take?: number,
-    @Query('skip', ParseIntPipe) skip?: number,
-  ) {
-    return this.circlesService.findMany({
-      where: { type: 'PUBLIC', handle: { not: null } },
-      take,
-      skip,
-    });
-  }
-
-  @Get('/types/public/count')
-  countPublic() {
-    return this.circlesService.count({ where: { type: 'PUBLIC', handle: { not: null } } });
-  }
-
-  @Get('/types/private')
-  findPrivateMany(
-    @Query('take', ParseIntPipe) take?: number,
-    @Query('skip', ParseIntPipe) skip?: number,
-  ) {
-    return this.circlesService.findMany({
-      where: { type: 'PRIVATE', handle: { not: null } },
-      take,
-      skip,
-    });
-  }
-
-  @Get('/types/private/count')
-  countPrivate() {
-    return this.circlesService.count({ where: { type: 'PRIVATE', handle: { not: null } } });
+  async count() {
+    let count;
+    try {
+      count = await this.circlesService.count({ where: { handle: { not: null } } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return count;
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
+    let circle;
     try {
-      return await this.circlesService.findFirst({ where: { id, handle: { not: null } } });
+      circle = await this.circlesService.findFirst({
+        where: { id, handle: { not: null }, status: 'NORMAL' },
+      });
     } catch (e) {
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: e.message || e || 'Unknown error',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.logger.error(e);
+      throw new InternalServerErrorException();
     }
+    if (!circle) {
+      throw new NotFoundException();
+    }
+    return circle;
   }
 
   @Get(':id/photo')
   async getPhoto(@Param('id') id: string, @Response() response: any) {
-    const circle = await this.circlesService.findOne({ where: { id } });
+    let circle;
+    try {
+      circle = await this.circlesService.findOne({ where: { id } });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
     if (!circle) {
       throw new NotFoundException();
     }
@@ -175,6 +156,7 @@ export class CirclesController {
           response.setHeader('Content-Type', 'image/png');
           response.setHeader('Content-Length', png.length);
           response.send(png);
+          return;
         }
       }
       throw new InternalServerErrorException();
@@ -188,10 +170,30 @@ export class CirclesController {
     @Request() request: any,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const circle = await this.circlesService.findFirst({ where: { id } });
-    if (!circle || !circle.handle || circle.status === 'DELETED') {
-      throw new NotFoundException();
+    const userId = request?.user?.id;
+    if (!userId) {
+      throw new UnauthorizedException();
     }
+
+    let circle;
+    try {
+      circle = await this.circlesService.findOne({
+        where: { id },
+        include: { members: true },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!circle || !circle.handle || circle.status !== 'NORMAL') {
+      throw new NotAcceptableException('Invalid circle');
+    }
+    if (!circle.members) {
+      throw new InternalServerErrorException();
+    }
+    if (!circle.members.find((m) => m.userId === userId && m.role === 'ADMIN')) {
+      throw new ForbiddenException();
+    }
+
     if (
       file.mimetype !== 'image/jpeg' &&
       file.mimetype !== 'image/gif' &&
@@ -202,56 +204,60 @@ export class CirclesController {
     if (file.size > 1024 * 128) {
       throw new NotAcceptableException('File too large');
     }
+
     try {
-      return this.blobsService.uploadBlob(
+      return await this.blobsService.uploadBlob(
         this.blobContainerName,
         `${id}/photo`,
         file.mimetype,
         file.buffer,
       );
     } catch (e) {
+      this.logger.error(e);
       throw new InternalServerErrorException();
     }
   }
 
-  @Get('handle/:handle')
-  async FindOneByHandle(@Param('handle') handle: string) {
-    const circle = await this.circlesService.findOne({ where: { handle } });
-    if (!circle || circle.status === 'DELETED') {
-      throw new NotFoundException();
-    }
-    return circle;
-  }
-
-  @Get('handle/:handle/photo')
-  async getPhotoByHandle(@Param('handle') handle: string, @Response() response: any) {
-    const circle = await this.FindOneByHandle(handle);
-    if (!circle || !circle.id) {
-      throw new NotFoundException();
-    }
-    const id = circle.id;
+  @Get(':id/members')
+  async findMembers(
+    @Param('id') id: string,
+    @Query('skip', ParseIntPipe) skip?: number,
+    @Query('take', ParseIntPipe) take?: number,
+  ) {
+    // get circle
+    let circle;
     try {
-      const downloadBlockBlobResponse = await this.blobsService.downloadBlob(
-        this.blobContainerName,
-        `${id}/photo`,
-      );
-      response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
-      downloadBlockBlobResponse.readableStreamBody?.pipe(response);
+      circle = await this.circlesService.findFirst({
+        where: { id, handle: { not: null }, status: 'NORMAL' },
+      });
     } catch (e) {
-      if (e instanceof RestError) {
-        if (e.statusCode === 404) {
-          const png = jdenticon.toPng(circle.id, 256, {
-            padding: 0.08,
-            backColor: '#F0F0F0',
-            saturation: { color: 0.25 },
-          });
-          response.setHeader('Content-Type', 'image/png');
-          response.setHeader('Content-Length', png.length);
-          response.send(png);
-        }
-      }
       throw new InternalServerErrorException();
     }
+    if (!circle) {
+      throw new NotFoundException();
+    }
+
+    // get memberships
+    let memberships;
+    try {
+      memberships = await this.membershipsService.findMany({
+        where: {
+          circleId: circle.id,
+        },
+        take,
+        skip,
+        orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
+        include: { user: true },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!memberships) {
+      throw new InternalServerErrorException();
+    }
+
+    // return result
+    return memberships;
   }
 
   @Get(':id/notes')
@@ -262,169 +268,192 @@ export class CirclesController {
     @Query('take') take?: number,
   ) {
     const userId = request.user.id;
+    let notes;
     try {
-      return await this.notesService.findMany({
+      notes = await this.notesService.findMany({
         where: {
-          status: 'NORMAL',
-          circle: {
-            id: id, // note belongs to the circle
-            handle: { not: null }, // circle has a handle (not deleted)
-          },
-          user: { handle: { not: null } }, // note belongs to an existing user
+          blobPointer: { not: null }, // only notes with blobPointer
+          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+          circleId: id,
           OR: [
-            { user: { id: userId } }, // you are owner
+            { userId: userId }, // user is owner
             {
-              // you are member of the circle
+              status: 'NORMAL',
               circle: {
-                members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
+                handle: { not: null },
+                status: 'NORMAL',
+                readNotePermission: 'ADMIN',
+                members: { some: { userId: userId, role: 'ADMIN' } },
               },
-            },
-            { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
+            }, // readNotePermission is ADMIN and user is admin of circle
+            {
+              status: 'NORMAL',
+              circle: {
+                handle: { not: null },
+                status: 'NORMAL',
+                readNotePermission: 'MEMBER',
+                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+              },
+            }, // readNotePermission is MEMBER and user is member of circle
+            {
+              status: 'NORMAL',
+              circle: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+            }, // readNotePermission is ALL
           ],
         },
+        include: { user: true, circle: true },
         orderBy: { createdAt: 'desc' },
         skip,
         take,
       });
     } catch (e) {
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: e.message || e || 'Unknown error',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.logger.error(e);
+      throw new InternalServerErrorException();
     }
+    return notes;
+  }
+
+  @Get(':id/notes/count')
+  async countNotes(@Request() request: any, @Param('id') id: string) {
+    const userId = request.user.id;
+    let count;
+    try {
+      count = await this.notesService.count({
+        where: {
+          blobPointer: { not: null }, // only notes with blobPointer
+          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+          circleId: id,
+          OR: [
+            { userId: userId }, // user is owner
+            {
+              status: 'NORMAL',
+              circle: {
+                handle: { not: null },
+                status: 'NORMAL',
+                readNotePermission: 'ADMIN',
+                members: { some: { userId: userId, role: 'ADMIN' } },
+              },
+            }, // readNotePermission is ADMIN and user is admin of circle
+            {
+              status: 'NORMAL',
+              circle: {
+                handle: { not: null },
+                status: 'NORMAL',
+                readNotePermission: 'MEMBER',
+                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+              },
+            }, // readNotePermission is MEMBER and user is member of circle
+            {
+              status: 'NORMAL',
+              circle: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+            }, // readNotePermission is ALL
+          ],
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return count;
+  }
+
+  @Get('handle/:handle')
+  async findOneByHandle(@Param('handle') handle: string) {
+    let circle;
+    try {
+      circle = await this.circlesService.findOne({ where: { handle } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!circle || circle.status === 'DELETED') {
+      throw new NotFoundException();
+    }
+    return circle;
+  }
+
+  @Get('handle/:handle/photo')
+  async getPhotoByHandle(@Param('handle') handle: string, @Response() response: any) {
+    const circle = await this.circlesService.findOne({ where: { handle } });
+    if (!circle || !circle.id) {
+      throw new NotFoundException();
+    }
+    return this.getPhoto(circle.id, response);
+  }
+
+  @Get('handle/:handle/members')
+  async findMembersByHandle(
+    @Param('handle') handle: string,
+    @Query('skip', ParseIntPipe) skip?: number,
+    @Query('take', ParseIntPipe) take?: number,
+  ) {
+    let circle;
+    try {
+      circle = await this.circlesService.findOne({ where: { handle } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!circle || circle.status === 'DELETED') {
+      throw new NotFoundException();
+    }
+
+    return this.findMembers(circle.id, skip, take);
   }
 
   @Get('handle/:handle/notes')
   async findNotesByHandle(
     @Request() request: any,
     @Param('handle') handle: string,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip') skip?: number,
+    @Query('take') take?: number,
   ) {
-    const userId = request.user.id;
-    if (!handle) {
-      throw new NotAcceptableException('Invalid handle');
+    let circle;
+    try {
+      circle = await this.circlesService.findOne({ where: { handle } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!circle || circle.status === 'DELETED') {
+      throw new NotFoundException();
     }
 
-    const check = await this.circlesService.findFirst({
-      where: {
-        handle,
-        OR: [
-          { members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } } }, // you are member of the circle
-          { type: { in: ['OPEN', 'PUBLIC'] } }, // circle is open or public
-        ],
-      },
-    });
-
-    if (!check) {
-      throw new ForbiddenException('You are not allowed to access this circle notes');
-    }
-
-    return this.notesService.findMany({
-      where: {
-        status: 'NORMAL',
-        blobPointer: { not: null },
-        circle: { handle: handle },
-        user: { handle: { not: null } }, // note belongs to an existing user
-        OR: [
-          {
-            // you are member of the circle
-            circle: {
-              members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
-            },
-          },
-          { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
-        ],
-      },
-      include: { user: true, circle: true },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take,
-    });
+    return this.findNotes(request, circle.id, skip, take);
   }
 
   @Get('handle/:handle/notes/count')
   async countNotesByHandle(@Request() request: any, @Param('handle') handle: string) {
-    const userId = request.user.id;
-    return this.notesService.count({
-      where: {
-        status: 'NORMAL',
-        blobPointer: { not: null },
-        circle: { handle: handle },
-        user: { handle: { not: null } }, // note belongs to an existing user
-        OR: [
-          {
-            // you are member of the circle
-            circle: {
-              members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
-            },
-          },
-          { circle: { type: { in: ['OPEN', 'PUBLIC'] } } }, // circle is open or public
-        ],
-      },
-    });
-  }
-
-  @Get('handle/:handle/members')
-  async findMembersByHandle(
-    @Request() request: any,
-    @Param('handle') handle: string,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
-  ) {
-    const userId = request.user.id;
-    if (!handle) {
-      throw new NotAcceptableException('Invalid handle');
+    let circle;
+    try {
+      circle = await this.circlesService.findOne({ where: { handle } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!circle || circle.status === 'DELETED') {
+      throw new NotFoundException();
     }
 
-    return this.circlesService.findMembers({
-      where: {
-        circle: {
-          handle,
-          status: 'NORMAL',
-          OR: [
-            { members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } } }, // you are member of the circle
-            { type: { in: ['OPEN', 'PUBLIC'] } }, // circle is open or public
-          ],
-        },
-      },
-      include: { user: true },
-      orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
-      take,
-      skip,
-    });
-  }
-
-  @Get('handle/:handle/members/count')
-  async countMembersByHandle(@Request() request: any, @Param('handle') handle: string) {
-    const userId = request.user.id;
-    if (!handle) {
-      throw new NotAcceptableException('Invalid handle');
-    }
-
-    return this.circlesService.countMembers({
-      where: {
-        circle: {
-          handle,
-          status: 'NORMAL',
-          OR: [
-            { members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } } }, // you are member of the circle
-            { type: { in: ['OPEN', 'PUBLIC'] } }, // circle is open or public
-          ],
-        },
-      },
-    });
+    return this.countNotes(request, circle.id);
   }
 
   @Patch(':id')
   async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateCircleDto) {
     const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
 
     // check permissions
-    const circle = await this.circlesService.findOne({ where: { id }, include: { members: true } });
+    let circle;
+    try {
+      circle = await this.circlesService.findOne({ where: { id }, include: { members: true } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+
     if (!circle || circle.status === 'DELETED') {
       throw new NotFoundException();
     }
@@ -445,26 +474,60 @@ export class CirclesController {
       }
     }
 
-    return await this.circlesService.update({ where: { id }, data: { ...data, type: undefined } });
+    let updatedCircle;
+    try {
+      updatedCircle = await this.circlesService.update({
+        where: { id: circle.id },
+        data: { ...data },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!updatedCircle) {
+      throw new NotFoundException();
+    }
+
+    return updatedCircle;
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Request() request: any, @Param('id') id: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let circle;
+    try {
+      circle = await this.circlesService.findFirst({
+        where: { id, handle: { not: null }, status: 'NORMAL' },
+        include: { members: true },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!circle) {
+      throw new NotFoundException();
+    }
+
+    if (!circle.members?.some((m) => m.userId === userId && m.role === 'ADMIN')) {
+      throw new ForbiddenException();
+    }
+
     try {
       // soft delete
-      return await this.circlesService.update({
+      circle = await this.circlesService.update({
         where: { id },
         data: { handle: null, status: 'DELETED' },
       });
     } catch (e) {
-      console.error(e);
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: e.message || e || 'Unknown error',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException();
     }
+    if (!circle) {
+      throw new NotFoundException();
+    }
+
+    return circle;
   }
 }

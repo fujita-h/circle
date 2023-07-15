@@ -65,7 +65,7 @@ export class UsersService {
     return prisma.user.count({ where });
   }
 
-  findfirst({
+  findFirst({
     where,
     orderBy = { id: 'asc' },
     include = { _count: false },

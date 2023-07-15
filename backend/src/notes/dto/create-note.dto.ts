@@ -1,4 +1,4 @@
-import { NoteStatus } from '@prisma/client';
+import { NoteStatus, PermissionWriteComment } from '@prisma/client';
 
 export class CreateNoteDto {
   circle: {
@@ -7,4 +7,5 @@ export class CreateNoteDto {
   title: string;
   body: string;
   status: NoteStatus;
+  writeCommentPermission: PermissionWriteComment;
 }

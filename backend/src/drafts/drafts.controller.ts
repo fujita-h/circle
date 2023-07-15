@@ -1,5 +1,6 @@
 import {
   Controller,
+  Logger,
   Get,
   UseGuards,
   Request,
@@ -16,6 +17,9 @@ import {
   Put,
   BadRequestException,
   InternalServerErrorException,
+  ForbiddenException,
+  UnauthorizedException,
+  Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
@@ -29,118 +33,195 @@ import { RestError } from '@azure/storage-blob';
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('drafts')
 export class DraftsController {
+  private logger = new Logger(DraftsController.name);
   private blobContainerName = 'note';
   constructor(
     private readonly notesService: NotesService,
     private readonly circlesService: CirclesService,
     private readonly blobsService: AzblobService,
-  ) {}
+  ) {
+    this.logger.log('Initializing Drafts Controller...');
+    this.blobsService.init(this.blobContainerName);
+  }
 
   @Post()
   async create(@Request() request: any, @Body() data: CreateNoteDto) {
     const userId = request.user.id;
     const circleId = data.circle.id;
 
+    if (!userId) {
+      throw new BadRequestException();
+    }
+
     // some checks if circle is exists
     if (circleId) {
-      const circle = await this.circlesService.findOne({
-        where: { id: circleId },
-        include: { members: true },
-      });
+      let circle;
+      try {
+        circle = await this.circlesService.findOne({ where: { id: circleId } });
+      } catch (e) {
+        this.logger.error(e);
+        throw new InternalServerErrorException();
+      }
+
+      if (!circle) {
+        throw new NotFoundException();
+      }
+
+      try {
+        circle = await this.circlesService.findFirst({
+          where: {
+            id: circleId,
+            status: 'NORMAL',
+            handle: { not: null },
+            OR: [
+              {
+                writeNotePermission: 'ADMIN',
+                members: { some: { userId: userId, role: 'ADMIN' } },
+              }, // writeNotePermission is ADMIN and user is admin of circle
+              {
+                writeNotePermission: 'MEMBER',
+                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+              }, // writeNotePermission is MEMBER and user is member of circle
+              { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
+            ],
+          },
+        });
+      } catch (e) {
+        this.logger.error(e);
+        throw new InternalServerErrorException();
+      }
 
       // if circle is not exists, throw error
       if (!circle) {
-        throw new BadRequestException();
-      }
-
-      // if circle is private or public, check if user is member
-      if (circle.type === 'PUBLIC' || circle.type === 'PRIVATE') {
-        if (circle.members?.filter((m) => m.userId === userId).length === 0) {
-          throw new BadRequestException();
-        }
+        throw new ForbiddenException("You're not allowed to create drafts in this circle");
       }
     }
 
-    return await this.notesService.createDraft({
-      data: {
-        user: { connect: { id: userId } },
-        circle: circleId ? { connect: { id: circleId } } : undefined,
-        title: data.title,
-        status: data.status,
-      },
-      body: data.body,
-    });
+    let note;
+    try {
+      note = await this.notesService.createDraft({
+        data: {
+          user: { connect: { id: userId } },
+          circle: circleId ? { connect: { id: circleId } } : undefined,
+          title: data.title,
+          status: 'NORMAL',
+          writeCommentPermission: data.writeCommentPermission,
+        },
+        body: data.body,
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    return note;
   }
 
   @Get()
-  findMany(
+  async findMany(
     @Request() request: any,
     @Query('skip', ParseIntPipe) skip?: number,
     @Query('take', ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
-    return this.notesService.findMany({
-      where: {
-        status: 'NORMAL',
-        draftBlobPointer: { not: null },
-        user: { id: userId },
-      },
-      orderBy: { createdAt: 'desc' },
-      include: { user: true, circle: true },
-      skip,
-      take,
-    });
+
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let drafts;
+    try {
+      drafts = await this.notesService.findMany({
+        where: {
+          status: 'NORMAL',
+          draftBlobPointer: { not: null },
+          userId: userId,
+        },
+        orderBy: { createdAt: 'desc' },
+        include: { user: true, circle: true },
+        skip,
+        take,
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+
+    return drafts;
   }
 
   @Get('count')
-  count(@Request() request: any) {
+  async count(@Request() request: any) {
     const userId = request.user.id;
-    return this.notesService.count({
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let count;
+    try {
+      count = this.notesService.count({
+        where: {
+          status: 'NORMAL',
+          draftBlobPointer: { not: null },
+          userId: userId,
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return count;
+  }
+
+  private async _getDraft(userId: string, draftId: string) {
+    return this.notesService.findFirst({
       where: {
+        id: draftId,
         status: 'NORMAL',
         draftBlobPointer: { not: null },
-        user: { id: userId },
+        userId: userId,
       },
+      include: { user: true, circle: true },
     });
   }
 
   @Get(':id')
   async findOne(@Request() request: any, @Param('id') id: string) {
     const userId = request.user.id;
-    const result = await this.notesService.findFirst({
-      where: {
-        id: id,
-        status: 'NORMAL',
-        draftBlobPointer: { not: null },
-        user: { id: userId },
-      },
-      include: { user: true, circle: true },
-    });
-    if (!result) {
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let draft;
+    try {
+      draft = await this._getDraft(userId, id);
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!draft) {
       throw new NotFoundException();
     }
-    return result;
+    return draft;
   }
 
   @Get(':id/md')
   async getMarkdown(@Request() request: any, @Param('id') id: string, @Response() response: any) {
     const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let draft;
     try {
-      const note = await this.notesService.findFirst({
-        where: {
-          id,
-          status: 'NORMAL',
-          draftBlobPointer: { not: null },
-          user: { id: userId },
-        },
-      });
+      draft = await this._getDraft(userId, id);
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!draft) {
+      throw new NotFoundException();
+    }
 
-      if (!note) {
-        throw new Error('Note not found');
-      }
+    try {
       const downloadBlockBlobResponse = await this.blobsService.downloadBlob(
         this.blobContainerName,
-        `${note.id}/${note.draftBlobPointer}.draft.md`,
+        `${draft.id}/${draft.draftBlobPointer}.draft.md`,
       );
       response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
       downloadBlockBlobResponse.readableStreamBody?.pipe(response);
@@ -157,36 +238,117 @@ export class DraftsController {
   @Put(':id')
   async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateNoteDto) {
     const userId = request.user.id;
-
-    //check input
-    if (!id || !userId) {
-      throw new BadRequestException();
+    const circleId = data.circle?.id;
+    if (!userId) {
+      throw new UnauthorizedException();
     }
 
     //check if note exists
-    const note = await this.notesService.findFirst({
-      where: {
-        id,
-        user: { id: userId }, // user is owner
-      },
-      include: { user: true, circle: true },
-    });
-
-    if (!note || !note.user) {
+    let note;
+    try {
+      note = await this.notesService.findFirst({
+        where: { id, userId, status: 'NORMAL', draftBlobPointer: { not: null } },
+        include: { user: true, circle: true },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
       throw new NotFoundException();
     }
 
+    if (circleId) {
+      let circle;
+      try {
+        circle = await this.circlesService.findFirst({
+          where: {
+            id: circleId,
+            status: 'NORMAL',
+            handle: { not: null },
+            OR: [
+              {
+                writeNotePermission: 'ADMIN',
+                members: { some: { userId: userId, role: 'ADMIN' } },
+              }, // writeNotePermission is ADMIN and user is admin of circle
+              {
+                writeNotePermission: 'MEMBER',
+                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+              }, // writeNotePermission is MEMBER and user is member of circle
+              { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
+            ],
+          },
+        });
+      } catch (e) {
+        this.logger.error(e);
+        throw new InternalServerErrorException();
+      }
+
+      // if circle is not exists, throw error
+      if (!circle) {
+        throw new ForbiddenException("You're not allowed to create drafts in this circle");
+      }
+    }
+
     //update note
-    const circle = data.circle?.id ? { connect: { id: data.circle.id } } : { disconnect: true };
-    return await this.notesService.updateDraft({
-      where: { id },
-      data: {
-        title: data.title,
-        user: { connect: { id: userId } },
-        circle: circle,
-        status: data.status,
-      },
-      body: data.body,
-    });
+    let updatedNote;
+    try {
+      updatedNote = await this.notesService.updateDraft({
+        where: { id },
+        data: {
+          title: data.title,
+          user: { connect: { id: userId } },
+          circle: circleId ? { connect: { id: circleId } } : undefined,
+          status: 'NORMAL',
+          writeCommentPermission: data.writeCommentPermission,
+        },
+        body: data.body,
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    return updatedNote;
+  }
+
+  @Delete(':id')
+  async remove(@Request() request: any, @Param('id') id: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let draft;
+    try {
+      draft = await this.notesService.findOne({
+        where: { id },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!draft) {
+      throw new NotFoundException();
+    }
+    try {
+      draft = await this.notesService.findFirst({
+        where: { id, userId, status: 'NORMAL', draftBlobPointer: { not: null } },
+        include: { user: true, circle: true },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!draft) {
+      throw new ForbiddenException();
+    }
+
+    try {
+      draft = await this.notesService.softRemove({
+        where: { id: draft.id },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    return draft;
   }
 }
