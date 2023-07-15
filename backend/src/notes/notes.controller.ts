@@ -58,51 +58,52 @@ export class NotesController {
     const circleId = data.circle.id;
 
     // check input
-    if (!userId || !circleId) {
-      throw new BadRequestException();
+    if (!userId) {
+      throw new UnauthorizedException();
     }
 
-    // check circle
     let circle;
-    try {
-      circle = await this.circlesService.findOne({ where: { id: circleId } });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
+    if (circleId) {
+      try {
+        circle = await this.circlesService.findOne({ where: { id: circleId } });
+      } catch (e) {
+        this.logger.error(e);
+        throw new InternalServerErrorException();
+      }
 
-    // if circle is not exists, throw error
-    if (!circle) {
-      throw new NotFoundException();
-    }
+      // if circle is not exists, throw error
+      if (!circle) {
+        throw new NotFoundException();
+      }
 
-    try {
-      circle = await this.circlesService.findFirst({
-        where: {
-          id: circleId,
-          status: 'NORMAL',
-          handle: { not: null }, // only circles with handle
-          OR: [
-            {
-              writeNotePermission: 'ADMIN',
-              members: { some: { userId: userId, role: 'ADMIN' } },
-            }, // writeNotePermission is ADMIN and user is admin of circle
-            {
-              writeNotePermission: 'MEMBER',
-              members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
-            }, // writeNotePermission is MEMBER and user is member of circle
-            { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
-          ],
-        },
-      });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
+      try {
+        circle = await this.circlesService.findFirst({
+          where: {
+            id: circleId,
+            status: 'NORMAL',
+            handle: { not: null }, // only circles with handle
+            OR: [
+              {
+                writeNotePermission: 'ADMIN',
+                members: { some: { userId: userId, role: 'ADMIN' } },
+              }, // writeNotePermission is ADMIN and user is admin of circle
+              {
+                writeNotePermission: 'MEMBER',
+                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+              }, // writeNotePermission is MEMBER and user is member of circle
+              { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
+            ],
+          },
+        });
+      } catch (e) {
+        this.logger.error(e);
+        throw new InternalServerErrorException();
+      }
 
-    // if circle is not exists, throw error
-    if (!circle) {
-      throw new ForbiddenException("You're not allowed to create notes in this circle");
+      // if circle is not exists, throw error
+      if (!circle) {
+        throw new ForbiddenException("You're not allowed to create notes in this circle");
+      }
     }
 
     let note;
@@ -112,8 +113,11 @@ export class NotesController {
           user: { connect: { id: userId } },
           circle: { connect: { id: circleId } },
           title: data.title,
-          status:
-            circle.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL' ? 'PENDING_APPROVAL' : 'NORMAL',
+          status: circle
+            ? circle.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL'
+              ? 'PENDING_APPROVAL'
+              : 'NORMAL'
+            : 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
         },
         body: data.body,
