@@ -54,8 +54,8 @@ export class DraftsController {
     }
 
     // some checks if circle is exists
+    let circle;
     if (circleId) {
-      let circle;
       try {
         circle = await this.circlesService.findOne({ where: { id: circleId } });
       } catch (e) {
