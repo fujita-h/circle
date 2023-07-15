@@ -40,13 +40,24 @@ describe('UsersController', () => {
     controller = module.get<UsersController>(UsersController);
     usersService = module.get<UsersService>(UsersService);
 
-    // delete test user if exists
-    await usersService.findOne({ where: { id: testUser.id } }).then(async (result) => {
-      if (result && result.id) {
-        await usersService.remove({ where: { id: result.id } });
-        //await sleep(100);
-      }
-    });
+    // delete test users
+    await usersService
+      .findMany({
+        where: {
+          OR: [
+            { id: { startsWith: testPrefix } },
+            { oid: { startsWith: testPrefix } },
+            { handle: { startsWith: testPrefix } },
+          ],
+        },
+      })
+      .then(async (results) => {
+        if (results && results.length > 0) {
+          for (const result of results) {
+            await usersService.remove({ where: { id: result.id } });
+          }
+        }
+      });
   });
 
   //beforeEach(async () => {
@@ -87,7 +98,7 @@ describe('UsersController', () => {
   });
 
   it('should return user object for deleted', async () => {
-    const result = controller.remove(testUser.id);
+    const result = controller.remove({ user: { id: testUser.id } }, testUser.id);
     await expect(result).resolves.toHaveProperty('id', testUser.id);
   });
 });

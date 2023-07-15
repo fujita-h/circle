@@ -36,18 +36,43 @@ describe('MembershipsService', () => {
     usersService = module.get<UsersService>(UsersService);
     circlesService = module.get<CirclesService>(CirclesService);
 
-    // delete test user if exists
-    await usersService.findOne({ where: { id: testUser.id } }).then(async (result) => {
-      if (result && result.id) {
-        await usersService.remove({ where: { id: result.id } });
-      }
-    });
-    // delete test circle if exists
-    await circlesService.findOne({ where: { id: testCircle.id } }).then(async (result) => {
-      if (result && result.id) {
-        await circlesService.remove({ where: { id: result.id } });
-      }
-    });
+    // delete test users
+    await usersService
+      .findMany({
+        where: {
+          OR: [
+            { id: { startsWith: testPrefix } },
+            { oid: { startsWith: testPrefix } },
+            { handle: { startsWith: testPrefix } },
+          ],
+        },
+      })
+      .then(async (results) => {
+        if (results && results.length > 0) {
+          for (const result of results) {
+            await usersService.remove({ where: { id: result.id } });
+          }
+        }
+      });
+
+    // delete test circles
+    await circlesService
+      .findMany({
+        where: {
+          OR: [
+            { id: { startsWith: testPrefix } },
+            { handle: { startsWith: testPrefix } },
+            { name: { startsWith: testPrefix } },
+          ],
+        },
+      })
+      .then(async (results) => {
+        if (results && results.length > 0) {
+          for (const result of results) {
+            await circlesService.remove({ where: { id: result.id } });
+          }
+        }
+      });
   });
 
   beforeEach(async () => {

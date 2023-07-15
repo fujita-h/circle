@@ -12,6 +12,7 @@ import { CreateCircleNoteDto } from '../circles/dto/create-circle-note.dto';
 import { CirclesController } from '../circles/circles.controller';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { CommentsService } from '../comments/comments.service';
+import { MembershipsService } from '../memberships/memberships.service';
 
 describe('NotesController', () => {
   let controller: NotesController;
@@ -36,13 +37,15 @@ describe('NotesController', () => {
     id: testPrefix + 'g1-0123-456789',
     handle: testPrefix + 'g1-handle',
     name: testPrefix + 'g1-name',
-    type: 'OPEN',
+    writeNoteCondition: 'NOT_REQUIRED',
+    joinCircleCondition: 'NOT_REQUIRED',
   };
   const testNote1: CreateNoteDto = {
     title: testPrefix + 'i1-title',
     body: testPrefix + 'i1-body',
     status: 'NORMAL',
     circle: { id: testCircle1.id },
+    writeCommentPermission: 'ALL',
   };
 
   beforeAll(async () => {
@@ -55,6 +58,7 @@ describe('NotesController', () => {
         UsersService,
         CirclesService,
         CommentsService,
+        MembershipsService,
       ],
       imports: [
         ConfigModule.forRoot({
@@ -69,9 +73,13 @@ describe('NotesController', () => {
     circlesService = module.get<CirclesService>(CirclesService);
     notesService = module.get<NotesService>(NotesService);
 
-    // delete test note1 if exists
+    // delete test notes
     await notesService
-      .findMany({ where: { circle: { id: testCircle1.id } } })
+      .findMany({
+        where: {
+          OR: [{ circleId: { startsWith: testPrefix } }, { userId: { startsWith: testPrefix } }],
+        },
+      })
       .then(async (results) => {
         if (results && results.length > 0) {
           for (const result of results) {
@@ -79,18 +87,44 @@ describe('NotesController', () => {
           }
         }
       });
-    // delete test user1 if exists
-    await usersService.findOne({ where: { id: testUser1.id } }).then(async (result) => {
-      if (result && result.id) {
-        await usersService.remove({ where: { id: result.id } });
-      }
-    });
-    // delete test circle1 if exists
-    await circlesService.findOne({ where: { id: testCircle1.id } }).then(async (result) => {
-      if (result && result.id) {
-        await circlesService.remove({ where: { id: result.id } });
-      }
-    });
+
+    // delete test users
+    await usersService
+      .findMany({
+        where: {
+          OR: [
+            { id: { startsWith: testPrefix } },
+            { oid: { startsWith: testPrefix } },
+            { handle: { startsWith: testPrefix } },
+          ],
+        },
+      })
+      .then(async (results) => {
+        if (results && results.length > 0) {
+          for (const result of results) {
+            await usersService.remove({ where: { id: result.id } });
+          }
+        }
+      });
+
+    // delete test circles
+    await circlesService
+      .findMany({
+        where: {
+          OR: [
+            { id: { startsWith: testPrefix } },
+            { handle: { startsWith: testPrefix } },
+            { name: { startsWith: testPrefix } },
+          ],
+        },
+      })
+      .then(async (results) => {
+        if (results && results.length > 0) {
+          for (const result of results) {
+            await circlesService.remove({ where: { id: result.id } });
+          }
+        }
+      });
   });
 
   beforeEach(async () => {
@@ -114,7 +148,6 @@ describe('NotesController', () => {
     await expect(result).resolves.toHaveProperty('id', testCircle1.id);
     await expect(result).resolves.toHaveProperty('name', testCircle1.name);
     await expect(result).resolves.toHaveProperty('handle', testCircle1.handle);
-    await expect(result).resolves.toHaveProperty('type', testCircle1.type);
   });
 
   it('Circle1に対してUser1でNote1を作成', async () => {
