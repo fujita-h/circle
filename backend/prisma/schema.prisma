@@ -57,6 +57,20 @@ model Circle {
   @@map("circle")
 }
 
+model Membership {
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String         @map("user_id")
+  circle    Circle         @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  circleId  String         @map("circle_id")
+  role      MembershipRole @default(MEMBER)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  @@id([userId, circleId])
+  @@index([role])
+  @@map("membership")
+}
+
 model Note {
   id                     String                 @id @default(cuid())
   createdAt              DateTime               @default(now()) @map("created_at")
@@ -96,20 +110,6 @@ model Comment {
   @@index([type])
   @@index([status])
   @@map("comment")
-}
-
-model Membership {
-  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String         @map("user_id")
-  circle    Circle         @relation(fields: [circleId], references: [id], onDelete: Cascade)
-  circleId  String         @map("circle_id")
-  role      MembershipRole @default(MEMBER)
-  createdAt DateTime       @default(now()) @map("created_at")
-  updatedAt DateTime       @updatedAt @map("updated_at")
-
-  @@id([userId, circleId])
-  @@index([role])
-  @@map("membership")
 }
 
 model Stock {
