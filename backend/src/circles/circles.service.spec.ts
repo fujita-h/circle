@@ -5,15 +5,34 @@ import { ConfigModule } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import { EsService } from '../es/es.service';
 
+const testPrefix = 'x-test-circles-service-';
+const deleteTestCircles = async (circlesService: CirclesService) => {
+  await circlesService
+    .findMany({ where: { handle: { startsWith: testPrefix } } })
+    .then(async (results) => {
+      for (const result of results) {
+        await circlesService.remove({ where: { id: result.id } });
+      }
+    });
+};
+const Circle = (
+  handle: string,
+  name: string,
+  rp?: 'ADMIN' | 'MEMBER' | 'ALL',
+  wp?: 'ADMIN' | 'MEMBER' | 'ALL',
+  wc?: 'REQUIRE_ADMIN_APPROVAL' | 'NOT_REQUIRED',
+  jc?: 'REQUIRE_ADMIN_APPROVAL' | 'NOT_REQUIRED',
+): Prisma.CircleCreateInput => ({
+  handle: testPrefix + handle,
+  name: testPrefix + name,
+  readNotePermission: rp,
+  writeNotePermission: wp,
+  writeNoteCondition: wc,
+  joinCircleCondition: jc,
+});
+
 describe('CirclesService', () => {
   let service: CirclesService;
-
-  const testPrefix = 'x-grp-svc-';
-  const testCircle: Prisma.CircleCreateInput = {
-    id: testPrefix + '0123-456789',
-    handle: testPrefix + 'handle',
-    name: testPrefix + 'name',
-  };
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -27,123 +46,155 @@ describe('CirclesService', () => {
 
     service = module.get<CirclesService>(CirclesService);
 
-    // delete test circle if exists
-    await service.findOne({ where: { id: testCircle.id } }).then(async (result) => {
-      if (result && result.id) {
-        await service.remove({ where: { id: result.id } });
-      }
-    });
+    await deleteTestCircles(service);
   });
 
-  beforeEach(async () => {
-    //
+  afterAll(async () => {
+    await deleteTestCircles(service);
   });
+
+  const testCircle1 = Circle('1', '1');
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it('グループを作成', async () => {
-    const result = service.create({ data: testCircle });
-    await expect(result).resolves.toHaveProperty('id', testCircle.id);
-    await expect(result).resolves.toHaveProperty('name', testCircle.name);
-    await expect(result).resolves.toHaveProperty('handle', testCircle.handle);
+  let circle1: any;
+  it('サークルを作成', async () => {
+    const result = service.create({ data: testCircle1 });
+    circle1 = await result;
+    await expect(result).resolves.toHaveProperty('id');
+    await expect(result).resolves.toHaveProperty('name', testCircle1.name);
+    await expect(result).resolves.toHaveProperty('handle', testCircle1.handle);
+    await expect(result).resolves.not.toHaveProperty('notes');
+    await expect(result).resolves.not.toHaveProperty('members');
   });
 
-  it('グループを取得', async () => {
-    const result = service.findOne({ where: { id: testCircle.id } });
-    await expect(result).resolves.toHaveProperty('id', testCircle.id);
-    await expect(result).resolves.toHaveProperty('name', testCircle.name);
-    await expect(result).resolves.toHaveProperty('handle', testCircle.handle);
+  it('サークルを取得', async () => {
+    const result = service.findOne({ where: { id: circle1.id } });
+    await expect(result).resolves.toHaveProperty('id', circle1.id);
+    await expect(result).resolves.toHaveProperty('name', testCircle1.name);
+    await expect(result).resolves.toHaveProperty('handle', testCircle1.handle);
+    await expect(result).resolves.not.toHaveProperty('notes');
+    await expect(result).resolves.not.toHaveProperty('members');
   });
 
-  it('グループをInclude付きで取得', async () => {
+  it('サークルをInclude付きで取得', async () => {
     const result = service.findOne({
-      where: { id: testCircle.id },
+      where: { id: circle1.id },
       include: { notes: true, members: true },
     });
-    await expect(result).resolves.toHaveProperty('id', testCircle.id);
-    await expect(result).resolves.toHaveProperty('name', testCircle.name);
-    await expect(result).resolves.toHaveProperty('handle', testCircle.handle);
+    await expect(result).resolves.toHaveProperty('id', circle1.id);
+    await expect(result).resolves.toHaveProperty('name', testCircle1.name);
+    await expect(result).resolves.toHaveProperty('handle', testCircle1.handle);
     await expect(result).resolves.toHaveProperty('notes');
     await expect(result).resolves.toHaveProperty('members');
   });
 
-  it('グループをhandleから取得', async () => {
-    const result = service.findFirst({ where: { handle: testCircle.handle } });
-    await expect(result).resolves.toHaveProperty('id', testCircle.id);
-    await expect(result).resolves.toHaveProperty('name', testCircle.name);
-    await expect(result).resolves.toHaveProperty('handle', testCircle.handle);
+  it('サークルをhandleから取得', async () => {
+    const result = service.findFirst({ where: { handle: circle1.handle } });
+    await expect(result).resolves.toHaveProperty('id', circle1.id);
+    await expect(result).resolves.toHaveProperty('name', testCircle1.name);
+    await expect(result).resolves.toHaveProperty('handle', testCircle1.handle);
   });
 
-  it('グループをhandleからInclude付きで取得', async () => {
+  it('サークルをhandleからInclude付きで取得', async () => {
     const result = service.findFirst({
-      where: { handle: testCircle.handle },
+      where: { handle: circle1.handle },
       include: { notes: true, members: true },
     });
-    await expect(result).resolves.toHaveProperty('id', testCircle.id);
-    await expect(result).resolves.toHaveProperty('name', testCircle.name);
-    await expect(result).resolves.toHaveProperty('handle', testCircle.handle);
+    await expect(result).resolves.toHaveProperty('id', circle1.id);
+    await expect(result).resolves.toHaveProperty('name', testCircle1.name);
+    await expect(result).resolves.toHaveProperty('handle', testCircle1.handle);
     await expect(result).resolves.toHaveProperty('notes');
     await expect(result).resolves.toHaveProperty('members');
   });
 
-  it('グループを削除', async () => {
-    const result = service.remove({ where: { id: testCircle.id } });
-    await expect(result).resolves.toHaveProperty('id', testCircle.id);
-    await expect(result).resolves.toHaveProperty('name', testCircle.name);
-    await expect(result).resolves.toHaveProperty('handle', testCircle.handle);
+  it('サークルを削除', async () => {
+    const result = service.remove({ where: { id: circle1.id } });
+    await expect(result).resolves.toHaveProperty('id', circle1.id);
+    await expect(result).resolves.toHaveProperty('name', testCircle1.name);
+    await expect(result).resolves.toHaveProperty('handle', testCircle1.handle);
   });
 
-  it('存在しないグループを取得 => ', async () => {
-    const result = service.findOne({ where: { id: testCircle.id } });
+  it('サークルを作成', async () => {
+    const result = service.create({ data: testCircle1 });
+    circle1 = await result;
+    await expect(result).resolves.toHaveProperty('id');
+    await expect(result).resolves.toHaveProperty('name', testCircle1.name);
+    await expect(result).resolves.toHaveProperty('handle', testCircle1.handle);
+    await expect(result).resolves.not.toHaveProperty('notes');
+    await expect(result).resolves.not.toHaveProperty('members');
+  });
+
+  it('サークルを更新', async () => {
+    const result = service.update({
+      where: { id: circle1.id },
+      data: { name: testCircle1.name + 'updated' },
+    });
+    circle1 = await result;
+    await expect(result).resolves.toHaveProperty('id', circle1.id);
+    await expect(result).resolves.toHaveProperty('name', testCircle1.handle + 'updated');
+    await expect(result).resolves.toHaveProperty('handle', testCircle1.handle);
+  });
+
+  it('サークルを削除', async () => {
+    const result = service.remove({ where: { id: circle1.id } });
+    await expect(result).resolves.toHaveProperty('id', circle1.id);
+    await expect(result).resolves.toHaveProperty('name', testCircle1.handle + 'updated');
+    await expect(result).resolves.toHaveProperty('handle', testCircle1.handle);
+  });
+
+  it('存在しないサークルを取得 => ', async () => {
+    const result = service.findOne({ where: { id: circle1.id } });
     await expect(result).resolves.toBeNull();
   });
 
-  it('グループをInclude付きで作成', async () => {
-    const result = service.create({ data: testCircle, include: { notes: true, members: true } });
-    await expect(result).resolves.toHaveProperty('id', testCircle.id);
-    await expect(result).resolves.toHaveProperty('name', testCircle.name);
-    await expect(result).resolves.toHaveProperty('handle', testCircle.handle);
+  it('サークルをInclude付きで作成', async () => {
+    const result = service.create({ data: testCircle1, include: { notes: true, members: true } });
+    circle1 = await result;
+    await expect(result).resolves.toHaveProperty('id', circle1.id);
+    await expect(result).resolves.toHaveProperty('name', testCircle1.name);
+    await expect(result).resolves.toHaveProperty('handle', testCircle1.handle);
     await expect(result).resolves.toHaveProperty('notes');
     await expect(result).resolves.toHaveProperty('members');
   });
 
-  it('全グループを取得', async () => {
+  it('全サークルを取得', async () => {
     const result = await service.findAll();
     await expect(result.length).toBeGreaterThan(0);
-    const circle = result.find((circle) => circle.id === testCircle.id);
+    const circle = result.find((circle) => circle.id === circle1.id);
     await expect(circle).toBeDefined();
-    await expect(circle).toHaveProperty('id', testCircle.id);
-    await expect(circle).toHaveProperty('name', testCircle.name);
-    await expect(circle).toHaveProperty('handle', testCircle.handle);
+    await expect(circle).toHaveProperty('id', circle1.id);
+    await expect(circle).toHaveProperty('name', testCircle1.name);
+    await expect(circle).toHaveProperty('handle', testCircle1.handle);
   });
 
-  it('全グループをInclude付きで取得', async () => {
+  it('全サークルをInclude付きで取得', async () => {
     const result = await service.findAll({ include: { notes: true, members: true } });
     await expect(result.length).toBeGreaterThan(0);
-    const circle = result.find((circle) => circle.id === testCircle.id);
+    const circle = result.find((circle) => circle.id === circle1.id);
     await expect(circle).toBeDefined();
-    await expect(circle).toHaveProperty('id', testCircle.id);
-    await expect(circle).toHaveProperty('name', testCircle.name);
-    await expect(circle).toHaveProperty('handle', testCircle.handle);
+    await expect(circle).toHaveProperty('id', circle1.id);
+    await expect(circle).toHaveProperty('name', testCircle1.name);
+    await expect(circle).toHaveProperty('handle', testCircle1.handle);
     await expect(circle).toHaveProperty('notes');
     await expect(circle).toHaveProperty('members');
   });
 
-  it('グループをSoft Delete', async () => {
+  it('サークルをSoft Delete', async () => {
     const result = await service.update({
-      where: { id: testCircle.id },
+      where: { id: circle1.id },
       data: { handle: null },
     });
-    await expect(result).toHaveProperty('id', testCircle.id);
-    await expect(result).toHaveProperty('name', testCircle.name);
+    await expect(result).toHaveProperty('id', circle1.id);
+    await expect(result).toHaveProperty('name', testCircle1.name);
     await expect(result).toHaveProperty('handle', null);
   });
 
-  it('グループを削除', async () => {
-    const result = await service.remove({ where: { id: testCircle.id } });
-    await expect(result).toHaveProperty('id', testCircle.id);
-    await expect(result).toHaveProperty('name', testCircle.name);
+  it('サークルを削除', async () => {
+    const result = await service.remove({ where: { id: circle1.id } });
+    await expect(result).toHaveProperty('id', circle1.id);
+    await expect(result).toHaveProperty('name', testCircle1.name);
   });
 });
