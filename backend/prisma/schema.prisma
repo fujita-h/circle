@@ -110,9 +110,9 @@ model Tag {
 }
 
 model TagMap {
-  Note      Note     @relation(fields: [noteId], references: [id])
+  Note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
   noteId    String   @map("note_id")
-  Tag       Tag      @relation(fields: [tagId], references: [id])
+  Tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
   tagId     String   @map("tag_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
