@@ -20,7 +20,7 @@ services:
       - MYSQL_USER=user
       - MYSQL_PASSWORD=user
   azurite:
-    image: mcr.microsoft.com/azure-storage/azurite
+    image: mcr.microsoft.com/azure-storage/azurite:latest
     ports:
       - 10000:10000
       - 10001:10001
