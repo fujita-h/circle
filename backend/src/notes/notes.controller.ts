@@ -574,20 +574,26 @@ export class NotesController {
             {
               userId: userId,
               writeCommentPermission: 'OWNER',
+              OR: [{ circleId: null }, { circle: { handle: { not: null }, status: 'NORMAL' } }],
             }, // writeCommentPermission is OWNER
             {
               writeCommentPermission: 'MEMBER',
               status: 'NORMAL',
-              circle: {
-                handle: { not: null },
-                status: 'NORMAL',
-                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
-              },
+              OR: [
+                { circleId: null },
+                {
+                  circle: {
+                    handle: { not: null },
+                    status: 'NORMAL',
+                    members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                  },
+                },
+              ],
             }, // writeCommentPermission is MEMBER and user is member of circle
             {
               writeCommentPermission: 'ALL',
               status: 'NORMAL',
-              circle: { handle: { not: null }, status: 'NORMAL' },
+              OR: [{ circleId: null }, { circle: { handle: { not: null }, status: 'NORMAL' } }],
             }, // writeCommentPermission is ALL
           ],
         },
