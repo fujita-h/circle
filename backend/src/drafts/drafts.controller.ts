@@ -247,7 +247,7 @@ export class DraftsController {
     let note;
     try {
       note = await this.notesService.findFirst({
-        where: { id, userId, status: 'NORMAL', draftBlobPointer: { not: null } },
+        where: { id, userId, status: { not: 'DELETED' } },
         include: { user: true, circle: true },
       });
     } catch (e) {
