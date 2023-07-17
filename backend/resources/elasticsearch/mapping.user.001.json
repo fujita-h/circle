@@ -1,7 +1,8 @@
 {
   "properties": {
     "id": {
-      "type": "keyword"
+      "type": "keyword",
+      "null_value": "NULL"
     },
     "name": {
       "type": "text",

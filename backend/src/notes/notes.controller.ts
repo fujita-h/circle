@@ -306,7 +306,7 @@ export class NotesController {
           ],
           minimum_should_match: 1,
           filter: {
-            terms: { circleId: circleIds },
+            terms: { circleId: ['NULL', ...circleIds] },
           },
         },
       },

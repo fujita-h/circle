@@ -1,16 +1,16 @@
 {
   "properties": {
     "id": {
-      "type": "keyword"
+      "type": "keyword",
+      "null_value": "NULL"
     },
     "userId": {
-      "type": "keyword"
+      "type": "keyword",
+      "null_value": "NULL"
     },
-    "groupId": {
-      "type": "keyword"
-    },
-    "type": {
-      "type": "keyword"
+    "circleId": {
+      "type": "keyword",
+      "null_value": "NULL"
     },
     "status": {
       "type": "keyword"
