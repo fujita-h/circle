@@ -260,6 +260,35 @@ export class CirclesController {
     return memberships;
   }
 
+  @Get(':id/members/count')
+  async countMembers(@Param('id') id: string) {
+    // get circle
+    let circle;
+    try {
+      circle = await this.circlesService.findFirst({
+        where: { id, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!circle) {
+      throw new NotFoundException();
+    }
+
+    let count;
+    try {
+      count = await this.membershipsService.count({
+        where: {
+          circleId: circle.id,
+        },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+
+    return count;
+  }
+
   @Get(':id/notes')
   async findNotes(
     @Request() request: any,
@@ -401,12 +430,28 @@ export class CirclesController {
     return this.findMembers(circle.id, skip, take);
   }
 
+  @Get('handle/:handle/members/count')
+  async countMembersByHandle(@Param('handle') handle: string) {
+    let circle;
+    try {
+      circle = await this.circlesService.findOne({ where: { handle } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!circle || circle.status === 'DELETED') {
+      throw new NotFoundException();
+    }
+
+    return this.countMembers(circle.id);
+  }
+
   @Get('handle/:handle/notes')
   async findNotesByHandle(
     @Request() request: any,
     @Param('handle') handle: string,
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
+    @Query('skip', ParseIntPipe) skip?: number,
+    @Query('take', ParseIntPipe) take?: number,
   ) {
     let circle;
     try {

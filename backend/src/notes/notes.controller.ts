@@ -111,7 +111,7 @@ export class NotesController {
       note = await this.notesService.create({
         data: {
           user: { connect: { id: userId } },
-          circle: { connect: { id: circleId } },
+          circle: circle ? { connect: { id: circleId } } : undefined,
           title: data.title,
           status: circle
             ? circle.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL'
@@ -229,6 +229,93 @@ export class NotesController {
       throw new InternalServerErrorException();
     }
     return count;
+  }
+
+  @Get('search')
+  async search(
+    @Request() request: any,
+    @Query('q') q: string,
+    @Query('skip', ParseIntPipe) skip: number,
+    @Query('take', ParseIntPipe) take: number,
+  ) {
+    const userId = request.user.id;
+    const circles = await this.circlesService.findMany({
+      where: {
+        status: 'NORMAL',
+        handle: { not: null }, // only circles with handle
+        OR: [
+          {
+            readNotePermission: 'ADMIN',
+            members: { some: { userId: userId, role: 'ADMIN' } },
+          }, // readNotePermission is ADMIN and user is admin of circle
+          {
+            readNotePermission: 'MEMBER',
+            members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+          }, // readNotePermission is MEMBER and user is member of circle
+          { readNotePermission: 'ALL' }, // readNotePermission is ALL
+        ],
+      },
+    });
+    const circleIds = circles.map((g) => g.id);
+    if (q === undefined || q === null || q === '') {
+      q = '*';
+    }
+    const body: SearchRequest = {
+      query: {
+        bool: {
+          should: [
+            {
+              multi_match: {
+                query: q,
+                fields: ['title^5', 'body^5', 'title.ngram^2', 'body.ngram^2'],
+                operator: 'and',
+              },
+            },
+            {
+              wildcard: {
+                title: {
+                  value: q,
+                  boost: 5,
+                },
+              },
+            },
+            {
+              wildcard: {
+                'title.ngram': {
+                  value: q,
+                  boost: 2,
+                },
+              },
+            },
+            {
+              wildcard: {
+                body: {
+                  value: q,
+                  boost: 10,
+                },
+              },
+            },
+            {
+              wildcard: {
+                'body.ngram': {
+                  value: q,
+                  boost: 5,
+                },
+              },
+            },
+          ],
+          minimum_should_match: 1,
+          filter: {
+            terms: { circleId: circleIds },
+          },
+        },
+      },
+      sort: [{ _score: { order: 'desc' } }, { createdAt: 'desc' }],
+      from: skip,
+      size: take,
+    };
+    const result = await this.esService.search(this.esIndex, body);
+    return result?.hits?.hits || [];
   }
 
   private async _getNote(userId: string, noteId: string) {
@@ -402,9 +489,6 @@ export class NotesController {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
-    if (!comments) {
-      throw new NotFoundException();
-    }
     return comments;
   }
 
@@ -538,50 +622,48 @@ export class NotesController {
       throw new UnauthorizedException();
     }
 
-    if (!circleId) {
-      throw new BadRequestException();
-    }
-
-    let note;
-    try {
-      note = await this.notesService.findFirst({
-        where: { id, userId, status: 'NORMAL', blobPointer: { not: null } },
-        include: { user: true, circle: true },
-      });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!note) {
-      throw new NotFoundException();
-    }
-
     let circle;
-    try {
-      circle = await this.circlesService.findFirst({
-        where: {
-          id: circleId,
-          status: 'NORMAL',
-          handle: { not: null }, // only circles with handle
-          OR: [
-            {
-              writeNotePermission: 'ADMIN',
-              members: { some: { userId: userId, role: 'ADMIN' } },
-            }, // writeNotePermission is ADMIN and user is admin of circle
-            {
-              writeNotePermission: 'MEMBER',
-              members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
-            }, // writeNotePermission is MEMBER and user is member of circle
-            { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
-          ],
-        },
-      });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!circle) {
-      throw new ForbiddenException("You're not allowed to create notes in this circle");
+    if (circleId) {
+      let note;
+      try {
+        note = await this.notesService.findFirst({
+          where: { id, userId, status: { not: 'DELETED' } },
+          include: { user: true, circle: true },
+        });
+      } catch (e) {
+        this.logger.error(e);
+        throw new InternalServerErrorException();
+      }
+      if (!note) {
+        throw new NotFoundException();
+      }
+
+      try {
+        circle = await this.circlesService.findFirst({
+          where: {
+            id: circleId,
+            status: 'NORMAL',
+            handle: { not: null }, // only circles with handle
+            OR: [
+              {
+                writeNotePermission: 'ADMIN',
+                members: { some: { userId: userId, role: 'ADMIN' } },
+              }, // writeNotePermission is ADMIN and user is admin of circle
+              {
+                writeNotePermission: 'MEMBER',
+                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+              }, // writeNotePermission is MEMBER and user is member of circle
+              { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
+            ],
+          },
+        });
+      } catch (e) {
+        this.logger.error(e);
+        throw new InternalServerErrorException();
+      }
+      if (!circle) {
+        throw new ForbiddenException("You're not allowed to create notes in this circle");
+      }
     }
 
     //update note
@@ -592,14 +674,18 @@ export class NotesController {
         data: {
           title: data.title,
           user: { connect: { id: userId } },
-          circle: { connect: { id: circleId } },
-          status:
-            circle.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL' ? 'PENDING_APPROVAL' : 'NORMAL',
+          circle: circle ? { connect: { id: circleId } } : { disconnect: true },
+          status: circle
+            ? circle.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL'
+              ? 'PENDING_APPROVAL'
+              : 'NORMAL'
+            : 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
         },
         body: data.body,
       });
     } catch (e) {
+      this.logger.error(e);
       throw new InternalServerErrorException();
     }
     return updatedNote;
@@ -643,92 +729,5 @@ export class NotesController {
       throw new InternalServerErrorException();
     }
     return note;
-  }
-
-  @Get('search')
-  async search(
-    @Request() request: any,
-    @Query('q') q: string,
-    @Query('skip', ParseIntPipe) skip: number,
-    @Query('take', ParseIntPipe) take: number,
-  ) {
-    const userId = request.user.id;
-    const circles = await this.circlesService.findMany({
-      where: {
-        status: 'NORMAL',
-        handle: { not: null }, // only circles with handle
-        OR: [
-          {
-            readNotePermission: 'ADMIN',
-            members: { some: { userId: userId, role: 'ADMIN' } },
-          }, // readNotePermission is ADMIN and user is admin of circle
-          {
-            readNotePermission: 'MEMBER',
-            members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
-          }, // readNotePermission is MEMBER and user is member of circle
-          { readNotePermission: 'ALL' }, // readNotePermission is ALL
-        ],
-      },
-    });
-    const circleIds = circles.map((g) => g.id);
-    if (q === undefined || q === null || q === '') {
-      q = '*';
-    }
-    const body: SearchRequest = {
-      query: {
-        bool: {
-          should: [
-            {
-              multi_match: {
-                query: q,
-                fields: ['title^5', 'body^5', 'title.ngram^2', 'body.ngram^2'],
-                operator: 'and',
-              },
-            },
-            {
-              wildcard: {
-                title: {
-                  value: q,
-                  boost: 5,
-                },
-              },
-            },
-            {
-              wildcard: {
-                'title.ngram': {
-                  value: q,
-                  boost: 2,
-                },
-              },
-            },
-            {
-              wildcard: {
-                body: {
-                  value: q,
-                  boost: 10,
-                },
-              },
-            },
-            {
-              wildcard: {
-                'body.ngram': {
-                  value: q,
-                  boost: 5,
-                },
-              },
-            },
-          ],
-          minimum_should_match: 1,
-          filter: {
-            terms: { circleId: circleIds },
-          },
-        },
-      },
-      sort: [{ _score: { order: 'desc' } }, { createdAt: 'desc' }],
-      from: skip,
-      size: take,
-    };
-    const result = await this.esService.search(this.esIndex, body);
-    return result?.hits?.hits || [];
   }
 }

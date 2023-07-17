@@ -218,9 +218,8 @@ export class UsersController {
       where: {
         blobPointer: { not: null }, // only notes with blobPointer
         userId: id, // only notes of existing users
-        circle: { handle: { not: null }, status: 'NORMAL' }, // only notes in existing circles
         OR: [
-          { userId: userId }, // user is owner
+          { circleId: null },
           {
             status: 'NORMAL',
             circle: {
@@ -274,9 +273,8 @@ export class UsersController {
         where: {
           blobPointer: { not: null }, // only notes with blobPointer
           userId: id, // only notes of existing users
-          circle: { handle: { not: null }, status: 'NORMAL' }, // only notes in existing circles
           OR: [
-            { userId: userId }, // user is owner
+            { circleId: null },
             {
               status: 'NORMAL',
               circle: {
