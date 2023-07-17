@@ -23,7 +23,7 @@ export function Loader({ sourcePath, countPath }: { sourcePath: string; countPat
 
   // fetch data
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
-  const { data: circles, isLoading: isCircleLoading } = useSWR<any[]>(
+  const { data: notes, isLoading: isNotesLoading } = useSWR<any[]>(
     `${environment.BACKEND_ENDPOINT}/${sourcePath}?take=${take}&skip=${skip}`,
     fetcher,
     { revalidateOnFocus: false },
@@ -35,18 +35,18 @@ export function Loader({ sourcePath, countPath }: { sourcePath: string; countPat
   );
 
   // render loading
-  if (isCountLoading || isCircleLoading) {
+  if (isNotesLoading || isCountLoading) {
     return <div>loading...</div>;
   }
 
   // render error
-  if (!circles || total === undefined) {
-    return <div>No Circles</div>;
+  if (!notes || total === undefined) {
+    return <div>No Item</div>;
   }
 
   return (
     <>
-      <List joinedCircles={circles} />
+      <List notes={notes} />
       <LinkPagination pathname={pathname} page={page} total={total} take={take} />
     </>
   );

@@ -30,7 +30,7 @@ export default function Layout({ params, children }: { params: any; children: Re
   const tabs: TabItem[] = [
     { name: 'Overview', href: `/u/${handle}/overview`, current: false },
     { name: 'Joined', href: `/u/${handle}/joined`, current: false },
-    { name: 'Items', href: `/u/${handle}/items`, current: false },
+    { name: 'Notes', href: `/u/${handle}/notes`, current: false },
   ];
 
   return (

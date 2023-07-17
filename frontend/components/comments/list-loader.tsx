@@ -11,7 +11,7 @@ import { Tab } from '@headlessui/react';
 import { AtSymbolIcon, CodeBracketIcon, LinkIcon } from '@heroicons/react/20/solid';
 import { CommentList } from './list';
 
-export function Loader({ itemId }: { itemId: string }) {
+export function Loader({ noteId }: { noteId: string }) {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
@@ -30,7 +30,7 @@ export function Loader({ itemId }: { itemId: string }) {
         account,
         scopes: apiRequest(environment).scopes,
       });
-      const response = await fetch(`${environment.BACKEND_ENDPOINT}/items/${itemId}/comments`, {
+      const response = await fetch(`${environment.BACKEND_ENDPOINT}/notes/${noteId}/comments`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${auth.accessToken}`,
@@ -53,7 +53,7 @@ export function Loader({ itemId }: { itemId: string }) {
     data: comments,
     isLoading: isDataLoading,
     mutate: commentsMutate,
-  } = useSWR<any[]>(`${environment.BACKEND_ENDPOINT}/items/${itemId}/comments?take=${take}&skip=${skip}`, fetcher, {
+  } = useSWR<any[]>(`${environment.BACKEND_ENDPOINT}/notes/${noteId}/comments?take=${take}&skip=${skip}`, fetcher, {
     revalidateOnFocus: false,
   });
 

@@ -6,10 +6,10 @@ export default function Page({ params }: { params: any }) {
     <>
       <div className="flex">
         <div className="w-96">
-          <DraftsListLoader activeItemId={params.id} />
+          <DraftsListLoader activeDraftId={params.id} />
         </div>
         <div className="flex-1">
-          <Viewer itemId={params.id} />
+          <Viewer noteId={params.id} />
         </div>
       </div>
     </>

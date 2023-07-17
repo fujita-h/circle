@@ -5,7 +5,7 @@ import { useEnvironment } from '@/components/environment/providers';
 import { useAccount, useMsal } from '@azure/msal-react';
 import useSWR from 'swr';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
-import { List } from './list';
+import { MemberList } from './list';
 import { LinkPagination } from '@/components/paginations';
 
 export function Loader({ sourcePath, countPath }: { sourcePath: string; countPath?: string }) {
@@ -23,7 +23,7 @@ export function Loader({ sourcePath, countPath }: { sourcePath: string; countPat
 
   // fetch data
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
-  const { data: circles, isLoading: isCircleLoading } = useSWR<any[]>(
+  const { data: members, isLoading: isDataLoading } = useSWR<any[]>(
     `${environment.BACKEND_ENDPOINT}/${sourcePath}?take=${take}&skip=${skip}`,
     fetcher,
     { revalidateOnFocus: false },
@@ -35,18 +35,18 @@ export function Loader({ sourcePath, countPath }: { sourcePath: string; countPat
   );
 
   // render loading
-  if (isCountLoading || isCircleLoading) {
+  if (isDataLoading || isCountLoading) {
     return <div>loading...</div>;
   }
 
   // render error
-  if (!circles || total === undefined) {
-    return <div>No Circles</div>;
+  if (!members || total === undefined) {
+    return <div>No members</div>;
   }
 
   return (
     <>
-      <List joinedCircles={circles} />
+      <MemberList members={members} />
       <LinkPagination pathname={pathname} page={page} total={total} take={take} />
     </>
   );

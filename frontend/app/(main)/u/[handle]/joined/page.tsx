@@ -1,9 +1,9 @@
-import { JoinedGroupListLoader } from '@/components/users/joined';
+import { JoinedCircleListLoader } from '@/components/users/joined';
 
 export default function Page({ params }: { params: any }) {
   return (
     <>
-      <JoinedGroupListLoader sourcePath={`users/handle/${params.handle}/joined/groups`} />
+      <JoinedCircleListLoader sourcePath={`users/handle/${params.handle}/joined/circles`} />
     </>
   );
 }

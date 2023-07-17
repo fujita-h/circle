@@ -15,26 +15,26 @@ export default function Page({ params }: { params: any }) {
   const jsonCredFetcher = swrMsalTokenFetcher(instance, account, environment, 'json', 'include');
   const { data: token, isLoading: isTokenLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/user/token`, jsonCredFetcher);
   const jsonFetcher = swrMsalTokenFetcher(instance, account, environment, 'json');
-  const { data: draft, isLoading: isItemLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/drafts/${id}`, jsonFetcher, {
+  const { data: note, isLoading: isNoteLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/notes/${id}`, jsonFetcher, {
     revalidateOnFocus: false,
   });
   const textFetcher = swrMsalTokenFetcher(instance, account, environment, 'text');
-  const { data: markdown, isLoading: isMarkdownLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/drafts/${id}/md`, textFetcher, {
+  const { data: markdown, isLoading: isMarkdownLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/notes/${id}/md`, textFetcher, {
     revalidateOnFocus: false,
   });
 
-  if (isTokenLoading || isItemLoading || isMarkdownLoading) {
+  if (isTokenLoading || isNoteLoading || isMarkdownLoading) {
     return <div>loading...</div>;
   }
 
-  if (!draft) {
+  if (!note) {
     return <div>Not Found</div>;
   }
 
   return (
     <>
       <div className={styles.editor}>
-        <Editor defaultSubmitButton="draft" noteId={draft.id} circleId={draft.circle?.id} title={draft.title} body={markdown} />
+        <Editor defaultSubmitButton="publish" noteId={note.id} circleId={note.circle?.id} title={note.title} body={markdown} />
       </div>
     </>
   );

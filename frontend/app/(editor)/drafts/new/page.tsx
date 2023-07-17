@@ -20,11 +20,11 @@ export default function Page() {
     return <div>loading...</div>;
   }
 
-  const groupId = searchParams.get('group') || undefined;
+  const circleId = searchParams.get('circle') || undefined;
   return (
     <>
       <div className={styles.editor}>
-        <Editor defaultSubmitButton="draft" groupId={groupId} />
+        <Editor defaultSubmitButton="draft" circleId={circleId} />
       </div>
     </>
   );

@@ -6,23 +6,24 @@ import { apiRequest } from '@/components/msal/requests';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { useRouter } from 'next/navigation';
 import { PencilSquareIcon, ViewColumnsIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { useSWRConfig } from 'swr';
 import { classNames } from '@/utils';
 import { RenderMDX } from '@/components/mdx';
 import styles from './styles.module.css';
 import mdxStyles from '@/components/mdx/mdx-styles.module.css';
 import { SubmitButton } from './submit-button';
-import { GroupSelector } from './group-selector';
+import { CircleSelector } from './circle-selector';
 import { DnDTextarea } from './dnd-textarea';
 
 export function Editor({
-  itemId = '',
-  groupId = '',
+  noteId = '',
+  circleId = '',
   title = '',
   body = '',
   defaultSubmitButton = 'publish',
 }: {
-  itemId?: string;
-  groupId?: string;
+  noteId?: string;
+  circleId?: string;
   title?: string;
   body?: string;
   defaultSubmitButton?: 'publish' | 'draft';
@@ -33,13 +34,14 @@ export function Editor({
   const router = useRouter();
   const [renderKey, setRenderKey] = useState(true);
   const [editorMode, setEditorMode] = useState<'edit' | 'preview' | 'both'>('both');
+  const { mutate } = useSWRConfig();
 
   const mdxRef = useRef<HTMLDivElement>(null!);
   const [mdxScrollTop, setMdxScrollTop] = useState(0);
 
   type FormState = {
     id: string;
-    group: {
+    circle: {
       id: string;
     };
     title: string;
@@ -47,29 +49,24 @@ export function Editor({
   };
 
   const [form, setForm] = useState<FormState>({
-    id: itemId,
-    group: {
-      id: groupId,
+    id: noteId,
+    circle: {
+      id: circleId,
     },
     title: title,
     body: body,
   });
 
-  const handleSubmitItem = async (status: 'PUBLISHED' | 'DRAFT') => {
-    if (status === 'PUBLISHED' && !form.group.id) {
-      alert('グループを選択してください');
-      return;
-    }
-
+  const handleSubmit = async (status: 'PUBLISHED' | 'DRAFT') => {
     if (account) {
       try {
         const auth = await instance.acquireTokenSilent({
           account,
           scopes: apiRequest(environment).scopes,
         });
-        const target = status === 'PUBLISHED' ? 'items' : 'drafts';
+        const target = status === 'PUBLISHED' ? 'notes' : 'drafts';
         if (form.id) {
-          // if form.id exists, update existing item
+          // if form.id exists, update existing
           const response = await fetch(`${environment.BACKEND_ENDPOINT}/${target}/${form.id}`, {
             method: 'PUT',
             headers: {
@@ -83,7 +80,7 @@ export function Editor({
             router.replace(`/${target}/${json.id}`);
           }
         } else {
-          // if form.id does not exist, create item
+          // if form.id does not exist, create
           const response = await fetch(`${environment.BACKEND_ENDPOINT}/${target}`, {
             method: 'POST',
             headers: {
@@ -94,6 +91,8 @@ export function Editor({
           });
           if (response.ok) {
             const json = await response.json();
+            mutate(`${environment.BACKEND_ENDPOINT}/${target}/${json.id}`);
+            mutate(`${environment.BACKEND_ENDPOINT}/${target}/${json.id}/md`);
             router.replace(`/${target}/${json.id}`);
           }
         }
@@ -116,10 +115,10 @@ export function Editor({
       </div>
       <div className={classNames(styles.h44, 'flex gap-2')}>
         <div className="flex-1">
-          <GroupSelector
-            groupId={groupId}
+          <CircleSelector
+            circleId={circleId}
             onChange={(id: string) => {
-              setForm({ ...form, group: { id: id } });
+              setForm({ ...form, circle: { id: id } });
             }}
           />
         </div>
@@ -191,9 +190,9 @@ export function Editor({
           }}
           onSubmit={(type: any) => {
             if (type === 'publish') {
-              handleSubmitItem('PUBLISHED');
+              handleSubmit('PUBLISHED');
             } else {
-              handleSubmitItem('DRAFT');
+              handleSubmit('DRAFT');
             }
           }}
         />

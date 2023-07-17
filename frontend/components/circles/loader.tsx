@@ -5,7 +5,7 @@ import { useEnvironment } from '@/components/environment/providers';
 import { useAccount, useMsal } from '@azure/msal-react';
 import useSWR from 'swr';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
-import { List } from './list';
+import { CardList } from './card-list';
 import { LinkPagination } from '@/components/paginations';
 
 export function Loader({ sourcePath, countPath }: { sourcePath: string; countPath?: string }) {
@@ -46,7 +46,7 @@ export function Loader({ sourcePath, countPath }: { sourcePath: string; countPat
 
   return (
     <>
-      <List joinedCircles={circles} />
+      <CardList circles={circles} />
       <LinkPagination pathname={pathname} page={page} total={total} take={take} />
     </>
   );

@@ -3,6 +3,7 @@
 import { FormEvent, Fragment, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MagnifyingGlassIcon, UserIcon } from '@heroicons/react/20/solid';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -12,9 +13,9 @@ import { UserName, UserEmail } from './user-data';
 
 const navigation = [
   { name: 'Dashboard', href: '/', current: false },
-  { name: 'Groups', href: '/groups/all', current: false },
-  { name: 'Users', href: '/users', current: false },
-  { name: 'Items', href: '/items', current: false },
+  { name: 'サークル', href: '/circles', current: false },
+  { name: 'ユーザー', href: '/users', current: false },
+  { name: '記事', href: '/notes', current: false },
 ];
 
 const userNavigation = [
@@ -40,11 +41,9 @@ export function NavbarWithSearch() {
             <div className="flex h-16 justify-between">
               <div className="flex px-2 lg:px-0">
                 <div className="flex flex-shrink-0 items-center">
-                  <img
-                    className="block h-8 w-auto"
-                    src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                    alt="Your Company"
-                  />
+                  <Link href="/">
+                    <Image src="/assets/images/circle_logo.png" alt="logo" width={32} height={32} />
+                  </Link>
                 </div>
                 <div className="hidden lg:ml-6 lg:flex lg:space-x-8">
                   {navigation.map((item) => (

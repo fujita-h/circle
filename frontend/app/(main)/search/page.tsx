@@ -8,7 +8,7 @@ import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ItemList } from '@/components/items/list';
+import { List } from '@/components/notes/list';
 
 export default function Page() {
   const environment = useEnvironment();
@@ -24,7 +24,7 @@ export default function Page() {
   }, [q]);
 
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
-  const { data, isLoading, mutate } = useSWR<any[]>(`${environment.BACKEND_ENDPOINT}/items/search?q=${q}&skip=0&take=20`, fetcher, {
+  const { data, isLoading, mutate } = useSWR<any[]>(`${environment.BACKEND_ENDPOINT}/notes/search?q=${q}&skip=0&take=20`, fetcher, {
     revalidateOnFocus: false,
   });
 
@@ -55,7 +55,7 @@ export default function Page() {
       </form>
       <div className="mt-4">
         <h2>Results:</h2>
-        <ItemList items={data.map((x) => x._source)} />
+        <List notes={data.map((x) => x._source)} />
       </div>
     </div>
   );

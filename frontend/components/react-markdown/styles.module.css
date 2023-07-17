@@ -1,7 +1,7 @@
-.item {
+.note {
   overflow-wrap: break-word;
 }
-.item h1 {
+.note h1 {
   font-size: 1.8rem;
   line-height: 1.5;
   font-weight: bold;
@@ -9,10 +9,10 @@
   margin-top: 1.8rem;
   margin-bottom: 1.6rem;
 }
-.item h1:first-child {
+.note h1:first-child {
   margin-top: 0rem;
 }
-.item h2 {
+.note h2 {
   font-size: 1.6rem;
   line-height: 1.5;
   font-weight: bold;
@@ -20,10 +20,10 @@
   margin-top: 1.6rem;
   margin-bottom: 1.4rem;
 }
-.item h2:first-child {
+.note h2:first-child {
   margin-top: 0rem;
 }
-.item img {
+.note img {
   margin-top: 0.8rem;
   margin-bottom: 0.8rem;
 }

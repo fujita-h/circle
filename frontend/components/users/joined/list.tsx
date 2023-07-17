@@ -2,51 +2,56 @@
 
 import { ChevronRightIcon, UserGroupIcon } from '@heroicons/react/20/solid';
 import { BackendImage } from '@/components/backend-image';
-import { ReadItemPermissionBadge, WriteItemPermissionBadge, WriteItemConditionBadge, JoinConditionBadge } from '@/components/groups/badges';
+import {
+  ReadNotePermissionBadge,
+  WriteNotePermissionBadge,
+  WriteNoteConditionBadge,
+  JoinCircleConditionBadge,
+} from '@/components/circles/badges';
 import Link from 'next/link';
 
-type JoinedGroupData = {
+type JoinedCircleData = {
   userId: string;
-  groupId: string;
+  circleId: string;
   role: string;
-  group: {
+  circle: {
     id: string;
-    readItemPermission: string;
-    writeItemPermission: string;
-    writeItemCondition: string;
-    joinCondition: string;
+    readNotePermission: string;
+    writeNotePermission: string;
+    writeNoteCondition: string;
+    joinCircleCondition: string;
     name: string;
     handle: string;
     description: string;
   };
 };
 
-export function CardList({ joinedGroups }: { joinedGroups: JoinedGroupData[] }) {
+export function List({ joinedCircles }: { joinedCircles: JoinedCircleData[] }) {
   return (
     <ul role="list" className="divide-y divide-gray-100">
-      {joinedGroups.map((joined) => (
-        <li key={joined.group.id} className="relative flex justify-between gap-x-6 px-4 py-3 hover:bg-gray-50 sm:px-6 lg:px-8">
+      {joinedCircles.map((joined) => (
+        <li key={joined.circle.id} className="relative flex justify-between gap-x-6 px-4 py-3 hover:bg-gray-50 sm:px-6 lg:px-8">
           <div className="flex gap-x-4">
             <BackendImage
-              src={`/groups/${joined.group.id}/photo`}
+              src={`/circles/${joined.circle.id}/photo`}
               className="h-16 w-16 flex-none rounded-md bg-gray-50"
-              alt="group-icon"
+              alt="circle-icon"
               fallback={<UserGroupIcon className="h-16 w-16 flex-none rounded-lg text-gray-300 bg-gray-50" />}
             />
             <div className="min-w-0 flex-auto">
               <div className="flex flex-wrap gap-2">
-                <ReadItemPermissionBadge permission={joined.group.readItemPermission} />
-                <WriteItemPermissionBadge permission={joined.group.writeItemPermission} />
-                <WriteItemConditionBadge condition={joined.group.writeItemCondition} />
-                <JoinConditionBadge condition={joined.group.joinCondition} />
+                <ReadNotePermissionBadge permission={joined.circle.readNotePermission} />
+                <WriteNotePermissionBadge permission={joined.circle.writeNotePermission} />
+                <WriteNoteConditionBadge condition={joined.circle.writeNoteCondition} />
+                <JoinCircleConditionBadge condition={joined.circle.joinCircleCondition} />
               </div>
               <p className="text-sm font-semibold leading-6 text-gray-900">
-                <Link href={`/g/${joined.group.handle}`}>
+                <Link href={`/c/${joined.circle.handle}`}>
                   <span className="absolute inset-x-0 -top-px bottom-0" />
-                  {joined.group.name}
+                  {joined.circle.name}
                 </Link>
               </p>
-              <p className="text-xs leading-5 text-gray-500 line-clamp-1">{joined.group.description}</p>
+              <p className="text-xs leading-5 text-gray-500 line-clamp-1">{joined.circle.description}</p>
             </div>
           </div>
           <div className="flex items-center gap-x-4">

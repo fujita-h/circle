@@ -4,9 +4,9 @@ import { useEnvironment } from '@/components/environment/providers';
 import { useAccount, useMsal } from '@azure/msal-react';
 import useSWR from 'swr';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
-import { ItemList } from './list';
+import { List } from './list';
 
-export function Loader({ activeItemId }: { activeItemId?: string }) {
+export function Loader({ activeDraftId }: { activeDraftId?: string }) {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
@@ -16,21 +16,21 @@ export function Loader({ activeItemId }: { activeItemId?: string }) {
     revalidateOnFocus: false,
   });
 
-  const { data: items, isLoading: isGroupLoading } = useSWR<any[]>(`${environment.BACKEND_ENDPOINT}/drafts?skip=0&take=200`, fetcher, {
+  const { data: drafts, isLoading: isDraftsLoading } = useSWR<any[]>(`${environment.BACKEND_ENDPOINT}/drafts?skip=0&take=200`, fetcher, {
     revalidateOnFocus: false,
   });
 
-  if (isCountLoading || isGroupLoading) {
+  if (isCountLoading || isDraftsLoading) {
     return <div>loading...</div>;
   }
 
-  if (!items || items.length === 0 || count === undefined) {
-    return <div>No Item</div>;
+  if (!drafts || drafts.length === 0 || count === undefined) {
+    return <div>No Drafts</div>;
   }
 
   return (
     <>
-      <ItemList active={activeItemId} items={items} />
+      <List active={activeDraftId} drafts={drafts} />
     </>
   );
 }
