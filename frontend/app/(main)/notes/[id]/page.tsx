@@ -63,109 +63,121 @@ export default function Page({ params }: { params: any }) {
 
   return (
     <div>
-      <div className="flex space-x-1 mb-4">
-        <div className="order-0 hidden md:block w-12 print:hidden"></div>
-        <div className="order-1 flex-1">
-          <div className="mx-4 space-y-1 sm:space-y-2">
-            <div className="inline-block py-1 px-2 rounded-md bg-white ring-1 ring-gray-200">
-              {note.circle ? (
-                <Link className="text-sm font-medium text-gray-700 hover:text-gray-500" href={`/c/${note.circle.handle}`}>
-                  <div className="flex items-center">
-                    <BackendImage
-                      src={`/circles/${note.circle.id}/photo`}
-                      className="w-6 h-6 rounded-md"
-                      alt="circle icon"
-                      fallback={<UserGroupIcon className="w-6 h-6 rounded-md bg-gray-100 text-gray-400 ring-1 ring-gray-200" />}
-                    />
-                    <div className="ml-2 hover:underline">{note.circle?.name} </div>
-                  </div>
-                </Link>
-              ) : (
-                <></>
-              )}
-            </div>
-            <div className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:tracking-tight">{note.title}</div>
-          </div>
-        </div>
-      </div>
-      <div className="flex space-x-1">
-        <div className="order-0 hidden md:block w-12 print:hidden">
-          <div></div>
-          <div className="sticky top-0">
-            <div className="pt-5 flex flex-col gap-4">
-              <div className="w-10 h-10 rounded-full ring-1 ring-gray-300 flex items-center justify-center">
-                <HeartIcon className="w-6 h-6 text-gray-300" />
-              </div>
-              <div className="w-10 h-10 rounded-full ring-1 ring-gray-300 flex items-center justify-center">
-                <ArchiveBoxIcon className="w-6 h-6 text-gray-300" />
-              </div>
-              <div className="w-10 h-10 flex items-center justify-center">
-                <OtherMenuButton note={note} className="w-8 h-8 text-gray-700" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="order-2 hidden lg:block w-80 pl-2 print:hidden">
-          <div>
-            <div className="rounded-md bg-white ring-1 ring-gray-200 p-4 flex flex-col divide-y divide-gray-300 ">
-              <div className="pb-2">
-                <div className="mx-2">
-                  <div className="text-gray-800">{createdAt} に公開</div>
+      {note.circle ? (
+        <div className="py-4 bg-white ring-1 ring-gray-200">
+          <div className="max-w-screen-2xl mx-auto">
+            <div className="px-4 lg:px-8">
+              <Link href={`/c/${note.circle.handle}`}>
+                <div className="flex items-center">
+                  <BackendImage
+                    src={`/circles/${note.circle.id}/photo`}
+                    className="w-10 h-10 rounded-md"
+                    alt="circle icon"
+                    fallback={<UserGroupIcon className="w-10 h-10 rounded-md bg-gray-100 text-gray-400 ring-1 ring-gray-200" />}
+                  />
+                  <div className="ml-3 text-xl font-bold text-gray-900 hover:text-gray-500 hover:underline">{note.circle?.name} </div>
                 </div>
-              </div>
-              <div className="py-2">
-                {note.circle ? (
-                  <div className="mx-2 flex space-x-2 items-center">
-                    <div>
-                      <BackendImage
-                        src={`/circles/${note.circle.id}/photo`}
-                        className="w-8 h-8 rounded-md"
-                        alt="circle icon"
-                        fallback={<UserGroupIcon className="w-8 h-8 rounded-md bg-gray-100 text-gray-400 ring-1 ring-gray-200" />}
-                      />
-                    </div>
-                    <div>
-                      <div className="text-sm font-bold text-gray-800">{note.circle.name}</div>
-                    </div>
-                  </div>
-                ) : (
-                  <></>
-                )}
-              </div>
-              <div className="pt-2">
-                <div className="mx-1 flex space-x-2 items-center">
-                  <div>
-                    <BackendImage
-                      src={`/users/${note.user.id}/photo`}
-                      className="w-10 h-10 rounded-full"
-                      alt="user icon"
-                      fallback={<UserIcon className="w-10 h-10 rounded-full bg-gray-100 text-gray-400" />}
-                    />
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-700">@{note.user.handle}</div>
-                    <div className="text-base font-bold text-gray-900">{note.user.name}</div>
-                  </div>
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <></>
+      )}
+      <div className="bg-slate-100 print:bg-white">
+        <div className="max-w-screen-2xl mx-auto">
+          <div className="p-4 md:p-8">
+            <div className="flex space-x-1 mb-4">
+              <div className="order-0 hidden md:block w-12 print:hidden"></div>
+              <div className="order-1 flex-1">
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="mx-4 text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:tracking-tight">{note.title}</div>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="sticky top-0">
-            <div className="pt-5">
-              <ReactiveToC>{markdown}</ReactiveToC>
+            <div className="flex space-x-1">
+              <div className="order-0 hidden md:block w-12 print:hidden">
+                <div></div>
+                <div className="sticky top-0">
+                  <div className="pt-5 flex flex-col gap-4">
+                    <div className="w-10 h-10 rounded-full ring-1 ring-gray-300 flex items-center justify-center">
+                      <HeartIcon className="w-6 h-6 text-gray-300" />
+                    </div>
+                    <div className="w-10 h-10 rounded-full ring-1 ring-gray-300 flex items-center justify-center">
+                      <ArchiveBoxIcon className="w-6 h-6 text-gray-300" />
+                    </div>
+                    <div className="w-10 h-10 flex items-center justify-center">
+                      <OtherMenuButton note={note} className="w-8 h-8 text-gray-700" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="order-2 hidden lg:block w-80 pl-2 print:hidden">
+                <div>
+                  <div className="rounded-md bg-white ring-1 ring-gray-200 p-4 flex flex-col divide-y divide-gray-300 ">
+                    <div className="pb-2">
+                      <div className="mx-2">
+                        <div className="text-gray-800">{createdAt} に公開</div>
+                      </div>
+                    </div>
+                    {note.circle ? (
+                      <div className="py-2">
+                        <div className="inline-block py-1 px-2 rounded-md bg-white ring-1 ring-gray-200">
+                          <div className="mx-2 flex space-x-2 items-center">
+                            <div>
+                              <BackendImage
+                                src={`/circles/${note.circle.id}/photo`}
+                                className="w-5 h-5 rounded-md"
+                                alt="circle icon"
+                                fallback={<UserGroupIcon className="w-8 h-8 rounded-md bg-gray-100 text-gray-400 ring-1 ring-gray-200" />}
+                              />
+                            </div>
+                            <div>
+                              <div className="text-sm font-bold text-gray-800">{note.circle.name}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <></>
+                    )}
+                    <div className="pt-2">
+                      <div className="mx-1 flex space-x-2 items-center">
+                        <div>
+                          <BackendImage
+                            src={`/users/${note.user.id}/photo`}
+                            className="w-10 h-10 rounded-full"
+                            alt="user icon"
+                            fallback={<UserIcon className="w-10 h-10 rounded-full bg-gray-100 text-gray-400" />}
+                          />
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-700">@{note.user.handle}</div>
+                          <div className="text-base font-bold text-gray-900">{note.user.name}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="sticky top-0">
+                  <div className="pt-5">
+                    <ReactiveToC>{markdown}</ReactiveToC>
+                  </div>
+                </div>
+              </div>
+              <div className="order-1 flex-1">
+                <div className="bg-white rounded-md ring-1 ring-gray-200 p-4 lg:p-5">
+                  <div>
+                    <Parser addHeaderAnchor={true} className={mdStyles.note}>
+                      {markdown}
+                    </Parser>
+                  </div>
+                </div>
+                <div className="rounded-md ring-1 ring-gray-200 my-8 p-4 bg-white">
+                  <Comments noteId={note.id} />
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div className="order-1 flex-1">
-          <div className="bg-white rounded-md ring-1 ring-gray-200 p-4 lg:p-5">
-            <div>
-              <Parser addHeaderAnchor={true} className={mdStyles.note}>
-                {markdown}
-              </Parser>
-            </div>
-          </div>
-          <div className="rounded-md ring-1 ring-gray-200 my-8 p-4 bg-white">
-            <Comments noteId={note.id} />
           </div>
         </div>
       </div>
