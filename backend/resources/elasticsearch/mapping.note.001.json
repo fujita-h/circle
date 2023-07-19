@@ -8,7 +8,7 @@
       "type": "keyword",
       "null_value": "NULL"
     },
-    "circleId": {
+    "groupId": {
       "type": "keyword",
       "null_value": "NULL"
     },

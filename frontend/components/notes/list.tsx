@@ -10,7 +10,7 @@ type NoteData = {
   title: string;
   createdAt: string;
   updatedAt: string;
-  circle: {
+  group: {
     id: String;
     handle: string;
     name: string;

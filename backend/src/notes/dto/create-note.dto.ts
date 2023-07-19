@@ -1,7 +1,7 @@
 import { NoteStatus, PermissionWriteComment } from '@prisma/client';
 
 export class CreateNoteDto {
-  circle: {
+  group: {
     id: string;
   };
   title: string;

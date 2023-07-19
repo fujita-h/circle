@@ -4,7 +4,7 @@ import { DraftsController } from './drafts.controller';
 import { NotesService } from '../notes/notes.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { EsService } from '../es/es.service';
-import { CirclesService } from '../circles/circles.service';
+import { GroupsService } from '../groups/groups.service';
 
 describe('DraftsController', () => {
   let controller: DraftsController;
@@ -12,7 +12,7 @@ describe('DraftsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [DraftsController],
-      providers: [NotesService, CirclesService, AzblobService, EsService],
+      providers: [NotesService, GroupsService, AzblobService, EsService],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],

@@ -25,7 +25,7 @@ import {
 } from '@nestjs/common';
 import * as Iron from '@hapi/iron';
 import { UsersService } from '../users/users.service';
-import { CirclesService } from '../circles/circles.service';
+import { GroupsService } from '../groups/groups.service';
 import { MembershipsService } from '../memberships/memberships.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -44,7 +44,7 @@ export class UserController {
   constructor(
     private readonly configService: ConfigService,
     private readonly usersService: UsersService,
-    private readonly circlesService: CirclesService,
+    private readonly groupsService: GroupsService,
     private readonly membershipsService: MembershipsService,
     private readonly blobsService: AzblobService,
   ) {
@@ -83,8 +83,8 @@ export class UserController {
     return {};
   }
 
-  @Get('/joined/circles')
-  async findJoinedCircles(
+  @Get('/joined/groups')
+  async findJoinedGroups(
     @Request() request: any,
     @Query('skip', ParseIntPipe) skip?: number,
     @Query('take', ParseIntPipe) take?: number,
@@ -93,62 +93,62 @@ export class UserController {
     return await this.membershipsService.findMany({
       where: { userId, role: { in: ['ADMIN', 'MEMBER'] } },
       orderBy: { createdAt: 'asc' },
-      include: { circle: true },
+      include: { group: true },
       skip,
       take,
     });
   }
 
-  @Get('/joined/circles/count')
-  async countJoinedCircles(@Request() request: any) {
+  @Get('/joined/groups/count')
+  async countJoinedGroups(@Request() request: any) {
     const userId = request.user.id;
     return await this.membershipsService.count({
       where: { userId, role: { in: ['ADMIN', 'MEMBER'] } },
     });
   }
 
-  @Get('/joined/circles/handle/:handle')
-  async findJoinedCircleByHandle(@Request() request: any, @Param('handle') handle: string) {
+  @Get('/joined/groups/handle/:handle')
+  async findJoinedGroupByHandle(@Request() request: any, @Param('handle') handle: string) {
     const userId = request.user.id;
     return await this.membershipsService.findFirst({
-      where: { userId, role: { in: ['ADMIN', 'MEMBER'] }, circle: { handle } },
+      where: { userId, role: { in: ['ADMIN', 'MEMBER'] }, group: { handle } },
     });
   }
 
-  @Put('joined/circles/:circleId')
-  async joinCircle(@Request() request: any, @Param('circleId') circleId: string) {
+  @Put('joined/groups/:groupId')
+  async joinGroup(@Request() request: any, @Param('groupId') groupId: string) {
     const userId = request.user.id;
     if (!userId) {
       throw new UnauthorizedException();
     }
 
-    let circle;
+    let group;
     try {
-      circle = await this.circlesService.findOne({ where: { id: circleId } });
+      group = await this.groupsService.findOne({ where: { id: groupId } });
     } catch (e) {
       throw new InternalServerErrorException();
     }
-    if (!circle) {
+    if (!group) {
       throw new NotFoundException();
     }
 
-    if (circle.joinCircleCondition === 'DENIED') {
+    if (group.joinGroupCondition === 'DENIED') {
       throw new ForbiddenException();
     }
 
     const role =
-      circle.joinCircleCondition === 'REQUIRE_ADMIN_APPROVAL' ? 'PENDING_APPROVAL' : 'MEMBER';
+      group.joinGroupCondition === 'REQUIRE_ADMIN_APPROVAL' ? 'PENDING_APPROVAL' : 'MEMBER';
 
-    return this.membershipsService.createIfNotExists({ userId, circleId, role });
+    return this.membershipsService.createIfNotExists({ userId, groupId, role });
   }
 
-  @Delete('joined/circles/:circleId')
-  leaveCircle(@Request() request: any, @Param('circleId') circleId: string) {
+  @Delete('joined/groups/:groupId')
+  leaveGroup(@Request() request: any, @Param('groupId') groupId: string) {
     const userId = request.user.id;
-    return this.membershipsService.removeIfExists({ userId, circleId });
+    return this.membershipsService.removeIfExists({ userId, groupId });
   }
 
-  @Get('/circles/postable')
+  @Get('/groups/postable')
   async findPostable(@Request() request: any) {
     const userId = request.user.id;
 
@@ -157,7 +157,7 @@ export class UserController {
       throw new Error('Invalid input');
     }
 
-    return await this.circlesService.findMany({
+    return await this.groupsService.findMany({
       where: {
         status: 'NORMAL',
         handle: { not: null },

@@ -36,37 +36,37 @@ model User {
   @@map("user")
 }
 
-model Circle {
+model Group {
   id                  String              @id @default(cuid())
   createdAt           DateTime            @default(now()) @map("created_at")
   updatedAt           DateTime            @updatedAt @map("updated_at")
-  status              CircleStatus        @default(NORMAL)
-  handle              String?             @unique // Set null if the circle is deleted.
+  status              GroupStatus         @default(NORMAL)
+  handle              String?             @unique // Set null if the group is deleted.
   name                String?             @db.VarChar(50)
   description         String?             @db.Text
   readNotePermission  PermissionReadNote  @default(ADMIN) @map("read_note_permission")
   writeNotePermission PermissionWriteNote @default(ADMIN) @map("write_note_permission")
   writeNoteCondition  ConditionWriteNote  @default(ALLOWED) @map("write_note_condition")
-  joinCircleCondition ConditionJoinCircle @default(DENIED) @map("join_circle_condition")
+  joinGroupCondition  ConditionJoinGroup  @default(DENIED) @map("join_group_condition")
 
   members Membership[]
   notes   Note[]
   watched Watch[]
 
   @@index([status])
-  @@map("circle")
+  @@map("group")
 }
 
 model Membership {
   user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String         @map("user_id")
-  circle    Circle         @relation(fields: [circleId], references: [id], onDelete: Cascade)
-  circleId  String         @map("circle_id")
+  group     Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String         @map("group_id")
   role      MembershipRole @default(MEMBER)
   createdAt DateTime       @default(now()) @map("created_at")
   updatedAt DateTime       @updatedAt @map("updated_at")
 
-  @@id([userId, circleId])
+  @@id([userId, groupId])
   @@index([role])
   @@map("membership")
 }
@@ -77,8 +77,8 @@ model Note {
   updatedAt              DateTime               @updatedAt @map("updated_at")
   user                   User                   @relation(fields: [userId], references: [id])
   userId                 String                 @map("user_id")
-  circle                 Circle?                @relation(fields: [circleId], references: [id], onDelete: SetNull) // circle is null if the note is drafted.
-  circleId               String?                @map("circle_id")
+  group                  Group?                 @relation(fields: [groupId], references: [id], onDelete: SetNull) // group is null if the note is drafted.
+  groupId                String?                @map("group_id")
   title                  String?                @db.VarChar(250)
   blobPointer            String?                @map("blob_pointer")
   draftBlobPointer       String?                @map("draft_blob_pointer")
@@ -178,12 +178,12 @@ model Follow {
 model Watch {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @map("user_id")
-  circle    Circle   @relation(fields: [circleId], references: [id], onDelete: Cascade)
-  circleId  String   @map("circle_id")
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String   @map("group_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@id([userId, circleId])
+  @@id([userId, groupId])
   @@map("watch")
 }
 
@@ -229,7 +229,7 @@ enum ConditionWriteNote {
   ALLOWED
 }
 
-enum ConditionJoinCircle {
+enum ConditionJoinGroup {
   DENIED
   REQUIRE_ADMIN_APPROVAL
   ALLOWED
@@ -241,7 +241,7 @@ enum PermissionWriteComment {
   ALL
 }
 
-enum CircleStatus {
+enum GroupStatus {
   NORMAL
   DELETED
 }

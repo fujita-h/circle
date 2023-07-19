@@ -4,13 +4,13 @@ import { ConfigService } from '@nestjs/config';
 import { ConfigModule } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import { UsersService } from '../users/users.service';
-import { CirclesService } from '../circles/circles.service';
+import { GroupsService } from '../groups/groups.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { EsService } from '../es/es.service';
 
 describe('NotesService', () => {
   let usersService: UsersService;
-  let circlesService: CirclesService;
+  let groupsService: GroupsService;
   let noteService: NotesService;
 
   const testPrefix = 'x-itm-svc-';
@@ -20,7 +20,7 @@ describe('NotesService', () => {
     handle: testPrefix + 'u-handle',
     name: testPrefix + 'u-name',
   };
-  const testCircle: Prisma.CircleCreateInput = {
+  const testGroup: Prisma.GroupCreateInput = {
     id: testPrefix + 'g-0123-456789',
     handle: testPrefix + 'g-handle',
     name: testPrefix + 'g-name',
@@ -28,7 +28,7 @@ describe('NotesService', () => {
   const testNote: Prisma.NoteCreateInput = {
     id: testPrefix + 'i-0123-456789',
     user: { connect: { id: testUser.id } },
-    circle: { connect: { id: testCircle.id } },
+    group: { connect: { id: testGroup.id } },
     title: testPrefix + 'i-title',
   };
 
@@ -38,7 +38,7 @@ describe('NotesService', () => {
         NotesService,
         ConfigService,
         UsersService,
-        CirclesService,
+        GroupsService,
         AzblobService,
         EsService,
       ],
@@ -50,7 +50,7 @@ describe('NotesService', () => {
     }).compile();
 
     usersService = module.get<UsersService>(UsersService);
-    circlesService = module.get<CirclesService>(CirclesService);
+    groupsService = module.get<GroupsService>(GroupsService);
     noteService = module.get<NotesService>(NotesService);
 
     // delete test notes if exists
@@ -64,9 +64,9 @@ describe('NotesService', () => {
         await usersService.remove({ where: { id: result.id } });
       }
     });
-    await circlesService.findOne({ where: { id: testCircle.id } }).then(async (result) => {
+    await groupsService.findOne({ where: { id: testGroup.id } }).then(async (result) => {
       if (result && result.id) {
-        await circlesService.remove({ where: { id: result.id } });
+        await groupsService.remove({ where: { id: result.id } });
       }
     });
   });
@@ -86,11 +86,11 @@ describe('NotesService', () => {
     await expect(result).resolves.toHaveProperty('handle', testUser.handle);
   });
 
-  it('Circleの作成', async () => {
-    const result = circlesService.create({ data: testCircle });
-    await expect(result).resolves.toHaveProperty('id', testCircle.id);
-    await expect(result).resolves.toHaveProperty('name', testCircle.name);
-    await expect(result).resolves.toHaveProperty('handle', testCircle.handle);
+  it('Groupの作成', async () => {
+    const result = groupsService.create({ data: testGroup });
+    await expect(result).resolves.toHaveProperty('id', testGroup.id);
+    await expect(result).resolves.toHaveProperty('name', testGroup.name);
+    await expect(result).resolves.toHaveProperty('handle', testGroup.handle);
   });
 
   it('Noteの作成', async () => {
@@ -110,7 +110,7 @@ describe('NotesService', () => {
   });
 
   it('Note一覧取得', async () => {
-    const result = await noteService.findMany({ where: { circle: { id: testCircle.id } } });
+    const result = await noteService.findMany({ where: { group: { id: testGroup.id } } });
     await expect(result.length).toBeGreaterThan(0);
     await expect(result[0]).toHaveProperty('id', testNote.id);
   });

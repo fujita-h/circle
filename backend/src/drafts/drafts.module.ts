@@ -3,9 +3,9 @@ import { DraftsController } from './drafts.controller';
 import { NotesService } from '../notes/notes.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { EsService } from '../es/es.service';
-import { CirclesService } from '../circles/circles.service';
+import { GroupsService } from '../groups/groups.service';
 @Module({
   controllers: [DraftsController],
-  providers: [NotesService, CirclesService, AzblobService, EsService],
+  providers: [NotesService, GroupsService, AzblobService, EsService],
 })
 export class DraftsModule {}

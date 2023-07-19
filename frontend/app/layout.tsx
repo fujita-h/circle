@@ -4,7 +4,7 @@ import { AuthenticatedAlwaysTemplate } from '@/components/msal/templates';
 import './globals.css';
 
 export const metadata = {
-  title: process.env.SITE_TITLE || 'Circle',
+  title: process.env.SITE_TITLE || 'Group',
 };
 
 const environment: EnvironmentContextType = {

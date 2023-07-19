@@ -1,1 +1,1 @@
-export { Loader as JoinedCircleListLoader } from './loader';
+export { Loader as JoinedGroupListLoader } from './loader';

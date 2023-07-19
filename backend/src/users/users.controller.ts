@@ -153,8 +153,8 @@ export class UsersController {
     }
   }
 
-  @Get(':id/joined/circles')
-  async findJoinedCircles(
+  @Get(':id/joined/groups')
+  async findJoinedGroups(
     @Param('id') id: string,
     @Query('skip', ParseIntPipe) skip?: number,
     @Query('take', ParseIntPipe) take?: number,
@@ -164,7 +164,7 @@ export class UsersController {
       memberships = await this.membershipsService.findMany({
         where: { userId: id, role: { in: ['ADMIN', 'MEMBER'] } },
         orderBy: { createdAt: 'asc' },
-        include: { circle: true },
+        include: { group: true },
         skip,
         take,
       });
@@ -175,8 +175,8 @@ export class UsersController {
     return memberships;
   }
 
-  @Get(':id/joined/circles/count')
-  async countJoinedCircles(@Param('id') id: string) {
+  @Get(':id/joined/groups/count')
+  async countJoinedGroups(@Param('id') id: string) {
     let count;
     try {
       count = await this.membershipsService.count({
@@ -219,28 +219,28 @@ export class UsersController {
         blobPointer: { not: null }, // only notes with blobPointer
         userId: id, // only notes of existing users
         OR: [
-          { circleId: null },
+          { groupId: null },
           {
             status: 'NORMAL',
-            circle: {
+            group: {
               readNotePermission: 'ADMIN',
               members: { some: { userId: userId, role: 'ADMIN' } },
             },
-          }, // readNotePermission is ADMIN and user is admin of circle
+          }, // readNotePermission is ADMIN and user is admin of group
           {
             status: 'NORMAL',
-            circle: {
+            group: {
               readNotePermission: 'MEMBER',
               members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
             },
-          }, // readNotePermission is MEMBER and user is member of circle
+          }, // readNotePermission is MEMBER and user is member of group
           {
             status: 'NORMAL',
-            circle: { readNotePermission: 'ALL' },
+            group: { readNotePermission: 'ALL' },
           }, // readNotePermission is ALL
         ],
       },
-      include: { user: true, circle: true },
+      include: { user: true, group: true },
       orderBy: { createdAt: 'desc' },
       skip,
       take,
@@ -274,24 +274,24 @@ export class UsersController {
           blobPointer: { not: null }, // only notes with blobPointer
           userId: id, // only notes of existing users
           OR: [
-            { circleId: null },
+            { groupId: null },
             {
               status: 'NORMAL',
-              circle: {
+              group: {
                 readNotePermission: 'ADMIN',
                 members: { some: { userId: userId, role: 'ADMIN' } },
               },
-            }, // readNotePermission is ADMIN and user is admin of circle
+            }, // readNotePermission is ADMIN and user is admin of group
             {
               status: 'NORMAL',
-              circle: {
+              group: {
                 readNotePermission: 'MEMBER',
                 members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
               },
-            }, // readNotePermission is MEMBER and user is member of circle
+            }, // readNotePermission is MEMBER and user is member of group
             {
               status: 'NORMAL',
-              circle: { readNotePermission: 'ALL' },
+              group: { readNotePermission: 'ALL' },
             }, // readNotePermission is ALL
           ],
         },
@@ -320,8 +320,8 @@ export class UsersController {
     return user;
   }
 
-  @Get('handle/:handle/joined/circles')
-  async findJoinedCirclesByHandle(
+  @Get('handle/:handle/joined/groups')
+  async findJoinedGroupsByHandle(
     @Param('handle') handle: string,
     @Query('skip', ParseIntPipe) skip?: number,
     @Query('take', ParseIntPipe) take?: number,
@@ -336,11 +336,11 @@ export class UsersController {
     if (!user) {
       throw new NotFoundException();
     }
-    return this.findJoinedCircles(user.id, skip, take);
+    return this.findJoinedGroups(user.id, skip, take);
   }
 
-  @Get('handle/:handle/joined/circles/count')
-  async countJoinedCirclesByHandle(@Param('handle') handle: string) {
+  @Get('handle/:handle/joined/groups/count')
+  async countJoinedGroupsByHandle(@Param('handle') handle: string) {
     let user;
     try {
       user = await this.usersService.findOne({ where: { handle } });
@@ -351,7 +351,7 @@ export class UsersController {
     if (!user) {
       throw new NotFoundException();
     }
-    return this.countJoinedCircles(user.id);
+    return this.countJoinedGroups(user.id);
   }
 
   @Get('handle/:handle/notes')

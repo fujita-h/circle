@@ -13,7 +13,7 @@ import { UserName, UserEmail } from './user-data';
 
 const navigation = [
   { name: 'Dashboard', href: '/', current: false },
-  { name: 'サークル', href: '/circles', current: false },
+  { name: 'グループ', href: '/groups', current: false },
   { name: 'ユーザー', href: '/users', current: false },
   { name: '記事', href: '/notes', current: false },
 ];

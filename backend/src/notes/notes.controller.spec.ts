@@ -5,24 +5,24 @@ import { ConfigModule } from '@nestjs/config';
 import { AzblobService } from '../azblob/azblob.service';
 import { EsService } from '../es/es.service';
 import { UsersService } from '../users/users.service';
-import { CirclesService } from '../circles/circles.service';
+import { GroupsService } from '../groups/groups.service';
 import { Prisma } from '@prisma/client';
-import { CreateCircleDto } from '../circles/dto/create-circle.dto';
-import { CreateCircleNoteDto } from '../circles/dto/create-circle-note.dto';
-import { CirclesController } from '../circles/circles.controller';
+import { CreateGroupDto } from '../groups/dto/create-group.dto';
+import { CreateGroupNoteDto } from '../groups/dto/create-group-note.dto';
+import { GroupsController } from '../groups/groups.controller';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { CommentsService } from '../comments/comments.service';
 import { MembershipsService } from '../memberships/memberships.service';
 
 describe('NotesController', () => {
   let controller: NotesController;
-  let circlesController: CirclesController;
+  let groupsController: GroupsController;
   let usersService: UsersService;
-  let circlesService: CirclesService;
+  let groupsService: GroupsService;
   let notesService: NotesService;
   let commentsService: CommentsService;
 
-  class CreateCircleDtoForTest extends CreateCircleDto {
+  class CreateGroupDtoForTest extends CreateGroupDto {
     id: string;
   }
 
@@ -33,30 +33,30 @@ describe('NotesController', () => {
     handle: testPrefix + 'u1-handle',
     name: testPrefix + 'u1-name',
   };
-  const testCircle1: CreateCircleDtoForTest = {
+  const testGroup1: CreateGroupDtoForTest = {
     id: testPrefix + 'g1-0123-456789',
     handle: testPrefix + 'g1-handle',
     name: testPrefix + 'g1-name',
     writeNoteCondition: 'ALLOWED',
-    joinCircleCondition: 'ALLOWED',
+    joinGroupCondition: 'ALLOWED',
   };
   const testNote1: CreateNoteDto = {
     title: testPrefix + 'i1-title',
     body: testPrefix + 'i1-body',
     status: 'NORMAL',
-    circle: { id: testCircle1.id },
+    group: { id: testGroup1.id },
     writeCommentPermission: 'ALL',
   };
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [NotesController, CirclesController],
+      controllers: [NotesController, GroupsController],
       providers: [
         NotesService,
         AzblobService,
         EsService,
         UsersService,
-        CirclesService,
+        GroupsService,
         CommentsService,
         MembershipsService,
       ],
@@ -68,16 +68,16 @@ describe('NotesController', () => {
     }).compile();
 
     controller = module.get<NotesController>(NotesController);
-    circlesController = module.get<CirclesController>(CirclesController);
+    groupsController = module.get<GroupsController>(GroupsController);
     usersService = module.get<UsersService>(UsersService);
-    circlesService = module.get<CirclesService>(CirclesService);
+    groupsService = module.get<GroupsService>(GroupsService);
     notesService = module.get<NotesService>(NotesService);
 
     // delete test notes
     await notesService
       .findMany({
         where: {
-          OR: [{ circleId: { startsWith: testPrefix } }, { userId: { startsWith: testPrefix } }],
+          OR: [{ groupId: { startsWith: testPrefix } }, { userId: { startsWith: testPrefix } }],
         },
       })
       .then(async (results) => {
@@ -107,8 +107,8 @@ describe('NotesController', () => {
         }
       });
 
-    // delete test circles
-    await circlesService
+    // delete test groups
+    await groupsService
       .findMany({
         where: {
           OR: [
@@ -121,7 +121,7 @@ describe('NotesController', () => {
       .then(async (results) => {
         if (results && results.length > 0) {
           for (const result of results) {
-            await circlesService.remove({ where: { id: result.id } });
+            await groupsService.remove({ where: { id: result.id } });
           }
         }
       });
@@ -142,15 +142,15 @@ describe('NotesController', () => {
     await expect(result).resolves.toHaveProperty('handle', testUser1.handle);
   });
 
-  it('User1がCircle1を作成', async () => {
+  it('User1がGroup1を作成', async () => {
     const req = { user: { id: testUser1.id } };
-    const result = circlesController.create(req, testCircle1);
-    await expect(result).resolves.toHaveProperty('id', testCircle1.id);
-    await expect(result).resolves.toHaveProperty('name', testCircle1.name);
-    await expect(result).resolves.toHaveProperty('handle', testCircle1.handle);
+    const result = groupsController.create(req, testGroup1);
+    await expect(result).resolves.toHaveProperty('id', testGroup1.id);
+    await expect(result).resolves.toHaveProperty('name', testGroup1.name);
+    await expect(result).resolves.toHaveProperty('handle', testGroup1.handle);
   });
 
-  it('Circle1に対してUser1でNote1を作成', async () => {
+  it('Group1に対してUser1でNote1を作成', async () => {
     const req = { user: { id: testUser1.id } };
     const result = controller.create(req, testNote1);
     await expect(result).resolves.toHaveProperty('id');
@@ -158,15 +158,15 @@ describe('NotesController', () => {
     await expect(result).resolves.toHaveProperty('status', testNote1.status);
   });
 
-  it('Circle1に対してUser1でNotesを取得', async () => {
+  it('Group1に対してUser1でNotesを取得', async () => {
     const req = { user: { id: testUser1.id } };
-    const result = circlesController.findNotes(req, testCircle1.id);
+    const result = groupsController.findNotes(req, testGroup1.id);
     await expect(result).resolves.toHaveLength(1);
   });
 
   it('noteを取得', async () => {
     const req = { user: { id: testUser1.id } };
-    const pre = await circlesController.findNotes(req, testCircle1.id);
+    const pre = await groupsController.findNotes(req, testGroup1.id);
     const result = controller.findOne(req, pre[0].id);
     await expect(result).resolves.toHaveProperty('id', pre[0].id);
     await expect(result).resolves.toHaveProperty('title', testNote1.title);
@@ -174,12 +174,12 @@ describe('NotesController', () => {
 
   it('noteを更新', async () => {
     const req = { user: { id: testUser1.id } };
-    const pre = await circlesController.findNotes(req, testCircle1.id);
+    const pre = await groupsController.findNotes(req, testGroup1.id);
     const result = controller.update(req, pre[0].id, {
       ...testNote1,
       title: 'updated-title',
       body: 'updated-body',
-      circle: { id: testCircle1.id },
+      group: { id: testGroup1.id },
     });
     await expect(result).resolves.toHaveProperty('id', pre[0].id);
     await expect(result).resolves.toHaveProperty('title', 'updated-title');
@@ -187,7 +187,7 @@ describe('NotesController', () => {
 
   it('noteを削除', async () => {
     const req = { user: { id: testUser1.id } };
-    const pre = await circlesController.findNotes(req, testCircle1.id);
+    const pre = await groupsController.findNotes(req, testGroup1.id);
     const result = controller.remove(req, pre[0].id);
     await expect(result).resolves.toHaveProperty('id', pre[0].id);
     await expect(result).resolves.toHaveProperty('title', 'updated-title');

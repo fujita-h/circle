@@ -27,7 +27,7 @@ import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { AuthorizedRolesAny } from '../guards/jwt.roles.decorator';
 import { AzblobService } from '../azblob/azblob.service';
 import { CreateNoteDto } from './dto/create-note.dto';
-import { CirclesService } from '../circles/circles.service';
+import { GroupsService } from '../groups/groups.service';
 import { RestError } from '@azure/storage-blob';
 import { EsService } from '../es/es.service';
 import { SearchRequest } from '@elastic/elasticsearch/lib/api/types';
@@ -43,54 +43,54 @@ export class NotesController {
 
   constructor(
     private readonly notesService: NotesService,
-    private readonly circlesService: CirclesService,
+    private readonly groupsService: GroupsService,
     private readonly commentsService: CommentsService,
     private readonly blobsService: AzblobService,
     private readonly esService: EsService,
   ) {
-    this.logger.log('Initializing Circles Controller...');
+    this.logger.log('Initializing Groups Controller...');
     this.blobsService.init(this.blobContainerName);
   }
 
   @Post()
   async create(@Request() request: any, @Body() data: CreateNoteDto) {
     const userId = request.user.id;
-    const circleId = data.circle.id;
+    const groupId = data.group.id;
 
     // check input
     if (!userId) {
       throw new UnauthorizedException();
     }
 
-    let circle;
-    if (circleId) {
+    let group;
+    if (groupId) {
       try {
-        circle = await this.circlesService.findOne({ where: { id: circleId } });
+        group = await this.groupsService.findOne({ where: { id: groupId } });
       } catch (e) {
         this.logger.error(e);
         throw new InternalServerErrorException();
       }
 
-      // if circle is not exists, throw error
-      if (!circle) {
+      // if group is not exists, throw error
+      if (!group) {
         throw new NotFoundException();
       }
 
       try {
-        circle = await this.circlesService.findFirst({
+        group = await this.groupsService.findFirst({
           where: {
-            id: circleId,
+            id: groupId,
             status: 'NORMAL',
-            handle: { not: null }, // only circles with handle
+            handle: { not: null }, // only groups with handle
             OR: [
               {
                 writeNotePermission: 'ADMIN',
                 members: { some: { userId: userId, role: 'ADMIN' } },
-              }, // writeNotePermission is ADMIN and user is admin of circle
+              }, // writeNotePermission is ADMIN and user is admin of group
               {
                 writeNotePermission: 'MEMBER',
                 members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
-              }, // writeNotePermission is MEMBER and user is member of circle
+              }, // writeNotePermission is MEMBER and user is member of group
               { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
             ],
           },
@@ -100,9 +100,9 @@ export class NotesController {
         throw new InternalServerErrorException();
       }
 
-      // if circle is not exists, throw error
-      if (!circle) {
-        throw new ForbiddenException("You're not allowed to create notes in this circle");
+      // if group is not exists, throw error
+      if (!group) {
+        throw new ForbiddenException("You're not allowed to create notes in this group");
       }
     }
 
@@ -111,10 +111,10 @@ export class NotesController {
       note = await this.notesService.create({
         data: {
           user: { connect: { id: userId } },
-          circle: circle ? { connect: { id: circleId } } : undefined,
+          group: group ? { connect: { id: groupId } } : undefined,
           title: data.title,
-          status: circle
-            ? circle.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL'
+          status: group
+            ? group.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL'
               ? 'PENDING_APPROVAL'
               : 'NORMAL'
             : 'NORMAL',
@@ -150,29 +150,29 @@ export class NotesController {
             { userId: userId }, // user is owner
             {
               status: 'NORMAL',
-              circle: {
+              group: {
                 handle: { not: null },
                 status: 'NORMAL',
                 readNotePermission: 'ADMIN',
                 members: { some: { userId: userId, role: 'ADMIN' } },
               },
-            }, // readNotePermission is ADMIN and user is admin of circle
+            }, // readNotePermission is ADMIN and user is admin of group
             {
               status: 'NORMAL',
-              circle: {
+              group: {
                 handle: { not: null },
                 status: 'NORMAL',
                 readNotePermission: 'MEMBER',
                 members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
               },
-            }, // readNotePermission is MEMBER and user is member of circle
+            }, // readNotePermission is MEMBER and user is member of group
             {
               status: 'NORMAL',
-              circle: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+              group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
             }, // readNotePermission is ALL
           ],
         },
-        include: { user: true, circle: true },
+        include: { user: true, group: true },
         orderBy: { createdAt: 'desc' },
         skip,
         take,
@@ -201,25 +201,25 @@ export class NotesController {
             { userId: userId }, // user is owner
             {
               status: 'NORMAL',
-              circle: {
+              group: {
                 handle: { not: null },
                 status: 'NORMAL',
                 readNotePermission: 'ADMIN',
                 members: { some: { userId: userId, role: 'ADMIN' } },
               },
-            }, // readNotePermission is ADMIN and user is admin of circle
+            }, // readNotePermission is ADMIN and user is admin of group
             {
               status: 'NORMAL',
-              circle: {
+              group: {
                 handle: { not: null },
                 status: 'NORMAL',
                 readNotePermission: 'MEMBER',
                 members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
               },
-            }, // readNotePermission is MEMBER and user is member of circle
+            }, // readNotePermission is MEMBER and user is member of group
             {
               status: 'NORMAL',
-              circle: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+              group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
             }, // readNotePermission is ALL
           ],
         },
@@ -239,24 +239,24 @@ export class NotesController {
     @Query('take', ParseIntPipe) take: number,
   ) {
     const userId = request.user.id;
-    const circles = await this.circlesService.findMany({
+    const groups = await this.groupsService.findMany({
       where: {
         status: 'NORMAL',
-        handle: { not: null }, // only circles with handle
+        handle: { not: null }, // only groups with handle
         OR: [
           {
             readNotePermission: 'ADMIN',
             members: { some: { userId: userId, role: 'ADMIN' } },
-          }, // readNotePermission is ADMIN and user is admin of circle
+          }, // readNotePermission is ADMIN and user is admin of group
           {
             readNotePermission: 'MEMBER',
             members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
-          }, // readNotePermission is MEMBER and user is member of circle
+          }, // readNotePermission is MEMBER and user is member of group
           { readNotePermission: 'ALL' }, // readNotePermission is ALL
         ],
       },
     });
-    const circleIds = circles.map((g) => g.id);
+    const groupIds = groups.map((g) => g.id);
     if (q === undefined || q === null || q === '') {
       q = '*';
     }
@@ -306,7 +306,7 @@ export class NotesController {
           ],
           minimum_should_match: 1,
           filter: {
-            terms: { circleId: ['NULL', ...circleIds] },
+            terms: { groupId: ['NULL', ...groupIds] },
           },
         },
       },
@@ -328,29 +328,29 @@ export class NotesController {
           { userId: userId }, // user is owner
           {
             status: 'NORMAL',
-            circle: {
+            group: {
               handle: { not: null },
               status: 'NORMAL',
               readNotePermission: 'ADMIN',
               members: { some: { userId: userId, role: 'ADMIN' } },
             },
-          }, // readNotePermission is ADMIN and user is admin of circle
+          }, // readNotePermission is ADMIN and user is admin of group
           {
             status: 'NORMAL',
-            circle: {
+            group: {
               handle: { not: null },
               status: 'NORMAL',
               readNotePermission: 'MEMBER',
               members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
             },
-          }, // readNotePermission is MEMBER and user is member of circle
+          }, // readNotePermission is MEMBER and user is member of group
           {
             status: 'NORMAL',
-            circle: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+            group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
           }, // readNotePermission is ALL
         ],
       },
-      include: { user: true, circle: true },
+      include: { user: true, group: true },
     });
   }
 
@@ -574,26 +574,26 @@ export class NotesController {
             {
               userId: userId,
               writeCommentPermission: 'OWNER',
-              OR: [{ circleId: null }, { circle: { handle: { not: null }, status: 'NORMAL' } }],
+              OR: [{ groupId: null }, { group: { handle: { not: null }, status: 'NORMAL' } }],
             }, // writeCommentPermission is OWNER
             {
               writeCommentPermission: 'MEMBER',
               status: 'NORMAL',
               OR: [
-                { circleId: null },
+                { groupId: null },
                 {
-                  circle: {
+                  group: {
                     handle: { not: null },
                     status: 'NORMAL',
                     members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
                   },
                 },
               ],
-            }, // writeCommentPermission is MEMBER and user is member of circle
+            }, // writeCommentPermission is MEMBER and user is member of group
             {
               writeCommentPermission: 'ALL',
               status: 'NORMAL',
-              OR: [{ circleId: null }, { circle: { handle: { not: null }, status: 'NORMAL' } }],
+              OR: [{ groupId: null }, { group: { handle: { not: null }, status: 'NORMAL' } }],
             }, // writeCommentPermission is ALL
           ],
         },
@@ -622,19 +622,19 @@ export class NotesController {
   @Put(':id')
   async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateNoteDto) {
     const userId = request.user.id;
-    const circleId = data.circle.id;
+    const groupId = data.group.id;
 
     if (!userId) {
       throw new UnauthorizedException();
     }
 
-    let circle;
-    if (circleId) {
+    let group;
+    if (groupId) {
       let note;
       try {
         note = await this.notesService.findFirst({
           where: { id, userId, status: { not: 'DELETED' } },
-          include: { user: true, circle: true },
+          include: { user: true, group: true },
         });
       } catch (e) {
         this.logger.error(e);
@@ -645,20 +645,20 @@ export class NotesController {
       }
 
       try {
-        circle = await this.circlesService.findFirst({
+        group = await this.groupsService.findFirst({
           where: {
-            id: circleId,
+            id: groupId,
             status: 'NORMAL',
-            handle: { not: null }, // only circles with handle
+            handle: { not: null }, // only groups with handle
             OR: [
               {
                 writeNotePermission: 'ADMIN',
                 members: { some: { userId: userId, role: 'ADMIN' } },
-              }, // writeNotePermission is ADMIN and user is admin of circle
+              }, // writeNotePermission is ADMIN and user is admin of group
               {
                 writeNotePermission: 'MEMBER',
                 members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
-              }, // writeNotePermission is MEMBER and user is member of circle
+              }, // writeNotePermission is MEMBER and user is member of group
               { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
             ],
           },
@@ -667,8 +667,8 @@ export class NotesController {
         this.logger.error(e);
         throw new InternalServerErrorException();
       }
-      if (!circle) {
-        throw new ForbiddenException("You're not allowed to create notes in this circle");
+      if (!group) {
+        throw new ForbiddenException("You're not allowed to create notes in this group");
       }
     }
 
@@ -680,9 +680,9 @@ export class NotesController {
         data: {
           title: data.title,
           user: { connect: { id: userId } },
-          circle: circle ? { connect: { id: circleId } } : { disconnect: true },
-          status: circle
-            ? circle.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL'
+          group: group ? { connect: { id: groupId } } : { disconnect: true },
+          status: group
+            ? group.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL'
               ? 'PENDING_APPROVAL'
               : 'NORMAL'
             : 'NORMAL',

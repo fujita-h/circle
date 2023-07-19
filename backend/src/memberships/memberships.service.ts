@@ -14,7 +14,7 @@ export class MembershipsService {
 
   findOne({
     where,
-    include = { user: false, circle: false },
+    include = { user: false, group: false },
   }: {
     where: Prisma.MembershipWhereUniqueInput;
     include?: Prisma.MembershipInclude;
@@ -25,7 +25,7 @@ export class MembershipsService {
   findFirst({
     where,
     orderBy,
-    include = { user: false, circle: false },
+    include = { user: false, group: false },
   }: {
     where: Prisma.MembershipWhereInput;
     orderBy?: Prisma.Enumerable<Prisma.MembershipOrderByWithRelationInput>;
@@ -37,7 +37,7 @@ export class MembershipsService {
   findMany({
     where,
     orderBy,
-    include = { user: false, circle: false },
+    include = { user: false, group: false },
     skip,
     take,
   }: {
@@ -56,27 +56,27 @@ export class MembershipsService {
 
   createIfNotExists({
     userId,
-    circleId,
+    groupId,
     role,
   }: {
     userId: string;
-    circleId: string;
+    groupId: string;
     role: MembershipRole;
   }) {
     return prisma.membership.upsert({
-      where: { userId_circleId: { userId, circleId } },
-      create: { userId, circleId, role: role },
+      where: { userId_groupId: { userId, groupId } },
+      create: { userId, groupId, role: role },
       update: {},
     });
   }
 
-  removeIfExists({ userId, circleId }: { userId: string; circleId: string }) {
+  removeIfExists({ userId, groupId }: { userId: string; groupId: string }) {
     return prisma.$transaction(async (prisma) => {
       const check = await prisma.membership.findUnique({
-        where: { userId_circleId: { userId, circleId } },
+        where: { userId_groupId: { userId, groupId } },
       });
       if (!check) return null;
-      return prisma.membership.delete({ where: { userId_circleId: { userId, circleId } } });
+      return prisma.membership.delete({ where: { userId_groupId: { userId, groupId } } });
     });
   }
 }

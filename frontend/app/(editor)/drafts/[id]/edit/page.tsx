@@ -34,7 +34,7 @@ export default function Page({ params }: { params: any }) {
   return (
     <>
       <div className={styles.editor}>
-        <Editor defaultSubmitButton="draft" noteId={draft.id} circleId={draft.circle?.id} title={draft.title} body={markdown} />
+        <Editor defaultSubmitButton="draft" noteId={draft.id} groupId={draft.group?.id} title={draft.title} body={markdown} />
       </div>
     </>
   );

@@ -8,7 +8,7 @@ import Link from 'next/link';
 type DraftData = {
   id: string;
   title: string;
-  circle?: {
+  group?: {
     id: string;
     name: string;
   };
@@ -26,18 +26,18 @@ export function List({ active, drafts }: { active?: string; drafts: DraftData[] 
           )}
         >
           <div className="flex gap-x-4">
-            {draft.circle ? (
+            {draft.group ? (
               <BackendImage
-                src={`/circles/${draft.circle?.id}/photo`}
+                src={`/groups/${draft.group?.id}/photo`}
                 className="h-16 w-16 flex-none rounded-md bg-gray-50"
-                alt="circle-icon"
+                alt="group-icon"
                 fallback={<UserGroupIcon className="h-16 w-16 flex-none rounded-lg text-gray-300 bg-gray-50" />}
               />
             ) : (
               <UserGroupIcon className="h-16 w-16 flex-none rounded-lg text-gray-300 bg-gray-50" />
             )}
             <div className="min-w-0 flex-auto">
-              <p>{draft.circle?.name || 'サークル連携なし'}</p>
+              <p>{draft.group?.name || 'グループ連携なし'}</p>
               <p className="text-sm font-semibold leading-6 text-gray-900">
                 <Link href={`/drafts/${draft.id}`}>
                   <span className="absolute inset-x-0 -top-px bottom-0" />

@@ -63,19 +63,19 @@ export default function Page({ params }: { params: any }) {
 
   return (
     <div>
-      {note.circle ? (
+      {note.group ? (
         <div className="py-4 bg-white ring-1 ring-gray-200">
           <div className="max-w-screen-2xl mx-auto">
             <div className="px-4 lg:px-8">
-              <Link href={`/c/${note.circle.handle}`}>
+              <Link href={`/g/${note.group.handle}`}>
                 <div className="flex items-center">
                   <BackendImage
-                    src={`/circles/${note.circle.id}/photo`}
+                    src={`/groups/${note.group.id}/photo`}
                     className="w-10 h-10 rounded-md"
-                    alt="circle icon"
+                    alt="group icon"
                     fallback={<UserGroupIcon className="w-10 h-10 rounded-md bg-gray-100 text-gray-400 ring-1 ring-gray-200" />}
                   />
-                  <div className="ml-3 text-xl font-bold text-gray-900 hover:text-gray-500 hover:underline">{note.circle?.name} </div>
+                  <div className="ml-3 text-xl font-bold text-gray-900 hover:text-gray-500 hover:underline">{note.group?.name} </div>
                 </div>
               </Link>
             </div>
@@ -120,20 +120,20 @@ export default function Page({ params }: { params: any }) {
                         <div className="text-gray-800">{createdAt} に公開</div>
                       </div>
                     </div>
-                    {note.circle ? (
+                    {note.group ? (
                       <div className="py-2">
                         <div className="inline-block py-1 px-2 rounded-md bg-white ring-1 ring-gray-200">
                           <div className="mx-2 flex space-x-2 items-center">
                             <div>
                               <BackendImage
-                                src={`/circles/${note.circle.id}/photo`}
+                                src={`/groups/${note.group.id}/photo`}
                                 className="w-5 h-5 rounded-md"
-                                alt="circle icon"
+                                alt="group icon"
                                 fallback={<UserGroupIcon className="w-8 h-8 rounded-md bg-gray-100 text-gray-400 ring-1 ring-gray-200" />}
                               />
                             </div>
                             <div>
-                              <div className="text-sm font-bold text-gray-800">{note.circle.name}</div>
+                              <div className="text-sm font-bold text-gray-800">{note.group.name}</div>
                             </div>
                           </div>
                         </div>

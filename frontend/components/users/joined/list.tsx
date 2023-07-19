@@ -6,52 +6,52 @@ import {
   ReadNotePermissionBadge,
   WriteNotePermissionBadge,
   WriteNoteConditionBadge,
-  JoinCircleConditionBadge,
-} from '@/components/circles/badges';
+  JoinGroupConditionBadge,
+} from '@/components/groups/badges';
 import Link from 'next/link';
 
-type JoinedCircleData = {
+type JoinedGroupData = {
   userId: string;
-  circleId: string;
+  groupId: string;
   role: string;
-  circle: {
+  group: {
     id: string;
     readNotePermission: string;
     writeNotePermission: string;
     writeNoteCondition: string;
-    joinCircleCondition: string;
+    joinGroupCondition: string;
     name: string;
     handle: string;
     description: string;
   };
 };
 
-export function List({ joinedCircles }: { joinedCircles: JoinedCircleData[] }) {
+export function List({ joinedGroups }: { joinedGroups: JoinedGroupData[] }) {
   return (
     <ul role="list" className="divide-y divide-gray-100">
-      {joinedCircles.map((joined) => (
-        <li key={joined.circle.id} className="relative flex justify-between gap-x-6 px-4 py-3 hover:bg-gray-50 sm:px-6 lg:px-8">
+      {joinedGroups.map((joined) => (
+        <li key={joined.group.id} className="relative flex justify-between gap-x-6 px-4 py-3 hover:bg-gray-50 sm:px-6 lg:px-8">
           <div className="flex gap-x-4">
             <BackendImage
-              src={`/circles/${joined.circle.id}/photo`}
+              src={`/groups/${joined.group.id}/photo`}
               className="h-16 w-16 flex-none rounded-md bg-gray-50"
-              alt="circle-icon"
+              alt="group-icon"
               fallback={<UserGroupIcon className="h-16 w-16 flex-none rounded-lg text-gray-300 bg-gray-50" />}
             />
             <div className="min-w-0 flex-auto">
               <div className="flex flex-wrap gap-2">
-                <ReadNotePermissionBadge permission={joined.circle.readNotePermission} />
-                <WriteNotePermissionBadge permission={joined.circle.writeNotePermission} />
-                <WriteNoteConditionBadge condition={joined.circle.writeNoteCondition} />
-                <JoinCircleConditionBadge condition={joined.circle.joinCircleCondition} />
+                <ReadNotePermissionBadge permission={joined.group.readNotePermission} />
+                <WriteNotePermissionBadge permission={joined.group.writeNotePermission} />
+                <WriteNoteConditionBadge condition={joined.group.writeNoteCondition} />
+                <JoinGroupConditionBadge condition={joined.group.joinGroupCondition} />
               </div>
               <p className="text-sm font-semibold leading-6 text-gray-900">
-                <Link href={`/c/${joined.circle.handle}`}>
+                <Link href={`/g/${joined.group.handle}`}>
                   <span className="absolute inset-x-0 -top-px bottom-0" />
-                  {joined.circle.name}
+                  {joined.group.name}
                 </Link>
               </p>
-              <p className="text-xs leading-5 text-gray-500 line-clamp-1">{joined.circle.description}</p>
+              <p className="text-xs leading-5 text-gray-500 line-clamp-1">{joined.group.description}</p>
             </div>
           </div>
           <div className="flex items-center gap-x-4">

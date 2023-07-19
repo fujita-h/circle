@@ -24,7 +24,7 @@ import {
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { NotesService } from '../notes/notes.service';
-import { CirclesService } from '../circles/circles.service';
+import { GroupsService } from '../groups/groups.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { CreateNoteDto } from '../notes/dto/create-note.dto';
 import { UpdateNoteDto } from '../notes/dto/update-note.dto';
@@ -37,7 +37,7 @@ export class DraftsController {
   private blobContainerName = 'note';
   constructor(
     private readonly notesService: NotesService,
-    private readonly circlesService: CirclesService,
+    private readonly groupsService: GroupsService,
     private readonly blobsService: AzblobService,
   ) {
     this.logger.log('Initializing Drafts Controller...');
@@ -47,41 +47,41 @@ export class DraftsController {
   @Post()
   async create(@Request() request: any, @Body() data: CreateNoteDto) {
     const userId = request.user.id;
-    const circleId = data.circle.id;
+    const groupId = data.group.id;
 
     if (!userId) {
       throw new BadRequestException();
     }
 
-    // some checks if circle is exists
-    let circle;
-    if (circleId) {
+    // some checks if group is exists
+    let group;
+    if (groupId) {
       try {
-        circle = await this.circlesService.findOne({ where: { id: circleId } });
+        group = await this.groupsService.findOne({ where: { id: groupId } });
       } catch (e) {
         this.logger.error(e);
         throw new InternalServerErrorException();
       }
 
-      if (!circle) {
+      if (!group) {
         throw new NotFoundException();
       }
 
       try {
-        circle = await this.circlesService.findFirst({
+        group = await this.groupsService.findFirst({
           where: {
-            id: circleId,
+            id: groupId,
             status: 'NORMAL',
             handle: { not: null },
             OR: [
               {
                 writeNotePermission: 'ADMIN',
                 members: { some: { userId: userId, role: 'ADMIN' } },
-              }, // writeNotePermission is ADMIN and user is admin of circle
+              }, // writeNotePermission is ADMIN and user is admin of group
               {
                 writeNotePermission: 'MEMBER',
                 members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
-              }, // writeNotePermission is MEMBER and user is member of circle
+              }, // writeNotePermission is MEMBER and user is member of group
               { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
             ],
           },
@@ -91,9 +91,9 @@ export class DraftsController {
         throw new InternalServerErrorException();
       }
 
-      // if circle is not exists, throw error
-      if (!circle) {
-        throw new ForbiddenException("You're not allowed to create drafts in this circle");
+      // if group is not exists, throw error
+      if (!group) {
+        throw new ForbiddenException("You're not allowed to create drafts in this group");
       }
     }
 
@@ -102,7 +102,7 @@ export class DraftsController {
       note = await this.notesService.createDraft({
         data: {
           user: { connect: { id: userId } },
-          circle: circleId ? { connect: { id: circleId } } : undefined,
+          group: groupId ? { connect: { id: groupId } } : undefined,
           title: data.title,
           status: 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
@@ -136,7 +136,7 @@ export class DraftsController {
           userId: userId,
         },
         orderBy: { createdAt: 'desc' },
-        include: { user: true, circle: true },
+        include: { user: true, group: true },
         skip,
         take,
       });
@@ -178,7 +178,7 @@ export class DraftsController {
         draftBlobPointer: { not: null },
         userId: userId,
       },
-      include: { user: true, circle: true },
+      include: { user: true, group: true },
     });
   }
 
@@ -238,7 +238,7 @@ export class DraftsController {
   @Put(':id')
   async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateNoteDto) {
     const userId = request.user.id;
-    const circleId = data.circle?.id;
+    const groupId = data.group?.id;
     if (!userId) {
       throw new UnauthorizedException();
     }
@@ -248,7 +248,7 @@ export class DraftsController {
     try {
       note = await this.notesService.findFirst({
         where: { id, userId, status: { not: 'DELETED' } },
-        include: { user: true, circle: true },
+        include: { user: true, group: true },
       });
     } catch (e) {
       this.logger.error(e);
@@ -258,23 +258,23 @@ export class DraftsController {
       throw new NotFoundException();
     }
 
-    if (circleId) {
-      let circle;
+    if (groupId) {
+      let group;
       try {
-        circle = await this.circlesService.findFirst({
+        group = await this.groupsService.findFirst({
           where: {
-            id: circleId,
+            id: groupId,
             status: 'NORMAL',
             handle: { not: null },
             OR: [
               {
                 writeNotePermission: 'ADMIN',
                 members: { some: { userId: userId, role: 'ADMIN' } },
-              }, // writeNotePermission is ADMIN and user is admin of circle
+              }, // writeNotePermission is ADMIN and user is admin of group
               {
                 writeNotePermission: 'MEMBER',
                 members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
-              }, // writeNotePermission is MEMBER and user is member of circle
+              }, // writeNotePermission is MEMBER and user is member of group
               { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
             ],
           },
@@ -284,9 +284,9 @@ export class DraftsController {
         throw new InternalServerErrorException();
       }
 
-      // if circle is not exists, throw error
-      if (!circle) {
-        throw new ForbiddenException("You're not allowed to create drafts in this circle");
+      // if group is not exists, throw error
+      if (!group) {
+        throw new ForbiddenException("You're not allowed to create drafts in this group");
       }
     }
 
@@ -298,7 +298,7 @@ export class DraftsController {
         data: {
           title: data.title,
           user: { connect: { id: userId } },
-          circle: circleId ? { connect: { id: circleId } } : undefined,
+          group: groupId ? { connect: { id: groupId } } : undefined,
           status: 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
         },
@@ -332,7 +332,7 @@ export class DraftsController {
     try {
       draft = await this.notesService.findFirst({
         where: { id, userId, status: 'NORMAL', draftBlobPointer: { not: null } },
-        include: { user: true, circle: true },
+        include: { user: true, group: true },
       });
     } catch (e) {
       this.logger.error(e);

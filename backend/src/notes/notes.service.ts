@@ -223,7 +223,7 @@ export class NotesService {
       if (esResponse.result === 'deleted' || esResponse.result === 'not_found') {
         return note;
       } else {
-        throw new Error('Failed to delete circle in Elasticsearch');
+        throw new Error('Failed to delete group in Elasticsearch');
       }
     });
   }
@@ -241,7 +241,7 @@ export class NotesService {
       if (esResponse.result === 'deleted' || esResponse.result === 'not_found') {
         return note;
       } else {
-        throw new Error('Failed to delete circle in Elasticsearch');
+        throw new Error('Failed to delete group in Elasticsearch');
       }
     });
   }

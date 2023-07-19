@@ -6,7 +6,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { PassportModule } from '@nestjs/passport';
 import { OidcJwtStrategy } from './guards/jwt.strategy';
-import { CirclesModule } from './circles/circles.module';
+import { GroupsModule } from './groups/groups.module';
 import { NotesModule } from './notes/notes.module';
 import { UsersService } from './users/users.service';
 import { AzblobService } from './azblob/azblob.service';
@@ -14,7 +14,7 @@ import { EsService } from './es/es.service';
 import { UserModule } from './user/user.module';
 import { DraftsModule } from './drafts/drafts.module';
 import { NotesService } from './notes/notes.service';
-import { CirclesService } from './circles/circles.service';
+import { GroupsService } from './groups/groups.service';
 import { MembershipsService } from './memberships/memberships.service';
 import { FilesModule } from './files/files.module';
 import { CommentsService } from './comments/comments.service';
@@ -29,7 +29,7 @@ import { CommentsModule } from './comments/comments.module';
     CacheModule.register(),
     PassportModule,
     UsersModule,
-    CirclesModule,
+    GroupsModule,
     NotesModule,
     UserModule,
     DraftsModule,
@@ -44,7 +44,7 @@ import { CommentsModule } from './comments/comments.module';
     AzblobService,
     EsService,
     NotesService,
-    CirclesService,
+    GroupsService,
     MembershipsService,
     CommentsService,
   ],

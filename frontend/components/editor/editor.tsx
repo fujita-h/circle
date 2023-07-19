@@ -12,18 +12,18 @@ import { RenderMDX } from '@/components/mdx';
 import styles from './styles.module.css';
 import mdxStyles from '@/components/mdx/mdx-styles.module.css';
 import { SubmitButton } from './submit-button';
-import { CircleSelector } from './circle-selector';
+import { GroupSelector } from './group-selector';
 import { DnDTextarea } from './dnd-textarea';
 
 export function Editor({
   noteId = '',
-  circleId = '',
+  groupId = '',
   title = '',
   body = '',
   defaultSubmitButton = 'publish',
 }: {
   noteId?: string;
-  circleId?: string;
+  groupId?: string;
   title?: string;
   body?: string;
   defaultSubmitButton?: 'publish' | 'draft';
@@ -41,7 +41,7 @@ export function Editor({
 
   type FormState = {
     id: string;
-    circle: {
+    group: {
       id: string;
     };
     title: string;
@@ -50,8 +50,8 @@ export function Editor({
 
   const [form, setForm] = useState<FormState>({
     id: noteId,
-    circle: {
-      id: circleId,
+    group: {
+      id: groupId,
     },
     title: title,
     body: body,
@@ -115,10 +115,10 @@ export function Editor({
       </div>
       <div className={classNames(styles.h44, 'flex gap-2')}>
         <div className="flex-1">
-          <CircleSelector
-            circleId={circleId}
+          <GroupSelector
+            groupId={groupId}
             onChange={(id: string) => {
-              setForm({ ...form, circle: { id: id } });
+              setForm({ ...form, group: { id: id } });
             }}
           />
         </div>
