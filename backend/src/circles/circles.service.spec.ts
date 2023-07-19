@@ -20,8 +20,8 @@ const Circle = (
   name: string,
   rp?: 'ADMIN' | 'MEMBER' | 'ALL',
   wp?: 'ADMIN' | 'MEMBER' | 'ALL',
-  wc?: 'REQUIRE_ADMIN_APPROVAL' | 'NOT_REQUIRED',
-  jc?: 'REQUIRE_ADMIN_APPROVAL' | 'NOT_REQUIRED',
+  wc?: 'REQUIRE_ADMIN_APPROVAL' | 'ALLOWED',
+  jc?: 'REQUIRE_ADMIN_APPROVAL' | 'ALLOWED',
 ): Prisma.CircleCreateInput => ({
   handle: testPrefix + handle,
   name: testPrefix + name,

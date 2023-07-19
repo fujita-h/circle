@@ -34,7 +34,7 @@ const ConditionWriteNotes: RadioGroupOptionItem[] = [
     description: '投稿は保留状態になります。管理者が承認すると記事が投稿されます。',
     value: 'REQUIRE_ADMIN_APPROVAL',
   },
-  { name: '投稿はすぐに反映', description: '投稿はすぐに公開されます。', value: 'NOT_REQUIRED' },
+  { name: '投稿はすぐに反映', description: '投稿はすぐに公開されます。', value: 'ALLOWED' },
 ];
 
 const conditionJoinCircles: RadioGroupOptionItem[] = [
@@ -43,7 +43,7 @@ const conditionJoinCircles: RadioGroupOptionItem[] = [
     description: '参加を希望したユーザーは参加保留状態になります。管理者が承認するとグループに参加できます。',
     value: 'REQUIRE_ADMIN_APPROVAL',
   },
-  { name: '誰でも参加できる', description: '誰でもグループに参加できます。', value: 'NOT_REQUIRED' },
+  { name: '誰でも参加できる', description: '誰でもグループに参加できます。', value: 'ALLOWED' },
 ];
 
 export function UpdateCircleForm({ circleId }: { circleId: string }) {

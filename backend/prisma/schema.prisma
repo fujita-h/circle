@@ -226,12 +226,12 @@ enum PermissionWriteNote {
 
 enum ConditionWriteNote {
   REQUIRE_ADMIN_APPROVAL
-  NOT_REQUIRED
+  ALLOWED
 }
 
 enum ConditionJoinCircle {
   REQUIRE_ADMIN_APPROVAL
-  NOT_REQUIRED
+  ALLOWED
 }
 
 enum PermissionWriteComment {
