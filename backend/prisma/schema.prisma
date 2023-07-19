@@ -46,8 +46,8 @@ model Circle {
   description         String?             @db.Text
   readNotePermission  PermissionReadNote  @default(ADMIN) @map("read_note_permission")
   writeNotePermission PermissionWriteNote @default(ADMIN) @map("write_note_permission")
-  writeNoteCondition  ConditionWriteNote  @default(REQUIRE_ADMIN_APPROVAL) @map("write_note_condition")
-  joinCircleCondition ConditionJoinCircle @default(REQUIRE_ADMIN_APPROVAL) @map("join_circle_condition")
+  writeNoteCondition  ConditionWriteNote  @default(ALLOWED) @map("write_note_condition")
+  joinCircleCondition ConditionJoinCircle @default(DENIED) @map("join_circle_condition")
 
   members Membership[]
   notes   Note[]
@@ -230,6 +230,7 @@ enum ConditionWriteNote {
 }
 
 enum ConditionJoinCircle {
+  DENIED
   REQUIRE_ADMIN_APPROVAL
   ALLOWED
 }
@@ -270,6 +271,7 @@ enum CommentStatus {
 enum MembershipRole {
   ADMIN
   MEMBER
+  PENDING_APPROVAL
 }
 
 enum NotificationType {

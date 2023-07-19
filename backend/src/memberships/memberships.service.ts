@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma, MembershipRole } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -54,10 +54,18 @@ export class MembershipsService {
     return prisma.membership.count({ where });
   }
 
-  createIfNotExists({ userId, circleId }: { userId: string; circleId: string }) {
+  createIfNotExists({
+    userId,
+    circleId,
+    role,
+  }: {
+    userId: string;
+    circleId: string;
+    role: MembershipRole;
+  }) {
     return prisma.membership.upsert({
       where: { userId_circleId: { userId, circleId } },
-      create: { userId, circleId, role: 'MEMBER' },
+      create: { userId, circleId, role: role },
       update: {},
     });
   }

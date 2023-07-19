@@ -101,6 +101,7 @@ describe('MembershipsService', () => {
     const result = service.createIfNotExists({
       userId: testUser.id,
       circleId: testCircle.id,
+      role: 'MEMBER',
     });
     await expect(result).resolves.toHaveProperty('userId', testUser.id);
     await expect(result).resolves.toHaveProperty('circleId', testCircle.id);
@@ -110,6 +111,7 @@ describe('MembershipsService', () => {
     const result = service.createIfNotExists({
       userId: testUser.id,
       circleId: testCircle.id,
+      role: 'MEMBER',
     });
     await expect(result).resolves.toHaveProperty('userId', testUser.id);
     await expect(result).resolves.toHaveProperty('circleId', testCircle.id);

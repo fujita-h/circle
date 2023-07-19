@@ -6,5 +6,5 @@ export class CreateCircleDto {
   readNotePermission?: 'ADMIN' | 'MEMBER' | 'ALL';
   writeNotePermission?: 'ADMIN' | 'MEMBER' | 'ALL';
   writeNoteCondition?: 'REQUIRE_ADMIN_APPROVAL' | 'ALLOWED';
-  joinCircleCondition?: 'REQUIRE_ADMIN_APPROVAL' | 'ALLOWED';
+  joinCircleCondition?: 'DENIED' | 'REQUIRE_ADMIN_APPROVAL' | 'ALLOWED';
 }

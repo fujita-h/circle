@@ -28,6 +28,20 @@ const PermissionWriteNotes: RadioGroupOptionItem[] = [
   { name: '誰でも', description: '誰でもこのグループにアイテムを投稿できます。', value: 'ALL' },
 ];
 
+const conditionJoinCircles: RadioGroupOptionItem[] = [
+  {
+    name: '参加を拒否',
+    description: 'ユーザーからの参加を受け付けません。管理者がメンバーを追加することは制限されません。',
+    value: 'DENIED',
+  },
+  {
+    name: '管理者の承認が必要',
+    description: '参加を希望したユーザーは参加保留状態になります。管理者が承認するとグループに参加できます。',
+    value: 'REQUIRE_ADMIN_APPROVAL',
+  },
+  { name: '誰でも参加できる', description: '誰でもグループに参加できます。', value: 'ALLOWED' },
+];
+
 const ConditionWriteNotes: RadioGroupOptionItem[] = [
   {
     name: '管理者の承認が必要',
@@ -35,15 +49,6 @@ const ConditionWriteNotes: RadioGroupOptionItem[] = [
     value: 'REQUIRE_ADMIN_APPROVAL',
   },
   { name: '投稿はすぐに反映', description: '投稿はすぐに公開されます。', value: 'ALLOWED' },
-];
-
-const conditionJoinCircles: RadioGroupOptionItem[] = [
-  {
-    name: '管理者の承認が必要',
-    description: '参加を希望したユーザーは参加保留状態になります。管理者が承認するとグループに参加できます。',
-    value: 'REQUIRE_ADMIN_APPROVAL',
-  },
-  { name: '誰でも参加できる', description: '誰でもグループに参加できます。', value: 'ALLOWED' },
 ];
 
 export function UpdateCircleForm({ circleId }: { circleId: string }) {
@@ -229,10 +234,10 @@ export function UpdateCircleForm({ circleId }: { circleId: string }) {
 
           <div className="col-span-full">
             <RadioGroupOption
-              label="アイテムの投稿条件"
-              name="writeNoteCondition"
-              values={ConditionWriteNotes}
-              value={formState?.writeNoteCondition}
+              label="メンバーの加入設定"
+              name={'joinCircleCondition'}
+              values={conditionJoinCircles}
+              value={formState?.joinCircleCondition}
               disabled={formLocked}
               onChange={handleRadioChange}
             />
@@ -240,10 +245,10 @@ export function UpdateCircleForm({ circleId }: { circleId: string }) {
 
           <div className="col-span-full">
             <RadioGroupOption
-              label="メンバーの加入設定"
-              name={'joinCircleCondition'}
-              values={conditionJoinCircles}
-              value={formState?.joinCircleCondition}
+              label="アイテムの投稿条件"
+              name="writeNoteCondition"
+              values={ConditionWriteNotes}
+              value={formState?.writeNoteCondition}
               disabled={formLocked}
               onChange={handleRadioChange}
             />

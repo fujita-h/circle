@@ -77,7 +77,7 @@ const Circle = (
   rp?: 'ADMIN' | 'MEMBER' | 'ALL',
   wp?: 'ADMIN' | 'MEMBER' | 'ALL',
   wc?: 'REQUIRE_ADMIN_APPROVAL' | 'ALLOWED',
-  jc?: 'REQUIRE_ADMIN_APPROVAL' | 'ALLOWED',
+  jc?: 'DENIED' | 'REQUIRE_ADMIN_APPROVAL' | 'ALLOWED',
 ): CreateCircleDto => ({
   handle: testPrefix + handle,
   name: testPrefix + name,

@@ -20,6 +20,8 @@ import {
   Query,
   ParseIntPipe,
   NotFoundException,
+  UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import * as Iron from '@hapi/iron';
 import { UsersService } from '../users/users.service';
@@ -114,9 +116,30 @@ export class UserController {
   }
 
   @Put('joined/circles/:circleId')
-  joinCircle(@Request() request: any, @Param('circleId') circleId: string) {
+  async joinCircle(@Request() request: any, @Param('circleId') circleId: string) {
     const userId = request.user.id;
-    return this.membershipsService.createIfNotExists({ userId, circleId });
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let circle;
+    try {
+      circle = await this.circlesService.findOne({ where: { id: circleId } });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!circle) {
+      throw new NotFoundException();
+    }
+
+    if (circle.joinCircleCondition === 'DENIED') {
+      throw new ForbiddenException();
+    }
+
+    const role =
+      circle.joinCircleCondition === 'REQUIRE_ADMIN_APPROVAL' ? 'PENDING_APPROVAL' : 'MEMBER';
+
+    return this.membershipsService.createIfNotExists({ userId, circleId, role });
   }
 
   @Delete('joined/circles/:circleId')
