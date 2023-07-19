@@ -8,9 +8,9 @@ import { useRouter } from 'next/navigation';
 import { PencilSquareIcon, ViewColumnsIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { useSWRConfig } from 'swr';
 import { classNames } from '@/utils';
-import { RenderMDX } from '@/components/mdx';
+import mdStyles from '@/components/react-markdown/styles.module.css';
+import { Parser } from '@/components/react-markdown/parser';
 import styles from './styles.module.css';
-import mdxStyles from '@/components/mdx/mdx-styles.module.css';
 import { SubmitButton } from './submit-button';
 import { GroupSelector } from './group-selector';
 import { DnDTextarea } from './dnd-textarea';
@@ -174,12 +174,13 @@ export function Editor({
         <div
           className={classNames(
             styles.thinScrollbar,
-            mdxStyles.mdx,
             editorMode === 'edit' ? 'hidden' : 'block',
             'w-full rounded-md border-0 px-4 py-2 ring-1 ring-inset ring-gray-300 bg-white break-words overflow-y-scroll',
           )}
         >
-          <RenderMDX source={form.body} />
+          <Parser addHeaderAnchor={false} className={mdStyles.note}>
+            {form.body}
+          </Parser>
         </div>
       </div>
       <div className="flex justify-end">
