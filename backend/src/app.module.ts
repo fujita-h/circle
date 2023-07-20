@@ -10,14 +10,20 @@ import { CommentsService } from './comments/comments.service';
 import { DraftsController } from './drafts/drafts.controller';
 import { EsService } from './es/es.service';
 import { FilesController } from './files/files.controller';
+import { FollowsService } from './follows/follows.service';
 import { GroupsController } from './groups/groups.controller';
 import { GroupsService } from './groups/groups.service';
+import { LikesService } from './likes/likes.service';
 import { MembershipsService } from './memberships/memberships.service';
 import { NotesService } from './notes/notes.service';
 import { NotesController } from './notes/notes.controller';
+import { NotificationsService } from './notifications/notifications.service';
+import { StocksService } from './stocks/stocks.service';
+import { TagsService } from './tags/tags.service';
 import { UserController } from './user/user.controller';
 import { UsersController } from './users/users.controller';
 import { UsersService } from './users/users.service';
+import { WatchesService } from './watches/watches.service';
 
 @Module({
   imports: [
@@ -42,10 +48,16 @@ import { UsersService } from './users/users.service';
     AzblobService,
     CommentsService,
     EsService,
+    FollowsService,
     GroupsService,
+    LikesService,
     MembershipsService,
     NotesService,
+    NotificationsService,
+    StocksService,
+    TagsService,
     UsersService,
+    WatchesService,
   ],
 })
 export class AppModule {}
