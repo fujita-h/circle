@@ -63,20 +63,32 @@ export class MembershipsService {
     groupId: string;
     role: MembershipRole;
   }) {
-    return prisma.membership.upsert({
-      where: { userId_groupId: { userId, groupId } },
-      create: { userId, groupId, role: role },
-      update: {},
+    return prisma.$transaction(async (prisma) => {
+      let membership;
+      membership = await prisma.membership.findUnique({
+        where: { userId_groupId: { userId, groupId } },
+      });
+      if (!membership) {
+        membership = await prisma.membership.create({
+          data: { userId, groupId, role },
+        });
+      }
+      return membership;
     });
   }
 
   removeIfExists({ userId, groupId }: { userId: string; groupId: string }) {
     return prisma.$transaction(async (prisma) => {
-      const check = await prisma.membership.findUnique({
+      let membership;
+      membership = await prisma.membership.findUnique({
         where: { userId_groupId: { userId, groupId } },
       });
-      if (!check) return null;
-      return prisma.membership.delete({ where: { userId_groupId: { userId, groupId } } });
+      if (membership) {
+        membership = await prisma.membership.delete({
+          where: { userId_groupId: { userId, groupId } },
+        });
+      }
+      return membership;
     });
   }
 }
