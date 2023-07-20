@@ -11,4 +11,72 @@ export class LikesService {
   constructor(private configService: ConfigService) {
     this.logger.log('Initializing Likes Service...');
   }
+
+  findOne({
+    where,
+    include = { user: false, note: false },
+  }: {
+    where: Prisma.LikeWhereUniqueInput;
+    include?: Prisma.LikeInclude;
+  }) {
+    return prisma.like.findUnique({ where, include });
+  }
+
+  findFirst({
+    where,
+    orderBy,
+    include = { user: false, note: false },
+  }: {
+    where: Prisma.LikeWhereInput;
+    orderBy?: Prisma.Enumerable<Prisma.LikeOrderByWithRelationInput>;
+    include?: Prisma.LikeInclude;
+  }) {
+    return prisma.like.findFirst({ where, orderBy, include });
+  }
+
+  findMany({
+    where,
+    orderBy,
+    include = { user: false, note: false },
+    skip,
+    take,
+  }: {
+    where: Prisma.LikeWhereInput;
+    orderBy?: Prisma.Enumerable<Prisma.LikeOrderByWithRelationInput>;
+    include?: Prisma.LikeInclude;
+    skip?: number;
+    take?: number;
+  }) {
+    return prisma.like.findMany({ where, orderBy, include, skip, take });
+  }
+
+  createIfNotExists({ userId, noteId }: { userId: string; noteId: string }) {
+    return prisma.$transaction(async (prisma) => {
+      let like;
+      like = await prisma.like.findUnique({
+        where: { userId_noteId: { userId, noteId } },
+      });
+      if (!like) {
+        like = await prisma.like.create({
+          data: { userId, noteId },
+        });
+      }
+      return like;
+    });
+  }
+
+  removeIfExist({ userId, noteId }: { userId: string; noteId: string }) {
+    return prisma.$transaction(async (prisma) => {
+      let like;
+      like = await prisma.like.findUnique({
+        where: { userId_noteId: { userId, noteId } },
+      });
+      if (like) {
+        like = await prisma.like.delete({
+          where: { userId_noteId: { userId, noteId } },
+        });
+      }
+      return like;
+    });
+  }
 }
