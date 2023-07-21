@@ -53,7 +53,10 @@ export class CommentsService {
     skip?: number;
     take?: number;
   }) {
-    return prisma.comment.findMany({ where, orderBy, include, skip, take });
+    return prisma.$transaction([
+      prisma.comment.findMany({ where, orderBy, include, skip, take }),
+      prisma.comment.count({ where }),
+    ]);
   }
 
   count({ where }: { where: Prisma.CommentWhereInput }) {

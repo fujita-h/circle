@@ -90,21 +90,24 @@ export class UserController {
     @Query('take', ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
-    return await this.membershipsService.findMany({
-      where: { userId, role: { in: ['ADMIN', 'MEMBER'] } },
-      orderBy: { createdAt: 'asc' },
-      include: { group: true },
-      skip,
-      take,
-    });
-  }
-
-  @Get('/joined/groups/count')
-  async countJoinedGroups(@Request() request: any) {
-    const userId = request.user.id;
-    return await this.membershipsService.count({
-      where: { userId, role: { in: ['ADMIN', 'MEMBER'] } },
-    });
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let memberships;
+    try {
+      const [data, total] = await this.membershipsService.findMany({
+        where: { userId, role: { in: ['ADMIN', 'MEMBER'] } },
+        orderBy: { createdAt: 'asc' },
+        include: { group: true },
+        skip,
+        take,
+      });
+      memberships = { data, meta: { total } };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return memberships;
   }
 
   @Get('/joined/groups/handle/:handle')
@@ -148,22 +151,27 @@ export class UserController {
     return this.membershipsService.removeIfExists({ userId, groupId });
   }
 
-  @Get('/groups/postable')
+  @Get('groups/postable')
   async findPostable(@Request() request: any) {
     const userId = request.user.id;
-
-    // check input
     if (!userId) {
-      throw new Error('Invalid input');
+      throw new UnauthorizedException();
     }
-
-    return await this.groupsService.findMany({
-      where: {
-        status: 'NORMAL',
-        handle: { not: null },
-        members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
-      },
-    });
+    let groups;
+    try {
+      const [data, total] = await this.groupsService.findMany({
+        where: {
+          status: 'NORMAL',
+          handle: { not: null },
+          members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
+        },
+      });
+      groups = { data, meta: { total } };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return groups;
   }
 
   @Patch()

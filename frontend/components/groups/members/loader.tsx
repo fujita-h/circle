@@ -23,31 +23,26 @@ export function Loader({ sourcePath, countPath }: { sourcePath: string; countPat
 
   // fetch data
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
-  const { data: members, isLoading: isDataLoading } = useSWR<any[]>(
+  const { data: members, isLoading } = useSWR<{ data: any[]; meta: { total: number } }>(
     `${environment.BACKEND_ENDPOINT}/${sourcePath}?take=${take}&skip=${skip}`,
-    fetcher,
-    { revalidateOnFocus: false },
-  );
-  const { data: total, isLoading: isCountLoading } = useSWR<number>(
-    `${environment.BACKEND_ENDPOINT}/${countPath ?? sourcePath + '/count'}`,
     fetcher,
     { revalidateOnFocus: false },
   );
 
   // render loading
-  if (isDataLoading || isCountLoading) {
+  if (isLoading) {
     return <div>loading...</div>;
   }
 
   // render error
-  if (!members || total === undefined) {
+  if (!members || members.data.length === 0 || members.meta.total === 0) {
     return <div>No members</div>;
   }
 
   return (
     <>
-      <MemberList members={members} />
-      <LinkPagination pathname={pathname} page={page} total={total} take={take} />
+      <MemberList members={members.data} />
+      <LinkPagination pathname={pathname} page={page} total={members.meta.total} take={take} />
     </>
   );
 }

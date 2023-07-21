@@ -53,9 +53,13 @@ export function Loader({ noteId }: { noteId: string }) {
     data: comments,
     isLoading: isDataLoading,
     mutate: commentsMutate,
-  } = useSWR<any[]>(`${environment.BACKEND_ENDPOINT}/notes/${noteId}/comments?take=${take}&skip=${skip}`, fetcher, {
-    revalidateOnFocus: false,
-  });
+  } = useSWR<{ data: any[]; meta: { total: number } }>(
+    `${environment.BACKEND_ENDPOINT}/notes/${noteId}/comments?take=${take}&skip=${skip}`,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+    },
+  );
 
   if (isDataLoading) {
     return <div>loading...</div>;
@@ -72,7 +76,7 @@ export function Loader({ noteId }: { noteId: string }) {
           <h2 className="text-xl font-bold ml-1">コメント</h2>
         </div>
         <div className="mt-3">
-          <CommentList comments={comments} />
+          <CommentList comments={comments.data} />
         </div>
       </div>
 

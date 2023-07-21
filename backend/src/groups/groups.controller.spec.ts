@@ -36,7 +36,7 @@ const deleteTestUsers = async (usersService: UsersService) => {
   await usersService
     .findMany({ where: { handle: { startsWith: testPrefix } } })
     .then(async (results) => {
-      for (const result of results) {
+      for (const result of results[0]) {
         await usersService.remove({ where: { id: result.id } });
       }
     });
@@ -45,7 +45,7 @@ const deleteTestGroups = async (groupsService: GroupsService) => {
   await groupsService
     .findMany({ where: { handle: { startsWith: testPrefix } } })
     .then(async (results) => {
-      for (const result of results) {
+      for (const result of results[0]) {
         await groupsService.remove({ where: { id: result.id } });
       }
     });
@@ -61,7 +61,7 @@ const deleteTestNotes = async (notesService: NotesService) => {
       },
     })
     .then(async (results) => {
-      for (const result of results) {
+      for (const result of results[0]) {
         await notesService.remove({ where: { id: result.id } });
       }
     });
@@ -219,7 +219,7 @@ describe('GroupsController/Base', () => {
 
   it('Group一覧を取得', async () => {
     const result = await controller.findMany();
-    await expect(result.length).toBeGreaterThanOrEqual(2);
+    await expect(result.data.length).toBeGreaterThanOrEqual(2);
   });
 
   it('User1がGroup1を更新', async () => {

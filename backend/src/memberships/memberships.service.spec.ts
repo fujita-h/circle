@@ -48,8 +48,8 @@ describe('MembershipsService', () => {
         },
       })
       .then(async (results) => {
-        if (results && results.length > 0) {
-          for (const result of results) {
+        if (results[0] && results[0].length > 0) {
+          for (const result of results[0]) {
             await usersService.remove({ where: { id: result.id } });
           }
         }
@@ -67,8 +67,8 @@ describe('MembershipsService', () => {
         },
       })
       .then(async (results) => {
-        if (results && results.length > 0) {
-          for (const result of results) {
+        if (results[0] && results[0].length > 0) {
+          for (const result of results[0]) {
             await groupsService.remove({ where: { id: result.id } });
           }
         }

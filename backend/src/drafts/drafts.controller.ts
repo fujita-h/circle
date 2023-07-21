@@ -129,7 +129,7 @@ export class DraftsController {
 
     let drafts;
     try {
-      drafts = await this.notesService.findMany({
+      const [data, total] = await this.notesService.findMany({
         where: {
           status: 'NORMAL',
           draftBlobPointer: { not: null },
@@ -140,34 +140,13 @@ export class DraftsController {
         skip,
         take,
       });
+      drafts = { data, meta: { total } };
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
 
     return drafts;
-  }
-
-  @Get('count')
-  async count(@Request() request: any) {
-    const userId = request.user.id;
-    if (!userId) {
-      throw new UnauthorizedException();
-    }
-    let count;
-    try {
-      count = this.notesService.count({
-        where: {
-          status: 'NORMAL',
-          draftBlobPointer: { not: null },
-          userId: userId,
-        },
-      });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    return count;
   }
 
   private async _getDraft(userId: string, draftId: string) {

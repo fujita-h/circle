@@ -123,7 +123,10 @@ export class NotesService {
     skip?: number;
     take?: number;
   }) {
-    return prisma.note.findMany({ where, orderBy, include, skip, take });
+    return prisma.$transaction([
+      prisma.note.findMany({ where, orderBy, include, skip, take }),
+      prisma.note.count({ where }),
+    ]);
   }
 
   count({ where }: { where: Prisma.NoteWhereInput }) {

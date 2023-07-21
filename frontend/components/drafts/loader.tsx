@@ -12,25 +12,25 @@ export function Loader({ activeDraftId }: { activeDraftId?: string }) {
   const account = useAccount(accounts[0] || {});
 
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
-  const { data: count, isLoading: isCountLoading } = useSWR<number>(`${environment.BACKEND_ENDPOINT}/drafts/count`, fetcher, {
-    revalidateOnFocus: false,
-  });
+  const { data: drafts, isLoading } = useSWR<{ data: any[]; meta: { total: number } }>(
+    `${environment.BACKEND_ENDPOINT}/drafts?skip=0&take=200`,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+    },
+  );
 
-  const { data: drafts, isLoading: isDraftsLoading } = useSWR<any[]>(`${environment.BACKEND_ENDPOINT}/drafts?skip=0&take=200`, fetcher, {
-    revalidateOnFocus: false,
-  });
-
-  if (isCountLoading || isDraftsLoading) {
+  if (isLoading) {
     return <div>loading...</div>;
   }
 
-  if (!drafts || drafts.length === 0 || count === undefined) {
+  if (!drafts || drafts.data.length === 0 || drafts.meta.total === 0) {
     return <div>No Drafts</div>;
   }
 
   return (
     <>
-      <List active={activeDraftId} drafts={drafts} />
+      <List active={activeDraftId} drafts={drafts.data} />
     </>
   );
 }

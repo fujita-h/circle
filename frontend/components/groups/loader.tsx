@@ -23,31 +23,26 @@ export function Loader({ sourcePath, countPath }: { sourcePath: string; countPat
 
   // fetch data
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
-  const { data: groups, isLoading: isGroupLoading } = useSWR<any[]>(
+  const { data: groups, isLoading } = useSWR<{ data: any[]; meta: { total: number } }>(
     `${environment.BACKEND_ENDPOINT}/${sourcePath}?take=${take}&skip=${skip}`,
-    fetcher,
-    { revalidateOnFocus: false },
-  );
-  const { data: total, isLoading: isCountLoading } = useSWR<number>(
-    `${environment.BACKEND_ENDPOINT}/${countPath ?? sourcePath + '/count'}`,
     fetcher,
     { revalidateOnFocus: false },
   );
 
   // render loading
-  if (isCountLoading || isGroupLoading) {
+  if (isLoading) {
     return <div>loading...</div>;
   }
 
   // render error
-  if (!groups || total === undefined) {
+  if (!groups || groups.data.length === 0 || groups.meta.total === 0) {
     return <div>No Groups</div>;
   }
 
   return (
     <>
-      <CardList groups={groups} />
-      <LinkPagination pathname={pathname} page={page} total={total} take={take} />
+      <CardList groups={groups.data} />
+      <LinkPagination pathname={pathname} page={page} total={groups.meta.total} take={take} />
     </>
   );
 }

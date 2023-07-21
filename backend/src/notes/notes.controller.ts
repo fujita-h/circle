@@ -142,7 +142,7 @@ export class NotesController {
 
     let notes;
     try {
-      notes = await this.notesService.findMany({
+      const [data, total] = await this.notesService.findMany({
         where: {
           blobPointer: { not: null }, // only notes with blobPointer
           user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
@@ -177,58 +177,13 @@ export class NotesController {
         skip,
         take,
       });
+      notes = { data, meta: { total } };
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
 
     return notes;
-  }
-
-  @Get('count')
-  async countNotes(@Request() request: any) {
-    const userId = request.user.id;
-    if (!userId) {
-      throw new UnauthorizedException();
-    }
-    let count;
-    try {
-      count = this.notesService.count({
-        where: {
-          blobPointer: { not: null }, // only notes with blobPointer
-          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
-          OR: [
-            { userId: userId }, // user is owner
-            {
-              status: 'NORMAL',
-              group: {
-                handle: { not: null },
-                status: 'NORMAL',
-                readNotePermission: 'ADMIN',
-                members: { some: { userId: userId, role: 'ADMIN' } },
-              },
-            }, // readNotePermission is ADMIN and user is admin of group
-            {
-              status: 'NORMAL',
-              group: {
-                handle: { not: null },
-                status: 'NORMAL',
-                readNotePermission: 'MEMBER',
-                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
-              },
-            }, // readNotePermission is MEMBER and user is member of group
-            {
-              status: 'NORMAL',
-              group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
-            }, // readNotePermission is ALL
-          ],
-        },
-      });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    return count;
   }
 
   @Get('search')
@@ -239,7 +194,7 @@ export class NotesController {
     @Query('take', ParseIntPipe) take: number,
   ) {
     const userId = request.user.id;
-    const groups = await this.groupsService.findMany({
+    const [groups, count] = await this.groupsService.findMany({
       where: {
         status: 'NORMAL',
         handle: { not: null }, // only groups with handle
@@ -478,63 +433,19 @@ export class NotesController {
 
     let comments;
     try {
-      comments = await this.commentsService.findMany({
+      const [data, total] = await this.commentsService.findMany({
         where: { noteId: note.id, status: 'NORMAL' },
         include: { user: true },
         orderBy: { createdAt: 'asc' },
         skip,
         take,
       });
+      comments = { data, meta: { total } };
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
     return comments;
-  }
-
-  @Get(':id/comments/count')
-  async countComments(@Request() request: any, @Param('id') id: string) {
-    const userId = request.user.id;
-    if (!userId) {
-      throw new UnauthorizedException();
-    }
-
-    let note;
-    try {
-      note = await this.notesService.findFirst({
-        where: {
-          id,
-          blobPointer: { not: null }, // only notes with blobPointer
-          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
-        },
-      });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!note) {
-      throw new NotFoundException();
-    }
-    try {
-      note = await this._getNote(userId, id);
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!note) {
-      throw new ForbiddenException();
-    }
-
-    let count;
-    try {
-      count = await this.commentsService.count({
-        where: { noteId: note.id, status: 'NORMAL' },
-      });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    return count;
   }
 
   @Post(':id/comments')

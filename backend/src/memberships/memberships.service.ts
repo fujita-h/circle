@@ -47,7 +47,10 @@ export class MembershipsService {
     skip?: number;
     take?: number;
   }) {
-    return prisma.membership.findMany({ where, orderBy, include, skip, take });
+    return prisma.$transaction([
+      prisma.membership.findMany({ where, orderBy, include, skip, take }),
+      prisma.membership.count({ where }),
+    ]);
   }
 
   count({ where }: { where: Prisma.MembershipWhereInput }) {

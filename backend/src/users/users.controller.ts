@@ -71,34 +71,24 @@ export class UsersController {
   }
 
   @Get()
-  findMany(@Query('take', ParseIntPipe) take?: number, @Query('skip', ParseIntPipe) skip?: number) {
+  async findMany(
+    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', ParseIntPipe) skip?: number,
+  ) {
     let users;
     try {
-      users = this.usersService.findMany({
+      const [data, total] = await this.usersService.findMany({
         where: { handle: { not: null }, status: 'NORMAL' },
         orderBy: { handle: 'asc' },
         take,
         skip,
       });
+      users = { data, meta: { total } };
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
     return users;
-  }
-
-  @Get('count')
-  async count() {
-    let count;
-    try {
-      count = await this.usersService.count({
-        where: { handle: { not: null }, status: 'NORMAL' },
-      });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    return count;
   }
 
   @Get(':id')
@@ -161,32 +151,19 @@ export class UsersController {
   ) {
     let memberships;
     try {
-      memberships = await this.membershipsService.findMany({
+      const [data, total] = await this.membershipsService.findMany({
         where: { userId: id, role: { in: ['ADMIN', 'MEMBER'] } },
         orderBy: { createdAt: 'asc' },
         include: { group: true },
         skip,
         take,
       });
+      memberships = { data, meta: { total } };
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
     return memberships;
-  }
-
-  @Get(':id/joined/groups/count')
-  async countJoinedGroups(@Param('id') id: string) {
-    let count;
-    try {
-      count = await this.membershipsService.count({
-        where: { userId: id, role: { in: ['ADMIN', 'MEMBER'] } },
-      });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    return count;
   }
 
   @Get(':id/notes')
@@ -214,62 +191,9 @@ export class UsersController {
       throw new NotFoundException();
     }
 
-    return this.notesService.findMany({
-      where: {
-        blobPointer: { not: null }, // only notes with blobPointer
-        userId: id, // only notes of existing users
-        OR: [
-          { groupId: null },
-          {
-            status: 'NORMAL',
-            group: {
-              readNotePermission: 'ADMIN',
-              members: { some: { userId: userId, role: 'ADMIN' } },
-            },
-          }, // readNotePermission is ADMIN and user is admin of group
-          {
-            status: 'NORMAL',
-            group: {
-              readNotePermission: 'MEMBER',
-              members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
-            },
-          }, // readNotePermission is MEMBER and user is member of group
-          {
-            status: 'NORMAL',
-            group: { readNotePermission: 'ALL' },
-          }, // readNotePermission is ALL
-        ],
-      },
-      include: { user: true, group: true },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take,
-    });
-  }
-
-  @Get(':id/notes/count')
-  async countNotes(@Request() request: any, @Param('id') id: string) {
-    const userId = request.user.id;
-    if (!userId) {
-      throw new UnauthorizedException();
-    }
-
-    let user;
+    let notes;
     try {
-      user = await this.usersService.findFirst({
-        where: { id, handle: { not: null }, status: 'NORMAL' },
-      });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    let count;
-    try {
-      count = await this.notesService.count({
+      const [data, total] = await this.notesService.findMany({
         where: {
           blobPointer: { not: null }, // only notes with blobPointer
           userId: id, // only notes of existing users
@@ -295,12 +219,17 @@ export class UsersController {
             }, // readNotePermission is ALL
           ],
         },
+        include: { user: true, group: true },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
       });
+      notes = { data, meta: { total } };
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
-    return count;
+    return notes;
   }
 
   @Get('handle/:handle')
@@ -339,21 +268,6 @@ export class UsersController {
     return this.findJoinedGroups(user.id, skip, take);
   }
 
-  @Get('handle/:handle/joined/groups/count')
-  async countJoinedGroupsByHandle(@Param('handle') handle: string) {
-    let user;
-    try {
-      user = await this.usersService.findOne({ where: { handle } });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!user) {
-      throw new NotFoundException();
-    }
-    return this.countJoinedGroups(user.id);
-  }
-
   @Get('handle/:handle/notes')
   async findNotesByHandle(
     @Request() request: any,
@@ -372,21 +286,6 @@ export class UsersController {
       throw new NotFoundException();
     }
     return this.findNotes(request, id.id, skip, take);
-  }
-
-  @Get('handle/:handle/notes/count')
-  async countNotesByHandle(@Request() request: any, @Param('handle') handle: string) {
-    let id;
-    try {
-      id = await this.usersService.findOne({ where: { handle } });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!id) {
-      throw new NotFoundException();
-    }
-    return this.countNotes(request, id.id);
   }
 
   @Put(':id')

@@ -111,8 +111,8 @@ describe('NotesService', () => {
 
   it('Note一覧取得', async () => {
     const result = await noteService.findMany({ where: { group: { id: testGroup.id } } });
-    await expect(result.length).toBeGreaterThan(0);
-    await expect(result[0]).toHaveProperty('id', testNote.id);
+    await expect(result[0].length).toBeGreaterThan(0);
+    await expect(result[0][0]).toHaveProperty('id', testNote.id);
   });
 
   it('Note取得', async () => {

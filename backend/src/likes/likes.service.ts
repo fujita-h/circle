@@ -47,7 +47,10 @@ export class LikesService {
     skip?: number;
     take?: number;
   }) {
-    return prisma.like.findMany({ where, orderBy, include, skip, take });
+    return prisma.$transaction([
+      prisma.like.findMany({ where, orderBy, include, skip, take }),
+      prisma.like.count({ where }),
+    ]);
   }
 
   createIfNotExists({ userId, noteId }: { userId: string; noteId: string }) {

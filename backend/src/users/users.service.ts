@@ -58,7 +58,10 @@ export class UsersService {
     take?: number;
     skip?: number;
   }) {
-    return prisma.user.findMany({ where, orderBy, include, take, skip });
+    return prisma.$transaction([
+      prisma.user.findMany({ where, orderBy, include, take, skip }),
+      prisma.user.count({ where }),
+    ]);
   }
 
   count({ where }: { where?: Prisma.UserWhereInput }) {

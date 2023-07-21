@@ -81,8 +81,8 @@ describe('NotesController', () => {
         },
       })
       .then(async (results) => {
-        if (results && results.length > 0) {
-          for (const result of results) {
+        if (results[0] && results[0].length > 0) {
+          for (const result of results[0]) {
             await notesService.remove({ where: { id: result.id } });
           }
         }
@@ -100,8 +100,8 @@ describe('NotesController', () => {
         },
       })
       .then(async (results) => {
-        if (results && results.length > 0) {
-          for (const result of results) {
+        if (results[0] && results[0].length > 0) {
+          for (const result of results[0]) {
             await usersService.remove({ where: { id: result.id } });
           }
         }
@@ -119,8 +119,8 @@ describe('NotesController', () => {
         },
       })
       .then(async (results) => {
-        if (results && results.length > 0) {
-          for (const result of results) {
+        if (results[0] && results[0].length > 0) {
+          for (const result of results[0]) {
             await groupsService.remove({ where: { id: result.id } });
           }
         }
@@ -161,35 +161,36 @@ describe('NotesController', () => {
   it('Group1に対してUser1でNotesを取得', async () => {
     const req = { user: { id: testUser1.id } };
     const result = groupsController.findNotes(req, testGroup1.id);
-    await expect(result).resolves.toHaveLength(1);
+    const { data, meta } = await result;
+    await expect(data).toHaveLength(1);
   });
 
   it('noteを取得', async () => {
     const req = { user: { id: testUser1.id } };
     const pre = await groupsController.findNotes(req, testGroup1.id);
-    const result = controller.findOne(req, pre[0].id);
-    await expect(result).resolves.toHaveProperty('id', pre[0].id);
+    const result = controller.findOne(req, pre.data[0].id);
+    await expect(result).resolves.toHaveProperty('id', pre.data[0].id);
     await expect(result).resolves.toHaveProperty('title', testNote1.title);
   });
 
   it('noteを更新', async () => {
     const req = { user: { id: testUser1.id } };
     const pre = await groupsController.findNotes(req, testGroup1.id);
-    const result = controller.update(req, pre[0].id, {
+    const result = controller.update(req, pre.data[0].id, {
       ...testNote1,
       title: 'updated-title',
       body: 'updated-body',
       group: { id: testGroup1.id },
     });
-    await expect(result).resolves.toHaveProperty('id', pre[0].id);
+    await expect(result).resolves.toHaveProperty('id', pre.data[0].id);
     await expect(result).resolves.toHaveProperty('title', 'updated-title');
   });
 
   it('noteを削除', async () => {
     const req = { user: { id: testUser1.id } };
     const pre = await groupsController.findNotes(req, testGroup1.id);
-    const result = controller.remove(req, pre[0].id);
-    await expect(result).resolves.toHaveProperty('id', pre[0].id);
+    const result = controller.remove(req, pre.data[0].id);
+    await expect(result).resolves.toHaveProperty('id', pre.data[0].id);
     await expect(result).resolves.toHaveProperty('title', 'updated-title');
   });
 

@@ -52,8 +52,8 @@ describe('UsersController', () => {
         },
       })
       .then(async (results) => {
-        if (results && results.length > 0) {
-          for (const result of results) {
+        if (results[0] && results[0].length > 0) {
+          for (const result of results[0]) {
             await usersService.remove({ where: { id: result.id } });
           }
         }
@@ -91,9 +91,9 @@ describe('UsersController', () => {
     let end = false;
     while (!end) {
       const result = await controller.findMany(take, skip);
-      expect(result.length).toBeLessThanOrEqual(take);
+      expect(result.data.length).toBeLessThanOrEqual(take);
       skip += take;
-      end = result.length < take;
+      end = result.data.length < take;
     }
   });
 

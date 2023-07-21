@@ -1,1 +1,1 @@
-export { Loader as Comments } from './list-loader';
+export { Loader as Comments } from './loader';

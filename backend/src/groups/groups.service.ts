@@ -58,7 +58,10 @@ export class GroupsService {
     take?: number;
     skip?: number;
   }) {
-    return prisma.group.findMany({ where, orderBy, include, take, skip });
+    return prisma.$transaction([
+      prisma.group.findMany({ where, orderBy, include, take, skip }),
+      prisma.group.count({ where }),
+    ]);
   }
 
   count({ where }: { where?: Prisma.GroupWhereInput }) {

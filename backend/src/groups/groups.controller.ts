@@ -86,28 +86,17 @@ export class GroupsController {
   ) {
     let groups;
     try {
-      groups = await this.groupsService.findMany({
+      const [data, total] = await this.groupsService.findMany({
         where: { handle: { not: null } },
         take,
         skip,
       });
+      groups = { data, meta: { total } };
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
     return groups;
-  }
-
-  @Get('count')
-  async count() {
-    let count;
-    try {
-      count = await this.groupsService.count({ where: { handle: { not: null } } });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    return count;
   }
 
   @Get(':id')
@@ -240,7 +229,7 @@ export class GroupsController {
     // get memberships
     let memberships;
     try {
-      memberships = await this.membershipsService.findMany({
+      const [data, total] = await this.membershipsService.findMany({
         where: {
           groupId: group.id,
         },
@@ -249,6 +238,7 @@ export class GroupsController {
         orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
         include: { user: true },
       });
+      memberships = { data, meta: { total } };
     } catch (e) {
       throw new InternalServerErrorException();
     }
@@ -258,35 +248,6 @@ export class GroupsController {
 
     // return result
     return memberships;
-  }
-
-  @Get(':id/members/count')
-  async countMembers(@Param('id') id: string) {
-    // get group
-    let group;
-    try {
-      group = await this.groupsService.findFirst({
-        where: { id, handle: { not: null }, status: 'NORMAL' },
-      });
-    } catch (e) {
-      throw new InternalServerErrorException();
-    }
-    if (!group) {
-      throw new NotFoundException();
-    }
-
-    let count;
-    try {
-      count = await this.membershipsService.count({
-        where: {
-          groupId: group.id,
-        },
-      });
-    } catch (e) {
-      throw new InternalServerErrorException();
-    }
-
-    return count;
   }
 
   @Get(':id/notes')
@@ -299,7 +260,7 @@ export class GroupsController {
     const userId = request.user.id;
     let notes;
     try {
-      notes = await this.notesService.findMany({
+      const [data, total] = await this.notesService.findMany({
         where: {
           blobPointer: { not: null }, // only notes with blobPointer
           user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
@@ -335,55 +296,12 @@ export class GroupsController {
         skip,
         take,
       });
+      notes = { data, meta: { total } };
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
     return notes;
-  }
-
-  @Get(':id/notes/count')
-  async countNotes(@Request() request: any, @Param('id') id: string) {
-    const userId = request.user.id;
-    let count;
-    try {
-      count = await this.notesService.count({
-        where: {
-          blobPointer: { not: null }, // only notes with blobPointer
-          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
-          groupId: id,
-          OR: [
-            { userId: userId }, // user is owner
-            {
-              status: 'NORMAL',
-              group: {
-                handle: { not: null },
-                status: 'NORMAL',
-                readNotePermission: 'ADMIN',
-                members: { some: { userId: userId, role: 'ADMIN' } },
-              },
-            }, // readNotePermission is ADMIN and user is admin of group
-            {
-              status: 'NORMAL',
-              group: {
-                handle: { not: null },
-                status: 'NORMAL',
-                readNotePermission: 'MEMBER',
-                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
-              },
-            }, // readNotePermission is MEMBER and user is member of group
-            {
-              status: 'NORMAL',
-              group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
-            }, // readNotePermission is ALL
-          ],
-        },
-      });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    return count;
   }
 
   @Get('handle/:handle')
@@ -430,22 +348,6 @@ export class GroupsController {
     return this.findMembers(group.id, skip, take);
   }
 
-  @Get('handle/:handle/members/count')
-  async countMembersByHandle(@Param('handle') handle: string) {
-    let group;
-    try {
-      group = await this.groupsService.findOne({ where: { handle } });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!group || group.status === 'DELETED') {
-      throw new NotFoundException();
-    }
-
-    return this.countMembers(group.id);
-  }
-
   @Get('handle/:handle/notes')
   async findNotesByHandle(
     @Request() request: any,
@@ -465,22 +367,6 @@ export class GroupsController {
     }
 
     return this.findNotes(request, group.id, skip, take);
-  }
-
-  @Get('handle/:handle/notes/count')
-  async countNotesByHandle(@Request() request: any, @Param('handle') handle: string) {
-    let group;
-    try {
-      group = await this.groupsService.findOne({ where: { handle } });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!group || group.status === 'DELETED') {
-      throw new NotFoundException();
-    }
-
-    return this.countNotes(request, group.id);
   }
 
   @Patch(':id')

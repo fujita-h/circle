@@ -10,7 +10,7 @@ const deleteTestGroups = async (groupsService: GroupsService) => {
   await groupsService
     .findMany({ where: { handle: { startsWith: testPrefix } } })
     .then(async (results) => {
-      for (const result of results) {
+      for (const result of results[0]) {
         await groupsService.remove({ where: { id: result.id } });
       }
     });
