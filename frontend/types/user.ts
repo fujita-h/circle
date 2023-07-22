@@ -2,6 +2,7 @@ import { Membership } from './membership';
 import { Comment } from './comment';
 import { Note } from './note';
 import { Stock } from './stock';
+import { StockLabel } from './stock-label';
 import { Like } from './like';
 import { Follow } from './follow';
 import { Watch } from './watch';
@@ -21,6 +22,7 @@ export interface User {
   Comments: Comment[];
   Notes?: Note[];
   Stocks?: Stock[];
+  StockLabels?: StockLabel[];
   Likes?: Like[];
   Following?: Follow[];
   Followed?: Follow[];

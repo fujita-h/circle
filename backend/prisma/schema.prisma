@@ -25,6 +25,7 @@ model User {
   Comments      Comment[]
   Notes         Note[]
   Stocks        Stock[]
+  StockLabels   StockLabel[]
   Likes         Like[]
   Following     Follow[]       @relation("from")
   Followed      Follow[]       @relation("to")
@@ -139,16 +140,31 @@ model Comment {
 }
 
 model Stock {
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @map("user_id")
-  Note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  noteId    String   @map("note_id")
-  label     String?  @db.VarChar(50)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  User      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String      @map("user_id")
+  Note      Note        @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId    String      @map("note_id")
+  Label     StockLabel? @relation(fields: [labelId], references: [id])
+  labelId   String?
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
 
   @@id([userId, noteId])
   @@map("stock")
+}
+
+model StockLabel {
+  id        String   @id @default(cuid())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  name      String   @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  Stocks Stock[]
+
+  @@unique([userId, name])
+  @@map("stock_label")
 }
 
 model Like {
