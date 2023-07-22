@@ -154,7 +154,7 @@ export class UsersController {
       const [data, total] = await this.membershipsService.findMany({
         where: { userId: id, role: { in: ['ADMIN', 'MEMBER'] } },
         orderBy: { createdAt: 'asc' },
-        include: { group: true },
+        include: { Group: true },
         skip,
         take,
       });
@@ -201,25 +201,25 @@ export class UsersController {
             { groupId: null },
             {
               status: 'NORMAL',
-              group: {
+              Group: {
                 readNotePermission: 'ADMIN',
-                members: { some: { userId: userId, role: 'ADMIN' } },
+                Members: { some: { userId: userId, role: 'ADMIN' } },
               },
             }, // readNotePermission is ADMIN and user is admin of group
             {
               status: 'NORMAL',
-              group: {
+              Group: {
                 readNotePermission: 'MEMBER',
-                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
               },
             }, // readNotePermission is MEMBER and user is member of group
             {
               status: 'NORMAL',
-              group: { readNotePermission: 'ALL' },
+              Group: { readNotePermission: 'ALL' },
             }, // readNotePermission is ALL
           ],
         },
-        include: { user: true, group: true },
+        include: { User: true, Group: true },
         orderBy: { createdAt: 'desc' },
         skip,
         take,
@@ -337,7 +337,7 @@ export class UsersController {
       // soft delete
       user = await this.usersService.update({
         where: { id },
-        data: { oid: null, handle: null, status: 'DELETED', joined: { set: [] } },
+        data: { oid: null, handle: null, status: 'DELETED', Joined: { set: [] } },
       });
     } catch (e) {
       throw new InternalServerErrorException();

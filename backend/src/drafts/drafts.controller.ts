@@ -4,13 +4,9 @@ import {
   Get,
   UseGuards,
   Request,
-  Response,
   Query,
   ParseIntPipe,
-  HttpStatus,
   NotFoundException,
-  NotAcceptableException,
-  HttpException,
   Param,
   Post,
   Body,
@@ -76,11 +72,11 @@ export class DraftsController {
             OR: [
               {
                 writeNotePermission: 'ADMIN',
-                members: { some: { userId: userId, role: 'ADMIN' } },
+                Members: { some: { userId: userId, role: 'ADMIN' } },
               }, // writeNotePermission is ADMIN and user is admin of group
               {
                 writeNotePermission: 'MEMBER',
-                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
               }, // writeNotePermission is MEMBER and user is member of group
               { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
             ],
@@ -101,8 +97,8 @@ export class DraftsController {
     try {
       note = await this.notesService.createDraft({
         data: {
-          user: { connect: { id: userId } },
-          group: groupId ? { connect: { id: groupId } } : undefined,
+          User: { connect: { id: userId } },
+          Group: groupId ? { connect: { id: groupId } } : undefined,
           title: data.title,
           status: 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
@@ -136,7 +132,7 @@ export class DraftsController {
           userId: userId,
         },
         orderBy: { createdAt: 'desc' },
-        include: { user: true, group: true },
+        include: { User: true, Group: true },
         skip,
         take,
       });
@@ -157,7 +153,7 @@ export class DraftsController {
         draftBlobPointer: { not: null },
         userId: userId,
       },
-      include: { user: true, group: true },
+      include: { User: true, Group: true },
     });
   }
 
@@ -210,7 +206,7 @@ export class DraftsController {
     try {
       note = await this.notesService.findFirst({
         where: { id, userId, status: { not: 'DELETED' } },
-        include: { user: true, group: true },
+        include: { User: true, Group: true },
       });
     } catch (e) {
       this.logger.error(e);
@@ -231,11 +227,11 @@ export class DraftsController {
             OR: [
               {
                 writeNotePermission: 'ADMIN',
-                members: { some: { userId: userId, role: 'ADMIN' } },
+                Members: { some: { userId: userId, role: 'ADMIN' } },
               }, // writeNotePermission is ADMIN and user is admin of group
               {
                 writeNotePermission: 'MEMBER',
-                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
               }, // writeNotePermission is MEMBER and user is member of group
               { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
             ],
@@ -259,8 +255,8 @@ export class DraftsController {
         where: { id },
         data: {
           title: data.title,
-          user: { connect: { id: userId } },
-          group: groupId ? { connect: { id: groupId } } : undefined,
+          User: { connect: { id: userId } },
+          Group: groupId ? { connect: { id: groupId } } : undefined,
           status: 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
         },
@@ -294,7 +290,7 @@ export class DraftsController {
     try {
       draft = await this.notesService.findFirst({
         where: { id, userId, status: 'NORMAL', draftBlobPointer: { not: null } },
-        include: { user: true, group: true },
+        include: { User: true, Group: true },
       });
     } catch (e) {
       this.logger.error(e);

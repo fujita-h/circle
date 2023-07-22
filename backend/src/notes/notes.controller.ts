@@ -3,19 +3,15 @@ import {
   Logger,
   UseGuards,
   Request,
-  Response,
   Get,
   Post,
   Body,
   Put,
   Param,
   Delete,
-  HttpStatus,
-  HttpException,
   Query,
   NotFoundException,
   ParseIntPipe,
-  BadRequestException,
   ForbiddenException,
   InternalServerErrorException,
   UnauthorizedException,
@@ -24,7 +20,7 @@ import { NotesService } from './notes.service';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
-import { AuthorizedRolesAny } from '../guards/jwt.roles.decorator';
+//import { AuthorizedRolesAny } from '../guards/jwt.roles.decorator';
 import { AzblobService } from '../azblob/azblob.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { GroupsService } from '../groups/groups.service';
@@ -85,11 +81,11 @@ export class NotesController {
             OR: [
               {
                 writeNotePermission: 'ADMIN',
-                members: { some: { userId: userId, role: 'ADMIN' } },
+                Members: { some: { userId: userId, role: 'ADMIN' } },
               }, // writeNotePermission is ADMIN and user is admin of group
               {
                 writeNotePermission: 'MEMBER',
-                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
               }, // writeNotePermission is MEMBER and user is member of group
               { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
             ],
@@ -110,8 +106,8 @@ export class NotesController {
     try {
       note = await this.notesService.create({
         data: {
-          user: { connect: { id: userId } },
-          group: group ? { connect: { id: groupId } } : undefined,
+          User: { connect: { id: userId } },
+          Group: group ? { connect: { id: groupId } } : undefined,
           title: data.title,
           status: group
             ? group.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL'
@@ -145,34 +141,34 @@ export class NotesController {
       const [data, total] = await this.notesService.findMany({
         where: {
           blobPointer: { not: null }, // only notes with blobPointer
-          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+          User: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
           OR: [
             { userId: userId }, // user is owner
             {
               status: 'NORMAL',
-              group: {
+              Group: {
                 handle: { not: null },
                 status: 'NORMAL',
                 readNotePermission: 'ADMIN',
-                members: { some: { userId: userId, role: 'ADMIN' } },
+                Members: { some: { userId: userId, role: 'ADMIN' } },
               },
             }, // readNotePermission is ADMIN and user is admin of group
             {
               status: 'NORMAL',
-              group: {
+              Group: {
                 handle: { not: null },
                 status: 'NORMAL',
                 readNotePermission: 'MEMBER',
-                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
               },
             }, // readNotePermission is MEMBER and user is member of group
             {
               status: 'NORMAL',
-              group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+              Group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
             }, // readNotePermission is ALL
           ],
         },
-        include: { user: true, group: true },
+        include: { User: true, Group: true },
         orderBy: { createdAt: 'desc' },
         skip,
         take,
@@ -194,18 +190,18 @@ export class NotesController {
     @Query('take', ParseIntPipe) take: number,
   ) {
     const userId = request.user.id;
-    const [groups, count] = await this.groupsService.findMany({
+    const [groups] = await this.groupsService.findMany({
       where: {
         status: 'NORMAL',
         handle: { not: null }, // only groups with handle
         OR: [
           {
             readNotePermission: 'ADMIN',
-            members: { some: { userId: userId, role: 'ADMIN' } },
+            Members: { some: { userId: userId, role: 'ADMIN' } },
           }, // readNotePermission is ADMIN and user is admin of group
           {
             readNotePermission: 'MEMBER',
-            members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+            Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
           }, // readNotePermission is MEMBER and user is member of group
           { readNotePermission: 'ALL' }, // readNotePermission is ALL
         ],
@@ -286,7 +282,7 @@ export class NotesController {
         where: {
           id,
           blobPointer: { not: null }, // only notes with blobPointer
-          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+          User: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
         },
       });
     } catch (e) {
@@ -300,7 +296,7 @@ export class NotesController {
       note = await this.notesService._exFindNoteUnderPermission({
         userId: userId,
         noteId: id,
-        include: { user: true, group: true, _count: { select: { liked: true, stocked: true } } },
+        include: { User: true, Group: true, _count: { select: { Liked: true, Stocked: true } } },
       });
     } catch (e) {
       this.logger.error(e);
@@ -347,7 +343,7 @@ export class NotesController {
         where: {
           id,
           blobPointer: { not: null }, // only notes with blobPointer
-          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+          User: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
         },
       });
     } catch (e) {
@@ -374,7 +370,7 @@ export class NotesController {
     try {
       const [data, total] = await this.commentsService.findMany({
         where: { noteId: note.id, status: 'NORMAL' },
-        include: { user: true },
+        include: { User: true },
         orderBy: { createdAt: 'asc' },
         skip,
         take,
@@ -404,7 +400,7 @@ export class NotesController {
         where: {
           id,
           blobPointer: { not: null }, // only notes with blobPointer
-          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+          User: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
         },
       });
     } catch (e) {
@@ -419,12 +415,12 @@ export class NotesController {
         where: {
           id: id,
           blobPointer: { not: null }, // only notes with blobPointer
-          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+          User: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
           OR: [
             {
               userId: userId,
               writeCommentPermission: 'OWNER',
-              OR: [{ groupId: null }, { group: { handle: { not: null }, status: 'NORMAL' } }],
+              OR: [{ groupId: null }, { Group: { handle: { not: null }, status: 'NORMAL' } }],
             }, // writeCommentPermission is OWNER
             {
               writeCommentPermission: 'MEMBER',
@@ -432,10 +428,10 @@ export class NotesController {
               OR: [
                 { groupId: null },
                 {
-                  group: {
+                  Group: {
                     handle: { not: null },
                     status: 'NORMAL',
-                    members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                    Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
                   },
                 },
               ],
@@ -443,7 +439,7 @@ export class NotesController {
             {
               writeCommentPermission: 'ALL',
               status: 'NORMAL',
-              OR: [{ groupId: null }, { group: { handle: { not: null }, status: 'NORMAL' } }],
+              OR: [{ groupId: null }, { Group: { handle: { not: null }, status: 'NORMAL' } }],
             }, // writeCommentPermission is ALL
           ],
         },
@@ -459,9 +455,9 @@ export class NotesController {
     let comment;
     try {
       comment = await this.commentsService.create({
-        data: { user: { connect: { id: userId } }, note: { connect: { id: note.id } } },
+        data: { User: { connect: { id: userId } }, Note: { connect: { id: note.id } } },
         body: data.body.trim(),
-        include: { user: true, note: true },
+        include: { User: true, Note: true },
       });
     } catch (e) {
       throw new InternalServerErrorException();
@@ -484,7 +480,7 @@ export class NotesController {
       try {
         note = await this.notesService.findFirst({
           where: { id, userId, status: { not: 'DELETED' } },
-          include: { user: true, group: true },
+          include: { User: true, Group: true },
         });
       } catch (e) {
         this.logger.error(e);
@@ -503,11 +499,11 @@ export class NotesController {
             OR: [
               {
                 writeNotePermission: 'ADMIN',
-                members: { some: { userId: userId, role: 'ADMIN' } },
+                Members: { some: { userId: userId, role: 'ADMIN' } },
               }, // writeNotePermission is ADMIN and user is admin of group
               {
                 writeNotePermission: 'MEMBER',
-                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
               }, // writeNotePermission is MEMBER and user is member of group
               { writeNotePermission: 'ALL' }, // writeNotePermission is ALL
             ],
@@ -529,8 +525,8 @@ export class NotesController {
         where: { id },
         data: {
           title: data.title,
-          user: { connect: { id: userId } },
-          group: group ? { connect: { id: groupId } } : { disconnect: true },
+          User: { connect: { id: userId } },
+          Group: group ? { connect: { id: groupId } } : { disconnect: true },
           status: group
             ? group.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL'
               ? 'PENDING_APPROVAL'

@@ -14,7 +14,7 @@ export class LikesService {
 
   findOne({
     where,
-    include = { user: false, note: false },
+    include = { User: false, Note: false },
   }: {
     where: Prisma.LikeWhereUniqueInput;
     include?: Prisma.LikeInclude;
@@ -25,7 +25,7 @@ export class LikesService {
   findFirst({
     where,
     orderBy,
-    include = { user: false, note: false },
+    include = { User: false, Note: false },
   }: {
     where: Prisma.LikeWhereInput;
     orderBy?: Prisma.Enumerable<Prisma.LikeOrderByWithRelationInput>;
@@ -37,7 +37,7 @@ export class LikesService {
   findMany({
     where,
     orderBy,
-    include = { user: false, note: false },
+    include = { User: false, Note: false },
     skip,
     take,
   }: {

@@ -14,7 +14,7 @@ export class MembershipsService {
 
   findOne({
     where,
-    include = { user: false, group: false },
+    include = { User: false, Group: false },
   }: {
     where: Prisma.MembershipWhereUniqueInput;
     include?: Prisma.MembershipInclude;
@@ -25,7 +25,7 @@ export class MembershipsService {
   findFirst({
     where,
     orderBy,
-    include = { user: false, group: false },
+    include = { User: false, Group: false },
   }: {
     where: Prisma.MembershipWhereInput;
     orderBy?: Prisma.Enumerable<Prisma.MembershipOrderByWithRelationInput>;
@@ -37,7 +37,7 @@ export class MembershipsService {
   findMany({
     where,
     orderBy,
-    include = { user: false, group: false },
+    include = { User: false, Group: false },
     skip,
     take,
   }: {

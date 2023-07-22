@@ -27,8 +27,8 @@ describe('NotesService', () => {
   };
   const testNote: Prisma.NoteCreateInput = {
     id: testPrefix + 'i-0123-456789',
-    user: { connect: { id: testUser.id } },
-    group: { connect: { id: testGroup.id } },
+    User: { connect: { id: testUser.id } },
+    Group: { connect: { id: testGroup.id } },
     title: testPrefix + 'i-title',
   };
 
@@ -110,7 +110,7 @@ describe('NotesService', () => {
   });
 
   it('Note一覧取得', async () => {
-    const result = await noteService.findMany({ where: { group: { id: testGroup.id } } });
+    const result = await noteService.findMany({ where: { Group: { id: testGroup.id } } });
     await expect(result[0].length).toBeGreaterThan(0);
     await expect(result[0][0]).toHaveProperty('id', testNote.id);
   });

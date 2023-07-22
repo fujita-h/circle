@@ -7,6 +7,8 @@ import { EsService } from '../es/es.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { GroupsService } from '../groups/groups.service';
 import { MembershipsService } from '../memberships/memberships.service';
+import { NotesService } from '../notes/notes.service';
+import { LikesService } from '../likes/likes.service';
 
 class CreateUserDtoForTest extends CreateUserDto {
   id: string;
@@ -28,7 +30,15 @@ describe('UserController', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UserController],
-      providers: [UsersService, EsService, AzblobService, GroupsService, MembershipsService],
+      providers: [
+        UsersService,
+        EsService,
+        AzblobService,
+        GroupsService,
+        MembershipsService,
+        NotesService,
+        LikesService,
+      ],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],

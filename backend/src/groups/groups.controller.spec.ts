@@ -55,8 +55,8 @@ const deleteTestNotes = async (notesService: NotesService) => {
     .findMany({
       where: {
         OR: [
-          { group: { handle: { startsWith: testPrefix } } },
-          { user: { handle: { startsWith: testPrefix } } },
+          { Group: { handle: { startsWith: testPrefix } } },
+          { User: { handle: { startsWith: testPrefix } } },
         ],
       },
     })

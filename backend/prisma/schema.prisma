@@ -21,15 +21,15 @@ model User {
   name      String?    @db.VarChar(50)
   email     String?    @db.VarChar(254)
 
-  joined        Membership[]
-  comments      Comment[]
-  notes         Note[]
-  stocks        Stock[]
-  likes         Like[]
-  following     Follow[]       @relation("from")
-  followed      Follow[]       @relation("to")
+  Joined        Membership[]
+  Comments      Comment[]
+  Notes         Note[]
+  Stocks        Stock[]
+  Likes         Like[]
+  Following     Follow[]       @relation("from")
+  Followed      Follow[]       @relation("to")
   Watching      Watch[]
-  notifications Notification[]
+  Notifications Notification[]
 
   @@index([type])
   @@index([status])
@@ -49,18 +49,18 @@ model Group {
   writeNoteCondition  ConditionWriteNote  @default(ALLOWED) @map("write_note_condition")
   joinGroupCondition  ConditionJoinGroup  @default(DENIED) @map("join_group_condition")
 
-  members Membership[]
-  notes   Note[]
-  watched Watch[]
+  Members Membership[]
+  Notes   Note[]
+  Watched Watch[]
 
   @@index([status])
   @@map("group")
 }
 
 model Membership {
-  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String         @map("user_id")
-  group     Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  Group     Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId   String         @map("group_id")
   role      MembershipRole @default(MEMBER)
   createdAt DateTime       @default(now()) @map("created_at")
@@ -75,9 +75,9 @@ model Note {
   id                     String                 @id @default(cuid())
   createdAt              DateTime               @default(now()) @map("created_at")
   updatedAt              DateTime               @updatedAt @map("updated_at")
-  user                   User                   @relation(fields: [userId], references: [id])
+  User                   User                   @relation(fields: [userId], references: [id])
   userId                 String                 @map("user_id")
-  group                  Group?                 @relation(fields: [groupId], references: [id], onDelete: SetNull) // group is null if the note is drafted.
+  Group                  Group?                 @relation(fields: [groupId], references: [id], onDelete: SetNull) // group is null if the note is drafted.
   groupId                String?                @map("group_id")
   title                  String?                @db.VarChar(250)
   blobPointer            String?                @map("blob_pointer")
@@ -86,10 +86,10 @@ model Note {
   status                 NoteStatus             @default(NORMAL)
   writeCommentPermission PermissionWriteComment @default(ALL) @map("write_comment_permission")
 
-  tags     TagMap[]
-  comments Comment[]
-  stocked  Stock[]
-  liked    Like[]
+  Tags     TagMap[]
+  Comments Comment[]
+  Stocked  Stock[]
+  Liked    Like[]
 
   @@index([type])
   @@index([status])
@@ -104,7 +104,7 @@ model Tag {
   displayName String?  @map("display_name") @db.VarChar(50)
   haveIcon    Boolean  @default(false) @map("have_icon")
 
-  notes TagMap[]
+  Notes TagMap[]
 
   @@map("tag")
 }
@@ -125,9 +125,9 @@ model Comment {
   id          String        @id @default(cuid())
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
-  note        Note          @relation(fields: [noteId], references: [id])
+  Note        Note          @relation(fields: [noteId], references: [id])
   noteId      String        @map("note_id")
-  user        User          @relation(fields: [userId], references: [id])
+  User        User          @relation(fields: [userId], references: [id])
   userId      String        @map("user_id")
   blobPointer String?       @map("blob_pointer")
   type        CommentType   @default(NORMAL)
@@ -139,9 +139,9 @@ model Comment {
 }
 
 model Stock {
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @map("user_id")
-  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  Note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
   noteId    String   @map("note_id")
   label     String?  @db.VarChar(50)
   createdAt DateTime @default(now()) @map("created_at")
@@ -152,9 +152,9 @@ model Stock {
 }
 
 model Like {
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @map("user_id")
-  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  Note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
   noteId    String   @map("note_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -164,9 +164,9 @@ model Like {
 }
 
 model Follow {
-  from      User     @relation("from", fields: [fromId], references: [id], onDelete: Cascade)
+  From      User     @relation("from", fields: [fromId], references: [id], onDelete: Cascade)
   fromId    String   @map("from_id")
-  to        User     @relation("to", fields: [toId], references: [id], onDelete: Cascade)
+  To        User     @relation("to", fields: [toId], references: [id], onDelete: Cascade)
   toId      String   @map("to_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -176,9 +176,9 @@ model Follow {
 }
 
 model Watch {
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @map("user_id")
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  Group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId   String   @map("group_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -191,7 +191,7 @@ model Notification {
   id        String             @id @default(cuid())
   createdAt DateTime           @default(now()) @map("created_at")
   updatedAt DateTime           @updatedAt @map("updated_at")
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String             @map("user_id")
   type      NotificationType   @default(NORMAL)
   status    NotificationStatus @default(UNREAD)

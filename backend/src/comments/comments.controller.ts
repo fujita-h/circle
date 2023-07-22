@@ -1,13 +1,8 @@
 import {
-  BadRequestException,
-  Body,
   Controller,
   Get,
   InternalServerErrorException,
   NotFoundException,
-  ParseIntPipe,
-  Post,
-  Query,
   Param,
   Request,
   Response,
@@ -15,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
-import { AuthorizedRolesAny } from '../guards/jwt.roles.decorator';
+//import { AuthorizedRolesAny } from '../guards/jwt.roles.decorator';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { NotesService } from '../notes/notes.service';
@@ -36,7 +31,7 @@ export class CommentsController {
     const userId = request.user.id;
     // ToDo:
     // need to check this user can read comment.
-    return this.commentsService.findOne({ where: { id }, include: { user: true } });
+    return this.commentsService.findOne({ where: { id }, include: { User: true } });
   }
 
   @Get(':id/md')

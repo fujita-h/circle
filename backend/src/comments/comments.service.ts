@@ -20,7 +20,7 @@ export class CommentsService {
 
   findOne({
     where,
-    include = { user: false, note: false },
+    include = { User: false, Note: false },
   }: {
     where: Prisma.CommentWhereUniqueInput;
     include?: Prisma.CommentInclude;
@@ -31,7 +31,7 @@ export class CommentsService {
   findFirst({
     where,
     orderBy,
-    include = { user: false, note: false },
+    include = { User: false, Note: false },
   }: {
     where: Prisma.CommentWhereInput;
     orderBy?: Prisma.Enumerable<Prisma.CommentOrderByWithRelationInput>;
@@ -43,7 +43,7 @@ export class CommentsService {
   findMany({
     where,
     orderBy,
-    include = { user: false, note: false },
+    include = { User: false, Note: false },
     skip,
     take,
   }: {
@@ -66,7 +66,7 @@ export class CommentsService {
   create({
     data,
     body,
-    include = { user: false, note: false },
+    include = { User: false, Note: false },
   }: {
     data: Prisma.CommentCreateInput;
     body: string;
@@ -99,7 +99,7 @@ export class CommentsService {
   update({
     where,
     data,
-    include = { user: false, note: false },
+    include = { User: false, Note: false },
   }: {
     where: Prisma.CommentWhereUniqueInput;
     data: Prisma.CommentUpdateInput;
@@ -110,7 +110,7 @@ export class CommentsService {
 
   delete({
     where,
-    include = { user: false, note: false },
+    include = { User: false, Note: false },
   }: {
     where: Prisma.CommentWhereUniqueInput;
     include?: Prisma.CommentInclude;

@@ -82,13 +82,13 @@ describe('GroupsService', () => {
   it('サークルをInclude付きで取得', async () => {
     const result = service.findOne({
       where: { id: group1.id },
-      include: { notes: true, members: true },
+      include: { Notes: true, Members: true },
     });
     await expect(result).resolves.toHaveProperty('id', group1.id);
     await expect(result).resolves.toHaveProperty('name', testGroup1.name);
     await expect(result).resolves.toHaveProperty('handle', testGroup1.handle);
-    await expect(result).resolves.toHaveProperty('notes');
-    await expect(result).resolves.toHaveProperty('members');
+    await expect(result).resolves.toHaveProperty('Notes');
+    await expect(result).resolves.toHaveProperty('Members');
   });
 
   it('サークルをhandleから取得', async () => {
@@ -101,13 +101,13 @@ describe('GroupsService', () => {
   it('サークルをhandleからInclude付きで取得', async () => {
     const result = service.findFirst({
       where: { handle: group1.handle },
-      include: { notes: true, members: true },
+      include: { Notes: true, Members: true },
     });
     await expect(result).resolves.toHaveProperty('id', group1.id);
     await expect(result).resolves.toHaveProperty('name', testGroup1.name);
     await expect(result).resolves.toHaveProperty('handle', testGroup1.handle);
-    await expect(result).resolves.toHaveProperty('notes');
-    await expect(result).resolves.toHaveProperty('members');
+    await expect(result).resolves.toHaveProperty('Notes');
+    await expect(result).resolves.toHaveProperty('Members');
   });
 
   it('サークルを削除', async () => {
@@ -151,13 +151,13 @@ describe('GroupsService', () => {
   });
 
   it('サークルをInclude付きで作成', async () => {
-    const result = service.create({ data: testGroup1, include: { notes: true, members: true } });
+    const result = service.create({ data: testGroup1, include: { Notes: true, Members: true } });
     group1 = await result;
     await expect(result).resolves.toHaveProperty('id', group1.id);
     await expect(result).resolves.toHaveProperty('name', testGroup1.name);
     await expect(result).resolves.toHaveProperty('handle', testGroup1.handle);
-    await expect(result).resolves.toHaveProperty('notes');
-    await expect(result).resolves.toHaveProperty('members');
+    await expect(result).resolves.toHaveProperty('Notes');
+    await expect(result).resolves.toHaveProperty('Members');
   });
 
   it('全サークルを取得', async () => {
@@ -171,15 +171,15 @@ describe('GroupsService', () => {
   });
 
   it('全サークルをInclude付きで取得', async () => {
-    const result = await service.findAll({ include: { notes: true, members: true } });
+    const result = await service.findAll({ include: { Notes: true, Members: true } });
     await expect(result.length).toBeGreaterThan(0);
     const group = result.find((group) => group.id === group1.id);
     await expect(group).toBeDefined();
     await expect(group).toHaveProperty('id', group1.id);
     await expect(group).toHaveProperty('name', testGroup1.name);
     await expect(group).toHaveProperty('handle', testGroup1.handle);
-    await expect(group).toHaveProperty('notes');
-    await expect(group).toHaveProperty('members');
+    await expect(group).toHaveProperty('Notes');
+    await expect(group).toHaveProperty('Members');
   });
 
   it('サークルをSoft Delete', async () => {

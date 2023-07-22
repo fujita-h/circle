@@ -129,7 +129,7 @@ export class UserController {
         where: {
           status: 'NORMAL',
           handle: { not: null },
-          members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
+          Members: { some: { User: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
         },
       });
       groups = data;
@@ -155,7 +155,7 @@ export class UserController {
       const [data, total] = await this.membershipsService.findMany({
         where: { userId, role: { in: ['ADMIN', 'MEMBER'] } },
         orderBy: { createdAt: 'asc' },
-        include: { group: true },
+        include: { Group: true },
         skip,
         take,
       });
@@ -177,7 +177,7 @@ export class UserController {
     let membership;
     try {
       membership = await this.membershipsService.findFirst({
-        where: { userId, role: { in: ['ADMIN', 'MEMBER'] }, group: { handle } },
+        where: { userId, role: { in: ['ADMIN', 'MEMBER'] }, Group: { handle } },
       });
     } catch (e) {
       this.logger.error(e);

@@ -9,8 +9,6 @@ import {
   Body,
   Param,
   Delete,
-  HttpException,
-  HttpStatus,
   Query,
   Patch,
   ParseIntPipe,
@@ -71,7 +69,7 @@ export class GroupsController {
       return await this.groupsService.create({
         data: {
           ...data,
-          members: { create: { user: { connect: { id: userId } }, role: 'ADMIN' } },
+          Members: { create: { User: { connect: { id: userId } }, role: 'ADMIN' } },
         },
       });
     } catch (e) {
@@ -168,7 +166,7 @@ export class GroupsController {
     try {
       group = await this.groupsService.findOne({
         where: { id },
-        include: { members: true },
+        include: { Members: true },
       });
     } catch (e) {
       throw new InternalServerErrorException();
@@ -176,10 +174,10 @@ export class GroupsController {
     if (!group || !group.handle || group.status !== 'NORMAL') {
       throw new NotAcceptableException('Invalid group');
     }
-    if (!group.members) {
+    if (!group.Members) {
       throw new InternalServerErrorException();
     }
-    if (!group.members.find((m) => m.userId === userId && m.role === 'ADMIN')) {
+    if (!group.Members.find((m) => m.userId === userId && m.role === 'ADMIN')) {
       throw new ForbiddenException();
     }
 
@@ -236,7 +234,7 @@ export class GroupsController {
         take,
         skip,
         orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
-        include: { user: true },
+        include: { User: true },
       });
       memberships = { data, meta: { total } };
     } catch (e) {
@@ -263,35 +261,35 @@ export class GroupsController {
       const [data, total] = await this.notesService.findMany({
         where: {
           blobPointer: { not: null }, // only notes with blobPointer
-          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+          User: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
           groupId: id,
           OR: [
             { userId: userId }, // user is owner
             {
               status: 'NORMAL',
-              group: {
+              Group: {
                 handle: { not: null },
                 status: 'NORMAL',
                 readNotePermission: 'ADMIN',
-                members: { some: { userId: userId, role: 'ADMIN' } },
+                Members: { some: { userId: userId, role: 'ADMIN' } },
               },
             }, // readNotePermission is ADMIN and user is admin of group
             {
               status: 'NORMAL',
-              group: {
+              Group: {
                 handle: { not: null },
                 status: 'NORMAL',
                 readNotePermission: 'MEMBER',
-                members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
               },
             }, // readNotePermission is MEMBER and user is member of group
             {
               status: 'NORMAL',
-              group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+              Group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
             }, // readNotePermission is ALL
           ],
         },
-        include: { user: true, group: true },
+        include: { User: true, Group: true },
         orderBy: { createdAt: 'desc' },
         skip,
         take,
@@ -379,7 +377,7 @@ export class GroupsController {
     // check permissions
     let group;
     try {
-      group = await this.groupsService.findOne({ where: { id }, include: { members: true } });
+      group = await this.groupsService.findOne({ where: { id }, include: { Members: true } });
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
@@ -388,11 +386,11 @@ export class GroupsController {
     if (!group || group.status === 'DELETED') {
       throw new NotFoundException();
     }
-    if (!group.members) {
+    if (!group.Members) {
       throw new InternalServerErrorException();
     }
 
-    const member = group.members.find((m) => m.userId === userId);
+    const member = group.Members.find((m) => m.userId === userId);
     if (!member || member.role !== 'ADMIN') {
       throw new ForbiddenException();
     }
@@ -432,7 +430,7 @@ export class GroupsController {
     try {
       group = await this.groupsService.findFirst({
         where: { id, handle: { not: null }, status: 'NORMAL' },
-        include: { members: true },
+        include: { Members: true },
       });
     } catch (e) {
       this.logger.error(e);
@@ -442,7 +440,7 @@ export class GroupsController {
       throw new NotFoundException();
     }
 
-    if (!group.members?.some((m) => m.userId === userId && m.role === 'ADMIN')) {
+    if (!group.Members?.some((m) => m.userId === userId && m.role === 'ADMIN')) {
       throw new ForbiddenException();
     }
 
