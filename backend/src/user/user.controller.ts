@@ -83,7 +83,7 @@ export class UserController {
     return {};
   }
 
-  @Get('/joined/groups')
+  @Get('joined/groups')
   async findJoinedGroups(
     @Request() request: any,
     @Query('skip', ParseIntPipe) skip?: number,
@@ -110,7 +110,7 @@ export class UserController {
     return memberships;
   }
 
-  @Get('/joined/groups/handle/:handle')
+  @Get('joined/groups/handle/:handle')
   async findJoinedGroupByHandle(@Request() request: any, @Param('handle') handle: string) {
     const userId = request.user.id;
     return await this.membershipsService.findFirst({
@@ -159,7 +159,7 @@ export class UserController {
     }
     let groups;
     try {
-      const [data, total] = await this.groupsService.findMany({
+      const [data] = await this.groupsService.findMany({
         where: {
           status: 'NORMAL',
           handle: { not: null },
@@ -225,7 +225,7 @@ export class UserController {
     }
   }
 
-  @Post('/photo')
+  @Post('photo')
   @UseInterceptors(FileInterceptor('file'))
   async uploadPhoto(@Request() request: any, @UploadedFile() file: Express.Multer.File) {
     const userId = request.user.id;
