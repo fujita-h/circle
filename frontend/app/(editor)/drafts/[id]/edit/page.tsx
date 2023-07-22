@@ -18,12 +18,8 @@ export default function Page({ params }: { params: any }) {
   const { data: draft, isLoading: isItemLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/drafts/${id}`, jsonFetcher, {
     revalidateOnFocus: false,
   });
-  const textFetcher = swrMsalTokenFetcher(instance, account, environment, 'text');
-  const { data: markdown, isLoading: isMarkdownLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/drafts/${id}/md`, textFetcher, {
-    revalidateOnFocus: false,
-  });
 
-  if (isTokenLoading || isItemLoading || isMarkdownLoading) {
+  if (isTokenLoading || isItemLoading) {
     return <div>loading...</div>;
   }
 
@@ -34,7 +30,7 @@ export default function Page({ params }: { params: any }) {
   return (
     <>
       <div className={styles.editor}>
-        <Editor defaultSubmitButton="draft" noteId={draft.id} groupId={draft.group?.id} title={draft.title} body={markdown} />
+        <Editor defaultSubmitButton="draft" noteId={draft.id} groupId={draft.group?.id} title={draft.title} body={draft.body} />
       </div>
     </>
   );

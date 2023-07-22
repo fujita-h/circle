@@ -16,12 +16,8 @@ export function Viewer({ noteId }: { noteId: string }) {
   const { data: draft, isLoading: isDraftLoading } = useSWR<any>(`${environment.BACKEND_ENDPOINT}/drafts/${noteId}`, jsonFetcher, {
     revalidateOnFocus: false,
   });
-  const textFetcher = swrMsalTokenFetcher(instance, account, environment, 'text');
-  const { data: markdown, isLoading: isMarkdownLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/drafts/${noteId}/md`, textFetcher, {
-    revalidateOnFocus: false,
-  });
 
-  if (isTokenLoading || isDraftLoading || isMarkdownLoading) {
+  if (isTokenLoading || isDraftLoading) {
     return <div>loading...</div>;
   }
 
@@ -42,7 +38,7 @@ export function Viewer({ noteId }: { noteId: string }) {
         </div>
       </div>
       <div className="border rounded-md p-2 border-gray-300">
-        <pre className="font-sans text-inherit">{markdown}</pre>
+        <pre className="font-sans text-inherit">{draft.body}</pre>
       </div>
     </div>
   );

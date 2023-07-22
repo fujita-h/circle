@@ -177,33 +177,14 @@ export class DraftsController {
     if (!draft) {
       throw new NotFoundException();
     }
-    return draft;
-  }
 
-  @Get(':id/md')
-  async getMarkdown(@Request() request: any, @Param('id') id: string, @Response() response: any) {
-    const userId = request.user.id;
-    if (!userId) {
-      throw new UnauthorizedException();
-    }
-    let draft;
+    let body: string;
     try {
-      draft = await this._getDraft(userId, id);
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!draft) {
-      throw new NotFoundException();
-    }
-
-    try {
-      const downloadBlockBlobResponse = await this.blobsService.downloadBlob(
+      const buffer = await this.blobsService.downloadBlobToBuffer(
         this.blobContainerName,
         `${draft.id}/${draft.draftBlobPointer}.draft.md`,
       );
-      response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
-      downloadBlockBlobResponse.readableStreamBody?.pipe(response);
+      body = buffer.toString();
     } catch (e) {
       if (e instanceof RestError) {
         if (e.statusCode === 404) {
@@ -212,6 +193,8 @@ export class DraftsController {
       }
       throw new InternalServerErrorException();
     }
+
+    return { ...draft, body };
   }
 
   @Put(':id')
