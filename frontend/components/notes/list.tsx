@@ -2,27 +2,10 @@
 
 import { ChevronRightIcon, UserIcon, UserGroupIcon } from '@heroicons/react/20/solid';
 import { BackendImage } from '@/components/backend-image';
-import { classNames } from '@/utils';
 import Link from 'next/link';
+import { SomeRequired, Note } from '@/types';
 
-type NoteData = {
-  id: string;
-  title: string;
-  createdAt: string;
-  updatedAt: string;
-  group: {
-    id: String;
-    handle: string;
-    name: string;
-  };
-  user: {
-    id: string;
-    handle: string;
-    name: string;
-  };
-};
-
-export function List({ notes }: { notes: NoteData[] }) {
+export function List({ notes }: { notes: SomeRequired<Note, 'User'>[] }) {
   return (
     <ul role="list" className="divide-y divide-gray-100">
       {notes.map((note) => {
@@ -32,7 +15,7 @@ export function List({ notes }: { notes: NoteData[] }) {
           <li key={note.id} className="relative flex justify-between gap-x-6 px-4 py-3 hover:bg-gray-50 sm:px-6 lg:px-8">
             <div className="flex gap-x-2">
               <BackendImage
-                src={`/users/${note.user.id}/photo`}
+                src={`/users/${note.User.id}/photo`}
                 className="h-8 w-8 rounded-full bg-gray-50"
                 alt="user-icon"
                 fallback={<UserIcon className="h-8 w-8 rounded-full bg-gray-100 text-gray-400" />}
@@ -40,10 +23,10 @@ export function List({ notes }: { notes: NoteData[] }) {
 
               <div className="min-w-0 flex-auto">
                 <div className="text-sm flex gap-x-2">
-                  <Link className="z-10 hover:underline" href={`/u/${note.user.handle}`}>
-                    <span>@{note.user.handle}</span>
+                  <Link className="z-10 hover:underline" href={`/u/${note.User.handle}`}>
+                    <span>@{note.User.handle}</span>
                   </Link>
-                  {note.user.name ? <span>({note.user.name})</span> : <></>}
+                  {note.User.name ? <span>({note.User.name})</span> : <></>}
                 </div>
                 <div className="text-sm">{createdAt}</div>
                 <div className="text-xl font-semibold leading-6 text-gray-900">

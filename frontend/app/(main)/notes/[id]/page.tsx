@@ -14,6 +14,7 @@ import { BackendImage } from '@/components/backend-image';
 import { Fragment } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import { LikeButton } from '@/components/notes';
+import { SomeRequired, Note } from '@/types';
 import {
   EllipsisHorizontalIcon,
   ArchiveBoxIcon,
@@ -40,7 +41,7 @@ export default function Page({ params }: { params: any }) {
     data: note,
     error: noteFetchError,
     isLoading: isNoteLoading,
-  } = useSWR(`${environment.BACKEND_ENDPOINT}/notes/${id}`, jsonFetcher, {
+  } = useSWR<SomeRequired<Note, 'User' | 'Group' | '_count'>>(`${environment.BACKEND_ENDPOINT}/notes/${id}`, jsonFetcher, {
     revalidateOnFocus: false,
   });
 
@@ -60,19 +61,19 @@ export default function Page({ params }: { params: any }) {
 
   return (
     <div>
-      {note.group ? (
+      {note.Group ? (
         <div className="py-4 bg-white ring-1 ring-gray-200">
           <div className="max-w-screen-2xl mx-auto">
             <div className="px-4 lg:px-8">
-              <Link href={`/g/${note.group.handle}`}>
+              <Link href={`/g/${note.Group.handle}`}>
                 <div className="flex items-center">
                   <BackendImage
-                    src={`/groups/${note.group.id}/photo`}
+                    src={`/groups/${note.Group.id}/photo`}
                     className="w-10 h-10 rounded-md"
                     alt="group icon"
                     fallback={<UserGroupIcon className="w-10 h-10 rounded-md bg-gray-100 text-gray-400 ring-1 ring-gray-200" />}
                   />
-                  <div className="ml-3 text-xl font-bold text-gray-900 hover:text-gray-500 hover:underline">{note.group?.name} </div>
+                  <div className="ml-3 text-xl font-bold text-gray-900 hover:text-gray-500 hover:underline">{note.Group.name} </div>
                 </div>
               </Link>
             </div>
@@ -102,7 +103,7 @@ export default function Page({ params }: { params: any }) {
                       <div className="h-10 rounded-full ring-1 ring-gray-300 flex items-center justify-center hover:cursor-pointer">
                         <ArchiveBoxIcon className="w-6 h-6 text-gray-300" />
                       </div>
-                      <div className="text-center font-bold text-gray-500">{note._count.stocked}</div>
+                      <div className="text-center font-bold text-gray-500">{note._count.Stocked}</div>
                     </div>
                     <div className="w-10 h-10 flex items-center justify-center">
                       <OtherMenuButton note={note} className="w-8 h-8 text-gray-700" />
@@ -118,20 +119,20 @@ export default function Page({ params }: { params: any }) {
                         <div className="text-gray-800">{createdAt} に公開</div>
                       </div>
                     </div>
-                    {note.group ? (
+                    {note.Group ? (
                       <div className="py-2">
                         <div className="inline-block py-1 px-2 rounded-md bg-white ring-1 ring-gray-200">
                           <div className="mx-2 flex space-x-2 items-center">
                             <div>
                               <BackendImage
-                                src={`/groups/${note.group.id}/photo`}
+                                src={`/groups/${note.Group.id}/photo`}
                                 className="w-5 h-5 rounded-md"
                                 alt="group icon"
                                 fallback={<UserGroupIcon className="w-8 h-8 rounded-md bg-gray-100 text-gray-400 ring-1 ring-gray-200" />}
                               />
                             </div>
                             <div>
-                              <div className="text-sm font-bold text-gray-800">{note.group.name}</div>
+                              <div className="text-sm font-bold text-gray-800">{note.Group.name}</div>
                             </div>
                           </div>
                         </div>
@@ -143,15 +144,15 @@ export default function Page({ params }: { params: any }) {
                       <div className="mx-1 flex space-x-2 items-center">
                         <div>
                           <BackendImage
-                            src={`/users/${note.user.id}/photo`}
+                            src={`/users/${note.User.id}/photo`}
                             className="w-10 h-10 rounded-full"
                             alt="user icon"
                             fallback={<UserIcon className="w-10 h-10 rounded-full bg-gray-100 text-gray-400" />}
                           />
                         </div>
                         <div>
-                          <div className="text-sm text-gray-700">@{note.user.handle}</div>
-                          <div className="text-base font-bold text-gray-900">{note.user.name}</div>
+                          <div className="text-sm text-gray-700">@{note.User.handle}</div>
+                          <div className="text-base font-bold text-gray-900">{note.User.name}</div>
                         </div>
                       </div>
                     </div>

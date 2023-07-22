@@ -2,7 +2,9 @@
 
 import { BackendImage } from '@/components/backend-image';
 import { MarkdownLoader } from './md-loader';
-export function CommentList({ comments }: { comments: any[] }) {
+import { SomeRequired, Comment } from '@/types';
+
+export function CommentList({ comments }: { comments: SomeRequired<Comment, 'User'>[] }) {
   return (
     <div className="divide-y space-y-2 border rounded-md">
       {comments.map((comment) => (
@@ -14,7 +16,7 @@ export function CommentList({ comments }: { comments: any[] }) {
   );
 }
 
-function Comment({ comment }: { comment: any }) {
+function Comment({ comment }: { comment: SomeRequired<Comment, 'User'> }) {
   const createdAt = new Date(comment.createdAt).toLocaleDateString('ja-JP', {
     year: 'numeric',
     month: '2-digit',
@@ -25,13 +27,13 @@ function Comment({ comment }: { comment: any }) {
   return (
     <div>
       <div className="flex justify-between">
-        <a href={`/u/${comment.user.handle}`}>
+        <a href={`/u/${comment.User.handle}`}>
           <div className="flex items-center space-x-2">
-            <BackendImage src={`/users/${comment.user.id}/photo`} className="h-8 w-8 rounded-full" alt="" />
+            <BackendImage src={`/users/${comment.User.id}/photo`} className="h-8 w-8 rounded-full" alt="" />
             <div className="text-sm">
               <span className="font-medium text-gray-700 hover:cursor-pointer hover:underline">
-                <span>@{comment.user.handle}</span>
-                {comment.user.name ? <span> ({comment.user.name})</span> : <></>}
+                <span>@{comment.User.handle}</span>
+                {comment.User.name ? <span> ({comment.User.name})</span> : <></>}
               </span>
             </div>
           </div>
