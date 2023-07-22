@@ -166,7 +166,7 @@ export class UserController {
           members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
         },
       });
-      groups = { data, meta: { total } };
+      groups = data;
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
