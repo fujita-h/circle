@@ -42,12 +42,8 @@ export default function Page({ params }: { params: any }) {
   } = useSWR(`${environment.BACKEND_ENDPOINT}/notes/${id}`, jsonFetcher, {
     revalidateOnFocus: false,
   });
-  const textFetcher = swrMsalTokenFetcher(instance, account, environment, 'text');
-  const { data: markdown, isLoading: isMarkdownLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/notes/${id}/md`, textFetcher, {
-    revalidateOnFocus: false,
-  });
 
-  if (isTokenLoading || isNoteLoading || isMarkdownLoading) {
+  if (isTokenLoading || isNoteLoading) {
     return <div>loading...</div>;
   }
 
@@ -161,7 +157,7 @@ export default function Page({ params }: { params: any }) {
                 </div>
                 <div className="sticky top-0">
                   <div className="pt-5">
-                    <ReactiveToC>{markdown}</ReactiveToC>
+                    <ReactiveToC>{note.body}</ReactiveToC>
                   </div>
                 </div>
               </div>
@@ -169,7 +165,7 @@ export default function Page({ params }: { params: any }) {
                 <div className="bg-white rounded-md ring-1 ring-gray-200 p-4 lg:p-5">
                   <div>
                     <Parser addHeaderAnchor={true} className={mdStyles.note}>
-                      {markdown}
+                      {note.body}
                     </Parser>
                   </div>
                 </div>

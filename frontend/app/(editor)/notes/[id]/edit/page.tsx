@@ -18,12 +18,8 @@ export default function Page({ params }: { params: any }) {
   const { data: note, isLoading: isNoteLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/notes/${id}`, jsonFetcher, {
     revalidateOnFocus: false,
   });
-  const textFetcher = swrMsalTokenFetcher(instance, account, environment, 'text');
-  const { data: markdown, isLoading: isMarkdownLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/notes/${id}/md`, textFetcher, {
-    revalidateOnFocus: false,
-  });
 
-  if (isTokenLoading || isNoteLoading || isMarkdownLoading) {
+  if (isTokenLoading || isNoteLoading) {
     return <div>loading...</div>;
   }
 
@@ -34,7 +30,7 @@ export default function Page({ params }: { params: any }) {
   return (
     <>
       <div className={styles.editor}>
-        <Editor defaultSubmitButton="publish" noteId={note.id} groupId={note.group?.id} title={note.title} body={markdown} />
+        <Editor defaultSubmitButton="publish" noteId={note.id} groupId={note.group?.id} title={note.title} body={note.body} />
       </div>
     </>
   );

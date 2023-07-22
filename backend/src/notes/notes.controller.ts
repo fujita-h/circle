@@ -305,7 +305,7 @@ export class NotesController {
           }, // readNotePermission is ALL
         ],
       },
-      include: { user: true, group: true },
+      include: { user: true, group: true, _count: { select: { liked: true, stocked: true } } },
     });
   }
 
@@ -341,48 +341,14 @@ export class NotesController {
     if (!note) {
       throw new ForbiddenException();
     }
-    return note;
-  }
 
-  @Get(':id/md')
-  async getMarkdown(@Request() request: any, @Param('id') id: string, @Response() response: any) {
-    const userId = request.user.id;
-    if (!userId) {
-      throw new UnauthorizedException();
-    }
-    let note;
+    let body: string;
     try {
-      note = await this.notesService.findFirst({
-        where: {
-          id,
-          blobPointer: { not: null }, // only notes with blobPointer
-          user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
-        },
-      });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!note) {
-      throw new NotFoundException();
-    }
-    try {
-      note = await this._getNote(userId, id);
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!note) {
-      throw new ForbiddenException();
-    }
-
-    try {
-      const downloadBlockBlobResponse = await this.blobsService.downloadBlob(
+      const buffer = await this.blobsService.downloadBlobToBuffer(
         this.blobContainerName,
         `${note.id}/${note.blobPointer}.md`,
       );
-      response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
-      downloadBlockBlobResponse.readableStreamBody?.pipe(response);
+      body = buffer.toString();
     } catch (e) {
       if (e instanceof RestError) {
         if (e.statusCode === 404) {
@@ -391,6 +357,8 @@ export class NotesController {
       }
       throw new InternalServerErrorException();
     }
+
+    return { ...note, body };
   }
 
   @Get(':id/comments')
