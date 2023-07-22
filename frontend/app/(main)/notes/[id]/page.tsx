@@ -13,6 +13,7 @@ import { Comments } from '@/components/comments';
 import { BackendImage } from '@/components/backend-image';
 import { Fragment } from 'react';
 import { Menu, Transition } from '@headlessui/react';
+import { LikeButton } from '@/components/notes';
 import {
   EllipsisHorizontalIcon,
   ArchiveBoxIcon,
@@ -96,11 +97,12 @@ export default function Page({ params }: { params: any }) {
                 <div></div>
                 <div className="sticky top-0">
                   <div className="pt-5 flex flex-col gap-4">
-                    <div className="w-10 h-10 rounded-full ring-1 ring-gray-300 flex items-center justify-center">
-                      <HeartIcon className="w-6 h-6 text-gray-300" />
-                    </div>
-                    <div className="w-10 h-10 rounded-full ring-1 ring-gray-300 flex items-center justify-center">
-                      <ArchiveBoxIcon className="w-6 h-6 text-gray-300" />
+                    <LikeButton noteId={note.id} />
+                    <div className="flex flex-col w-10">
+                      <div className="h-10 rounded-full ring-1 ring-gray-300 flex items-center justify-center hover:cursor-pointer">
+                        <ArchiveBoxIcon className="w-6 h-6 text-gray-300" />
+                      </div>
+                      <div className="text-center font-bold text-gray-500">{note._count.stocked}</div>
                     </div>
                     <div className="w-10 h-10 flex items-center justify-center">
                       <OtherMenuButton note={note} className="w-8 h-8 text-gray-700" />

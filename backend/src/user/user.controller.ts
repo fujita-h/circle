@@ -22,15 +22,17 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import * as Iron from '@hapi/iron';
+import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { GroupsService } from '../groups/groups.service';
 import { MembershipsService } from '../memberships/memberships.service';
 import { AzblobService } from '../azblob/azblob.service';
+import { NotesService } from '../notes/notes.service';
+import { LikesService } from '../likes/likes.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ConfigService } from '@nestjs/config';
 import { RestError } from '@azure/storage-blob';
 import * as jdenticon from 'jdenticon';
 
@@ -45,6 +47,8 @@ export class UserController {
     private readonly groupsService: GroupsService,
     private readonly membershipsService: MembershipsService,
     private readonly blobsService: AzblobService,
+    private readonly notesService: NotesService,
+    private readonly likesService: LikesService,
   ) {
     if (!this.configService.get<string>('IRON_SECRET')) {
       this.logger.error('IRON_SECRET is not defined');
@@ -246,6 +250,128 @@ export class UserController {
     }
 
     return membership || {};
+  }
+
+  @Get('liked/notes')
+  async findLikedNotes(
+    @Request() request: any,
+    @Query('skip', ParseIntPipe) skip?: number,
+    @Query('take', ParseIntPipe) take?: number,
+  ) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let likes;
+    try {
+      const [data, total] = await this.likesService.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'asc' },
+        skip,
+        take,
+      });
+      likes = { data, meta: { total } };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return likes;
+  }
+
+  @Get('liked/notes/:noteId')
+  async findLikedNote(@Request() request: any, @Param('noteId') noteId: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let note;
+    try {
+      note = await this.notesService.findOne({ where: { id: noteId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+
+    let liked;
+    let count: number;
+    try {
+      liked = await this.likesService.findFirst({ where: { userId, noteId } });
+      count = await this.likesService.count({ where: { noteId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return { liked, count };
+  }
+
+  @Put('liked/notes/:noteId')
+  async likeNote(@Request() request: any, @Param('noteId') noteId: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let note;
+    try {
+      note = await this.notesService.findOne({ where: { id: noteId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+
+    try {
+      note = await this.notesService._exFindNoteUnderPermission({ userId, noteId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new ForbiddenException();
+    }
+
+    let like;
+    try {
+      like = await this.likesService.createIfNotExists({ userId, noteId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return like || {};
+  }
+
+  @Delete('liked/notes/:noteId')
+  async unlikeNote(@Request() request: any, @Param('noteId') noteId: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let note;
+    try {
+      note = await this.notesService.findOne({ where: { id: noteId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+
+    let like;
+    try {
+      like = await this.likesService.removeIfExist({ userId, noteId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return like || {};
   }
 
   @Get('photo')

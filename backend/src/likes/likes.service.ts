@@ -53,6 +53,10 @@ export class LikesService {
     ]);
   }
 
+  count({ where }: { where: Prisma.LikeWhereInput }) {
+    return prisma.like.count({ where });
+  }
+
   createIfNotExists({ userId, noteId }: { userId: string; noteId: string }) {
     return prisma.$transaction(async (prisma) => {
       let like;
