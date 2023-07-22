@@ -273,42 +273,6 @@ export class NotesController {
     return result?.hits?.hits || [];
   }
 
-  private async _getNote(userId: string, noteId: string) {
-    return this.notesService.findFirst({
-      where: {
-        id: noteId,
-        blobPointer: { not: null }, // only notes with blobPointer
-        user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
-        OR: [
-          { userId: userId }, // user is owner
-          {
-            status: 'NORMAL',
-            group: {
-              handle: { not: null },
-              status: 'NORMAL',
-              readNotePermission: 'ADMIN',
-              members: { some: { userId: userId, role: 'ADMIN' } },
-            },
-          }, // readNotePermission is ADMIN and user is admin of group
-          {
-            status: 'NORMAL',
-            group: {
-              handle: { not: null },
-              status: 'NORMAL',
-              readNotePermission: 'MEMBER',
-              members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
-            },
-          }, // readNotePermission is MEMBER and user is member of group
-          {
-            status: 'NORMAL',
-            group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
-          }, // readNotePermission is ALL
-        ],
-      },
-      include: { user: true, group: true, _count: { select: { liked: true, stocked: true } } },
-    });
-  }
-
   @Get(':id')
   async findOne(@Request() request: any, @Param('id') id: string) {
     const userId = request.user.id;
@@ -333,7 +297,11 @@ export class NotesController {
       throw new NotFoundException();
     }
     try {
-      note = await this._getNote(userId, id);
+      note = await this.notesService._exFindNoteUnderPermission({
+        userId: userId,
+        noteId: id,
+        include: { user: true, group: true, _count: { select: { liked: true, stocked: true } } },
+      });
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
@@ -390,7 +358,10 @@ export class NotesController {
       throw new NotFoundException();
     }
     try {
-      note = await this._getNote(userId, id);
+      note = await this.notesService._exFindNoteUnderPermission({
+        userId: userId,
+        noteId: id,
+      });
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();

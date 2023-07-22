@@ -248,4 +248,49 @@ export class NotesService {
       }
     });
   }
+
+  _exFindNoteUnderPermission({
+    userId,
+    noteId,
+    include = { _count: false },
+  }: {
+    userId: string;
+    noteId: string;
+    include?: Prisma.NoteInclude;
+  }) {
+    return this.findFirst({
+      where: {
+        id: noteId,
+        blobPointer: { not: null }, // only notes with blobPointer
+        user: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+        OR: [
+          { userId: userId }, // user is owner
+          { status: 'NORMAL', groupId: null }, // no group
+          {
+            status: 'NORMAL',
+            group: {
+              handle: { not: null },
+              status: 'NORMAL',
+              readNotePermission: 'ADMIN',
+              members: { some: { userId: userId, role: 'ADMIN' } },
+            },
+          }, // readNotePermission is ADMIN and user is admin of group
+          {
+            status: 'NORMAL',
+            group: {
+              handle: { not: null },
+              status: 'NORMAL',
+              readNotePermission: 'MEMBER',
+              members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+            },
+          }, // readNotePermission is MEMBER and user is member of group
+          {
+            status: 'NORMAL',
+            group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+          }, // readNotePermission is ALL
+        ],
+      },
+      include: include,
+    });
+  }
 }
