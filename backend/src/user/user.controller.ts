@@ -10,8 +10,6 @@ import {
   Patch,
   Param,
   Delete,
-  HttpException,
-  HttpStatus,
   UseInterceptors,
   UploadedFile,
   NotAcceptableException,
@@ -64,23 +62,78 @@ export class UserController {
   @Get()
   async findOne(@Request() request: any) {
     const userId = request.user.id;
-    // check input
     if (!userId) {
-      throw new Error('Invalid input');
+      throw new UnauthorizedException();
     }
-    return await this.usersService.findOne({ where: { id: userId } });
+    let user;
+    try {
+      user = await this.usersService.findOne({ where: { id: userId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user;
   }
 
-  @Get('token')
-  async getToken(@Request() request: any, @Response({ passthrough: true }) response: any) {
-    const token = await Iron.seal(request.user, this.IRON_SECRET, Iron.defaults);
-    response.cookie('filesToken', token, {
-      httpOnly: true,
-      sameSite: 'none',
-      secure: true,
-      path: '/files/',
-    });
-    return {};
+  @Patch()
+  async update(@Request() request: any, @Body() data: UpdateUserDto) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    if (data.handle) {
+      try {
+        this.checkHandle(data.handle);
+      } catch (e) {
+        throw new NotAcceptableException();
+      }
+    }
+
+    let user;
+    try {
+      user = await this.usersService.update({
+        where: { id: userId },
+        data: {
+          handle: data.handle ?? undefined,
+          name: data.name ?? undefined,
+          email: data.email ?? undefined,
+        },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user;
+  }
+
+  @Get('groups/postable')
+  async findPostable(@Request() request: any) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let groups;
+    try {
+      const [data] = await this.groupsService.findMany({
+        where: {
+          status: 'NORMAL',
+          handle: { not: null },
+          members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
+        },
+      });
+      groups = data;
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return groups;
   }
 
   @Get('joined/groups')
@@ -110,12 +163,26 @@ export class UserController {
     return memberships;
   }
 
+  /** @deprecated */
   @Get('joined/groups/handle/:handle')
   async findJoinedGroupByHandle(@Request() request: any, @Param('handle') handle: string) {
     const userId = request.user.id;
-    return await this.membershipsService.findFirst({
-      where: { userId, role: { in: ['ADMIN', 'MEMBER'] }, group: { handle } },
-    });
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let membership;
+    try {
+      membership = await this.membershipsService.findFirst({
+        where: { userId, role: { in: ['ADMIN', 'MEMBER'] }, group: { handle } },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!membership) {
+      throw new NotFoundException();
+    }
+    return membership;
   }
 
   @Put('joined/groups/:groupId')
@@ -142,69 +209,53 @@ export class UserController {
     const role =
       group.joinGroupCondition === 'REQUIRE_ADMIN_APPROVAL' ? 'PENDING_APPROVAL' : 'MEMBER';
 
-    return this.membershipsService.createIfNotExists({ userId, groupId, role });
-  }
-
-  @Delete('joined/groups/:groupId')
-  leaveGroup(@Request() request: any, @Param('groupId') groupId: string) {
-    const userId = request.user.id;
-    return this.membershipsService.removeIfExists({ userId, groupId });
-  }
-
-  @Get('groups/postable')
-  async findPostable(@Request() request: any) {
-    const userId = request.user.id;
-    if (!userId) {
-      throw new UnauthorizedException();
-    }
-    let groups;
+    let membership;
     try {
-      const [data] = await this.groupsService.findMany({
-        where: {
-          status: 'NORMAL',
-          handle: { not: null },
-          members: { some: { user: { id: userId }, role: { in: ['ADMIN', 'MEMBER'] } } },
-        },
-      });
-      groups = data;
+      membership = this.membershipsService.createIfNotExists({ userId, groupId, role });
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
-    return groups;
+
+    return membership || {};
   }
 
-  @Patch()
-  update(@Request() request: any, @Body() data: UpdateUserDto) {
+  @Delete('joined/groups/:groupId')
+  async leaveGroup(@Request() request: any, @Param('groupId') groupId: string) {
     const userId = request.user.id;
-
-    // check input
     if (!userId) {
-      throw new Error('Invalid input');
+      throw new UnauthorizedException();
     }
 
-    if (data.handle) {
-      try {
-        this.checkHandle(data.handle);
-      } catch (e) {
-        throw new NotAcceptableException();
-      }
+    let group;
+    try {
+      group = await this.groupsService.findOne({ where: { id: groupId } });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!group) {
+      throw new NotFoundException();
     }
 
-    return this.usersService.update({
-      where: { id: userId },
-      data: {
-        handle: data.handle ?? undefined,
-        name: data.name ?? undefined,
-        email: data.email ?? undefined,
-      },
-    });
+    let membership;
+    try {
+      membership = await this.membershipsService.removeIfExists({ userId, groupId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+
+    return membership || {};
   }
 
   @Get('photo')
   async getPhoto(@Request() request: any, @Response() response: any) {
+    const id = request.user.id;
+    if (!id) {
+      throw new UnauthorizedException();
+    }
+
     try {
-      const id = request.user.id;
       const downloadBlockBlobResponse = await this.blobsService.downloadBlob('user', `${id}/photo`);
       response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
       downloadBlockBlobResponse.readableStreamBody?.pipe(response);
@@ -227,10 +278,14 @@ export class UserController {
 
   @Post('photo')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadPhoto(@Request() request: any, @UploadedFile() file: Express.Multer.File) {
+  async uploadPhoto(
+    @Request() request: any,
+    @Response() response: any,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     const userId = request.user.id;
     if (!userId) {
-      throw new NotAcceptableException('Invalid input');
+      throw new UnauthorizedException();
     }
     if (
       file.mimetype !== 'image/jpeg' &&
@@ -243,9 +298,32 @@ export class UserController {
       throw new NotAcceptableException('File too large');
     }
     try {
-      return this.blobsService.uploadBlob('user', `${userId}/photo`, file.mimetype, file.buffer);
+      const result = await this.blobsService.uploadBlob(
+        'user',
+        `${userId}/photo`,
+        file.mimetype,
+        file.buffer,
+      );
+      response.status(201).send({ ...result });
     } catch (e) {
-      throw new InternalServerErrorException();
+      if (e instanceof RestError) {
+        if (e.statusCode) {
+          response.status(e.statusCode).send();
+        }
+        throw new InternalServerErrorException();
+      }
     }
+  }
+
+  @Get('token')
+  async getToken(@Request() request: any, @Response({ passthrough: true }) response: any) {
+    const token = await Iron.seal(request.user, this.IRON_SECRET, Iron.defaults);
+    response.cookie('filesToken', token, {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+      path: '/files/',
+    });
+    return {};
   }
 }
