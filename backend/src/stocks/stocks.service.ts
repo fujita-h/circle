@@ -65,6 +65,24 @@ export class StocksService {
     ]);
   }
 
+  findManyDistinct({
+    select,
+    where,
+    distinct,
+    orderBy,
+    skip,
+    take,
+  }: {
+    select?: Prisma.StockSelect;
+    where?: Prisma.StockWhereInput;
+    distinct?: Prisma.StockScalarFieldEnum[];
+    orderBy?: Prisma.Enumerable<Prisma.StockOrderByWithRelationInput>;
+    skip?: number;
+    take?: number;
+  }) {
+    return this.prisma.stock.findMany({ select, where, orderBy, distinct, skip, take });
+  }
+
   count({ where }: { where: Prisma.StockWhereInput }) {
     return this.prisma.stock.count({ where });
   }
@@ -89,5 +107,51 @@ export class StocksService {
     include?: Prisma.StockInclude;
   }) {
     return this.prisma.stock.delete({ where, include });
+  }
+
+  createIfNotExists({
+    userId,
+    noteId,
+    labelId,
+  }: {
+    userId: string;
+    noteId: string;
+    labelId: string;
+  }) {
+    return this.prisma.$transaction(async (prisma) => {
+      let stock;
+      stock = await prisma.stock.findUnique({
+        where: { userId_noteId_labelId: { userId, noteId, labelId } },
+      });
+      if (!stock) {
+        stock = await prisma.stock.create({
+          data: { userId, noteId, labelId },
+        });
+      }
+      return stock;
+    });
+  }
+
+  deleteIfNotExists({
+    userId,
+    noteId,
+    labelId,
+  }: {
+    userId: string;
+    noteId: string;
+    labelId: string;
+  }) {
+    return this.prisma.$transaction(async (prisma) => {
+      let stock;
+      stock = await prisma.stock.findUnique({
+        where: { userId_noteId_labelId: { userId, noteId, labelId } },
+      });
+      if (stock) {
+        stock = await prisma.stock.delete({
+          where: { userId_noteId_labelId: { userId, noteId, labelId } },
+        });
+      }
+      return stock;
+    });
   }
 }

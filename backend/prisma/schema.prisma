@@ -140,16 +140,16 @@ model Comment {
 }
 
 model Stock {
-  User      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String      @map("user_id")
-  Note      Note        @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  noteId    String      @map("note_id")
-  Label     StockLabel? @relation(fields: [labelId], references: [id])
-  labelId   String?
-  createdAt DateTime    @default(now()) @map("created_at")
-  updatedAt DateTime    @updatedAt @map("updated_at")
+  User      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String     @map("user_id")
+  Note      Note       @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId    String     @map("note_id")
+  Label     StockLabel @relation(fields: [labelId], references: [id])
+  labelId   String
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
 
-  @@id([userId, noteId])
+  @@id([userId, noteId, labelId])
   @@map("stock")
 }
 

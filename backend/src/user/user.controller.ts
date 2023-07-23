@@ -30,6 +30,8 @@ import { MembershipsService } from '../memberships/memberships.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { NotesService } from '../notes/notes.service';
 import { LikesService } from '../likes/likes.service';
+import { StocksService } from '../stocks/stocks.service';
+import { StockLabelsService } from '../stock-labels/stock-labels.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
@@ -50,6 +52,8 @@ export class UserController {
     private readonly blobsService: AzblobService,
     private readonly notesService: NotesService,
     private readonly likesService: LikesService,
+    private readonly stocksService: StocksService,
+    private readonly stockLabelsService: StockLabelsService,
   ) {
     if (!this.configService.get<string>('IRON_SECRET')) {
       this.logger.error('IRON_SECRET is not defined');
@@ -373,6 +377,182 @@ export class UserController {
       throw new InternalServerErrorException();
     }
     return like || {};
+  }
+
+  @Get('stocked/notes')
+  async findStockedNotes(
+    @Request() request: any,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
+  ) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let stocks;
+    try {
+      const [data, total] = await this.stocksService.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'asc' },
+        include: { Label: true },
+        skip: skip > 0 ? skip : undefined,
+        take: take > 0 ? take : undefined,
+      });
+      stocks = { data, meta: { total } };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return stocks;
+  }
+
+  @Get('stocked/notes/:noteId')
+  async findStockedNote(@Request() request: any, @Param('noteId') noteId: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let note;
+    try {
+      note = await this.notesService.findOne({ where: { id: noteId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+
+    let stocked;
+    let count: number;
+    try {
+      const [data] = await this.stocksService.findMany({
+        where: { noteId, userId },
+        include: { Label: true },
+      });
+      const data2 = await this.stocksService.findManyDistinct({
+        where: { noteId },
+        distinct: ['userId'],
+      });
+      stocked = data;
+      count = data2.length;
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return { stocked, count };
+  }
+
+  @Put('stocked/notes/:noteId/labels/:labelId')
+  async stockNoteWithLabel(
+    @Request() request: any,
+    @Param('noteId') noteId: string,
+    @Param('labelId') labelId: string,
+  ) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let note;
+    try {
+      note = await this.notesService.findOne({ where: { id: noteId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+
+    try {
+      note = await this.notesService._exFindNoteUnderPermission({ userId, noteId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new ForbiddenException();
+    }
+
+    let label;
+    try {
+      label = await this.stockLabelsService.findFirst({ where: { id: labelId, userId: userId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!label) {
+      throw new NotFoundException();
+    }
+
+    let stock;
+    try {
+      stock = await this.stocksService.createIfNotExists({ userId, noteId, labelId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return stock || {};
+  }
+
+  @Delete('stocked/notes/:noteId/labels/:labelId')
+  async unstockNoteWithLabel(
+    @Request() request: any,
+    @Param('noteId') noteId: string,
+    @Param('labelId') labelId: string,
+  ) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let note;
+    try {
+      note = await this.notesService.findOne({ where: { id: noteId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+
+    let stock;
+    try {
+      stock = await this.stocksService.deleteIfNotExists({ userId, noteId, labelId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return stock || {};
+  }
+
+  @Get('stocked/labels')
+  async findStockedLabels(
+    @Request() request: any,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
+  ) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let labels;
+    try {
+      const [data, total] = await this.stockLabelsService.findMany({
+        where: { userId },
+        orderBy: { name: 'asc' },
+        skip: skip > 0 ? skip : undefined,
+        take: take > 0 ? take : undefined,
+      });
+      labels = { data, meta: { total } };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return labels;
   }
 
   @Get('photo')

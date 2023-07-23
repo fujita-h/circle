@@ -6,7 +6,6 @@ import { useEnvironment } from '@/components/environment/providers';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { apiRequest } from '@/components/msal/requests';
-
 import { HeartIcon } from '@heroicons/react/24/solid';
 
 export function LikeButton({ noteId }: { noteId: string }) {
@@ -28,12 +27,10 @@ export function LikeButton({ noteId }: { noteId: string }) {
 
   const handleLike = async () => {
     if (!account) return;
-
     const auth = await instance.acquireTokenSilent({
       account,
       scopes: apiRequest(environment).scopes,
     });
-
     const response = await fetch(`${environment.BACKEND_ENDPOINT}/user/liked/notes/${noteId}`, {
       method: data.liked ? 'DELETE' : 'PUT',
       headers: {
@@ -41,7 +38,6 @@ export function LikeButton({ noteId }: { noteId: string }) {
         Authorization: `Bearer ${auth.accessToken}`,
       },
     });
-
     if (response.ok) {
       mutate();
     }
