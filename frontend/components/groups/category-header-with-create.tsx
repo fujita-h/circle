@@ -68,7 +68,7 @@ export function CategoryHeaderWithCreate({ title, tabs }: { title: string; tabs:
       });
       if (response.ok) {
         const data = await response.json();
-        router.push(`/g/${data.handle}`);
+        router.push(`/g/${data.handle}/settings`);
       } else {
         const data = await response.json();
         setFailedMessage(data.error);
