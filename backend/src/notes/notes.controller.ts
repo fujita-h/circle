@@ -15,6 +15,7 @@ import {
   ForbiddenException,
   InternalServerErrorException,
   UnauthorizedException,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { NotesService } from './notes.service';
 import { UpdateNoteDto } from './dto/update-note.dto';
@@ -127,8 +128,8 @@ export class NotesController {
   @Get()
   async findNotes(
     @Request() request: any,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
   ) {
     const userId = request.user.id;
 
@@ -170,8 +171,8 @@ export class NotesController {
         },
         include: { User: true, Group: true },
         orderBy: { createdAt: 'desc' },
-        skip,
-        take,
+        skip: skip > 0 ? skip : undefined,
+        take: take > 0 ? take : undefined,
       });
       notes = { data, meta: { total } };
     } catch (e) {
@@ -186,8 +187,8 @@ export class NotesController {
   async search(
     @Request() request: any,
     @Query('q') q: string,
-    @Query('skip', ParseIntPipe) skip: number,
-    @Query('take', ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
   ) {
     const userId = request.user.id;
     const [groups] = await this.groupsService.findMany({
@@ -262,8 +263,8 @@ export class NotesController {
         },
       },
       sort: [{ _score: { order: 'desc' } }, { createdAt: 'desc' }],
-      from: skip,
-      size: take,
+      from: skip > 0 ? skip : undefined,
+      size: take > 0 ? take : undefined,
     };
     const result = await this.esService.search(this.esIndex, body);
     return result?.hits?.hits || [];
@@ -329,8 +330,8 @@ export class NotesController {
   async getComments(
     @Request() request: any,
     @Param('id') id: string,
-    @Query('skip', ParseIntPipe) skip: number,
-    @Query('take', ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
   ) {
     const userId = request.user.id;
     if (!userId) {
@@ -372,8 +373,8 @@ export class NotesController {
         where: { noteId: note.id, status: 'NORMAL' },
         include: { User: true },
         orderBy: { createdAt: 'asc' },
-        skip,
-        take,
+        skip: skip > 0 ? skip : undefined,
+        take: take > 0 ? take : undefined,
       });
       comments = { data, meta: { total } };
     } catch (e) {

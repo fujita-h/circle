@@ -19,6 +19,7 @@ import {
   NotAcceptableException,
   UnauthorizedException,
   ForbiddenException,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { MembershipsService } from '../memberships/memberships.service';
@@ -72,16 +73,16 @@ export class UsersController {
 
   @Get()
   async findMany(
-    @Query('take', ParseIntPipe) take?: number,
-    @Query('skip', ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
   ) {
     let users;
     try {
       const [data, total] = await this.usersService.findMany({
         where: { handle: { not: null }, status: 'NORMAL' },
         orderBy: { handle: 'asc' },
-        take,
-        skip,
+        take: take > 0 ? take : undefined,
+        skip: skip > 0 ? skip : undefined,
       });
       users = { data, meta: { total } };
     } catch (e) {
@@ -146,8 +147,8 @@ export class UsersController {
   @Get(':id/joined/groups')
   async findJoinedGroups(
     @Param('id') id: string,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
   ) {
     let memberships;
     try {
@@ -155,8 +156,8 @@ export class UsersController {
         where: { userId: id, role: { in: ['ADMIN', 'MEMBER'] } },
         orderBy: { createdAt: 'asc' },
         include: { Group: true },
-        skip,
-        take,
+        skip: skip > 0 ? skip : undefined,
+        take: take > 0 ? take : undefined,
       });
       memberships = { data, meta: { total } };
     } catch (e) {
@@ -170,8 +171,8 @@ export class UsersController {
   async findNotes(
     @Request() request: any,
     @Param('id') id: string,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
   ) {
     const userId = request.user.id;
     if (!userId) {
@@ -221,8 +222,8 @@ export class UsersController {
         },
         include: { User: true, Group: true },
         orderBy: { createdAt: 'desc' },
-        skip,
-        take,
+        skip: skip > 0 ? skip : undefined,
+        take: take > 0 ? take : undefined,
       });
       notes = { data, meta: { total } };
     } catch (e) {
@@ -252,8 +253,8 @@ export class UsersController {
   @Get('handle/:handle/joined/groups')
   async findJoinedGroupsByHandle(
     @Param('handle') handle: string,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
   ) {
     let user;
     try {
@@ -272,8 +273,8 @@ export class UsersController {
   async findNotesByHandle(
     @Request() request: any,
     @Param('handle') handle: string,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
   ) {
     let id;
     try {

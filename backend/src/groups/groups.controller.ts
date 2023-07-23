@@ -19,6 +19,7 @@ import {
   UseInterceptors,
   UploadedFile,
   UnauthorizedException,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { GroupsService } from './groups.service';
 import { MembershipsService } from '../memberships/memberships.service';
@@ -79,15 +80,15 @@ export class GroupsController {
 
   @Get()
   async findMany(
-    @Query('take', ParseIntPipe) take?: number,
-    @Query('skip', ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
   ) {
     let groups;
     try {
       const [data, total] = await this.groupsService.findMany({
         where: { handle: { not: null } },
-        take,
-        skip,
+        take: take > 0 ? take : undefined,
+        skip: skip > 0 ? skip : undefined,
       });
       groups = { data, meta: { total } };
     } catch (e) {
@@ -208,8 +209,8 @@ export class GroupsController {
   @Get(':id/members')
   async findMembers(
     @Param('id') id: string,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
   ) {
     // get group
     let group;
@@ -231,8 +232,8 @@ export class GroupsController {
         where: {
           groupId: group.id,
         },
-        take,
-        skip,
+        take: take > 0 ? take : undefined,
+        skip: skip > 0 ? skip : undefined,
         orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
         include: { User: true },
       });
@@ -329,8 +330,8 @@ export class GroupsController {
   @Get('handle/:handle/members')
   async findMembersByHandle(
     @Param('handle') handle: string,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
   ) {
     let group;
     try {
@@ -350,8 +351,8 @@ export class GroupsController {
   async findNotesByHandle(
     @Request() request: any,
     @Param('handle') handle: string,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
   ) {
     let group;
     try {

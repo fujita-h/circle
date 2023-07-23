@@ -20,6 +20,7 @@ import {
   NotFoundException,
   UnauthorizedException,
   ForbiddenException,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import * as Iron from '@hapi/iron';
 import { ConfigService } from '@nestjs/config';
@@ -143,8 +144,8 @@ export class UserController {
   @Get('joined/groups')
   async findJoinedGroups(
     @Request() request: any,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
   ) {
     const userId = request.user.id;
     if (!userId) {
@@ -156,8 +157,8 @@ export class UserController {
         where: { userId, role: { in: ['ADMIN', 'MEMBER'] } },
         orderBy: { createdAt: 'asc' },
         include: { Group: true },
-        skip,
-        take,
+        skip: skip > 0 ? skip : undefined,
+        take: take > 0 ? take : undefined,
       });
       memberships = { data, meta: { total } };
     } catch (e) {
@@ -255,8 +256,8 @@ export class UserController {
   @Get('liked/notes')
   async findLikedNotes(
     @Request() request: any,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
   ) {
     const userId = request.user.id;
     if (!userId) {
@@ -267,8 +268,8 @@ export class UserController {
       const [data, total] = await this.likesService.findMany({
         where: { userId },
         orderBy: { createdAt: 'asc' },
-        skip,
-        take,
+        skip: skip > 0 ? skip : undefined,
+        take: take > 0 ? take : undefined,
       });
       likes = { data, meta: { total } };
     } catch (e) {
