@@ -18,6 +18,7 @@ import { MembershipsService } from './memberships/memberships.service';
 import { NotesService } from './notes/notes.service';
 import { NotesController } from './notes/notes.controller';
 import { NotificationsService } from './notifications/notifications.service';
+import { StockLabelsService } from './stock-labels/stock-labels.service';
 import { StocksService } from './stocks/stocks.service';
 import { TagsService } from './tags/tags.service';
 import { UserController } from './user/user.controller';
@@ -54,6 +55,7 @@ import { WatchesService } from './watches/watches.service';
     MembershipsService,
     NotesService,
     NotificationsService,
+    StockLabelsService,
     StocksService,
     TagsService,
     UsersService,
