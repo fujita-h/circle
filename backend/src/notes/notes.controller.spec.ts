@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaService } from '../prisma.service';
 import { NotesController } from './notes.controller';
 import { NotesService } from './notes.service';
-import { ConfigModule } from '@nestjs/config';
 import { AzblobService } from '../azblob/azblob.service';
 import { EsService } from '../es/es.service';
 import { UsersService } from '../users/users.service';
 import { GroupsService } from '../groups/groups.service';
 import { Prisma } from '@prisma/client';
 import { CreateGroupDto } from '../groups/dto/create-group.dto';
-import { CreateGroupNoteDto } from '../groups/dto/create-group-note.dto';
 import { GroupsController } from '../groups/groups.controller';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { CommentsService } from '../comments/comments.service';
@@ -20,7 +20,6 @@ describe('NotesController', () => {
   let usersService: UsersService;
   let groupsService: GroupsService;
   let notesService: NotesService;
-  let commentsService: CommentsService;
 
   class CreateGroupDtoForTest extends CreateGroupDto {
     id: string;
@@ -53,6 +52,7 @@ describe('NotesController', () => {
       controllers: [NotesController, GroupsController],
       providers: [
         NotesService,
+        PrismaService,
         AzblobService,
         EsService,
         UsersService,

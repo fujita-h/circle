@@ -1,14 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient, Prisma, MembershipRole } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { PrismaService } from '../prisma.service';
+import { Prisma, MembershipRole } from '@prisma/client';
 
 @Injectable()
 export class MembershipsService {
   private logger = new Logger(MembershipsService.name);
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     this.logger.log('Initializing Memberships Service...');
   }
 
@@ -19,7 +21,7 @@ export class MembershipsService {
     where: Prisma.MembershipWhereUniqueInput;
     include?: Prisma.MembershipInclude;
   }) {
-    return prisma.membership.findUnique({ where, include });
+    return this.prisma.membership.findUnique({ where, include });
   }
 
   findFirst({
@@ -31,7 +33,7 @@ export class MembershipsService {
     orderBy?: Prisma.Enumerable<Prisma.MembershipOrderByWithRelationInput>;
     include?: Prisma.MembershipInclude;
   }) {
-    return prisma.membership.findFirst({ where, orderBy, include });
+    return this.prisma.membership.findFirst({ where, orderBy, include });
   }
 
   findMany({
@@ -47,14 +49,14 @@ export class MembershipsService {
     skip?: number;
     take?: number;
   }) {
-    return prisma.$transaction([
-      prisma.membership.findMany({ where, orderBy, include, skip, take }),
-      prisma.membership.count({ where }),
+    return this.prisma.$transaction([
+      this.prisma.membership.findMany({ where, orderBy, include, skip, take }),
+      this.prisma.membership.count({ where }),
     ]);
   }
 
   count({ where }: { where: Prisma.MembershipWhereInput }) {
-    return prisma.membership.count({ where });
+    return this.prisma.membership.count({ where });
   }
 
   createIfNotExists({
@@ -66,7 +68,7 @@ export class MembershipsService {
     groupId: string;
     role: MembershipRole;
   }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       let membership;
       membership = await prisma.membership.findUnique({
         where: { userId_groupId: { userId, groupId } },
@@ -81,7 +83,7 @@ export class MembershipsService {
   }
 
   removeIfExists({ userId, groupId }: { userId: string; groupId: string }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       let membership;
       membership = await prisma.membership.findUnique({
         where: { userId_groupId: { userId, groupId } },

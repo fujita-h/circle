@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaService } from '../prisma.service';
 import { DraftsController } from './drafts.controller';
 import { NotesService } from '../notes/notes.service';
 import { AzblobService } from '../azblob/azblob.service';
@@ -12,7 +13,7 @@ describe('DraftsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [DraftsController],
-      providers: [NotesService, GroupsService, AzblobService, EsService],
+      providers: [NotesService, PrismaService, GroupsService, AzblobService, EsService],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],

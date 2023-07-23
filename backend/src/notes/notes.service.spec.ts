@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotesService } from './notes.service';
-import { ConfigService } from '@nestjs/config';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaService } from '../prisma.service';
 import { Prisma } from '@prisma/client';
+import { NotesService } from './notes.service';
 import { UsersService } from '../users/users.service';
 import { GroupsService } from '../groups/groups.service';
 import { AzblobService } from '../azblob/azblob.service';
@@ -36,7 +36,7 @@ describe('NotesService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NotesService,
-        ConfigService,
+        PrismaService,
         UsersService,
         GroupsService,
         AzblobService,

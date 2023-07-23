@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma.service';
+import { Prisma } from '@prisma/client';
 import { SortOptions } from '@elastic/elasticsearch/lib/api/types';
-import { Prisma, PrismaClient } from '@prisma/client';
 import { EsService } from '../es/es.service';
 import { init } from '@paralleldrive/cuid2';
 
-const prisma = new PrismaClient();
 const cuid = init({ length: 24 });
 
 @Injectable()
@@ -15,6 +15,7 @@ export class GroupsService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
     private readonly esService: EsService,
   ) {
     this.logger.log('Initializing Users Service...');
@@ -30,7 +31,7 @@ export class GroupsService {
     data: Prisma.GroupCreateInput;
     include?: Prisma.GroupInclude;
   }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       const group = await prisma.group.create({ data: { id: cuid(), ...data } });
       const esResponse = await this.esService.create(this.esGroupIndex, group.id, { ...group });
       if (esResponse.result === 'created' || esResponse.result === 'updated') {
@@ -42,7 +43,7 @@ export class GroupsService {
   }
 
   findAll({ include = { _count: false } }: { include?: Prisma.GroupInclude } = {}) {
-    return prisma.group.findMany({ include });
+    return this.prisma.group.findMany({ include });
   }
 
   findMany({
@@ -58,14 +59,14 @@ export class GroupsService {
     take?: number;
     skip?: number;
   }) {
-    return prisma.$transaction([
-      prisma.group.findMany({ where, orderBy, include, take, skip }),
-      prisma.group.count({ where }),
+    return this.prisma.$transaction([
+      this.prisma.group.findMany({ where, orderBy, include, take, skip }),
+      this.prisma.group.count({ where }),
     ]);
   }
 
   count({ where }: { where?: Prisma.GroupWhereInput }) {
-    return prisma.group.count({ where });
+    return this.prisma.group.count({ where });
   }
 
   findFirst({
@@ -77,7 +78,7 @@ export class GroupsService {
     orderBy?: Prisma.Enumerable<Prisma.GroupOrderByWithRelationInput>;
     include?: Prisma.GroupInclude;
   }) {
-    return prisma.group.findFirst({ where, orderBy, include });
+    return this.prisma.group.findFirst({ where, orderBy, include });
   }
 
   findOne({
@@ -87,7 +88,7 @@ export class GroupsService {
     where: Prisma.GroupWhereUniqueInput;
     include?: Prisma.GroupInclude;
   }) {
-    return prisma.group.findUnique({ where, include });
+    return this.prisma.group.findUnique({ where, include });
   }
 
   findMembers({
@@ -103,11 +104,11 @@ export class GroupsService {
     take?: number;
     skip?: number;
   }) {
-    return prisma.membership.findMany({ where, include, orderBy, take, skip });
+    return this.prisma.membership.findMany({ where, include, orderBy, take, skip });
   }
 
   countMembers({ where }: { where?: Prisma.MembershipWhereInput }) {
-    return prisma.membership.count({ where });
+    return this.prisma.membership.count({ where });
   }
 
   update({
@@ -119,7 +120,7 @@ export class GroupsService {
     data: Prisma.GroupUpdateInput;
     include?: Prisma.GroupInclude;
   }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       const group = await prisma.group.update({ where, data });
       const esResponse = await this.esService.create(this.esGroupIndex, group.id, { ...group });
       if (esResponse.result === 'created' || esResponse.result === 'updated') {
@@ -137,7 +138,7 @@ export class GroupsService {
     where: Prisma.GroupWhereUniqueInput;
     include?: Prisma.GroupInclude;
   }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       const group = await prisma.group.delete({ where, include });
       const esResponse = await this.esService.delete(this.esGroupIndex, group.id.toString());
       if (esResponse.result === 'deleted' || esResponse.result === 'not_found') {

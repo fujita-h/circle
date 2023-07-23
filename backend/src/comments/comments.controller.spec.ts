@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaService } from '../prisma.service';
 import { CommentsController } from './comments.controller';
 import { CommentsService } from './comments.service';
 import { AzblobService } from '../azblob/azblob.service';
-import { ConfigService } from '@nestjs/config';
 import { NotesService } from '../notes/notes.service';
 import { EsService } from '../es/es.service';
 
@@ -12,7 +13,12 @@ describe('CommentsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CommentsController],
-      providers: [CommentsService, ConfigService, NotesService, EsService, AzblobService],
+      providers: [CommentsService, PrismaService, NotesService, EsService, AzblobService],
+      imports: [
+        ConfigModule.forRoot({
+          envFilePath: ['.env.test'],
+        }),
+      ],
     }).compile();
 
     controller = module.get<CommentsController>(CommentsController);

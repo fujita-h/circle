@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaService } from '../prisma.service';
+import { Prisma } from '@prisma/client';
 import { init } from '@paralleldrive/cuid2';
 import { AzblobService } from '../azblob/azblob.service';
 import { EsService } from '../es/es.service';
 
-const prisma = new PrismaClient();
 const cuid = init({ length: 24 });
 
 @Injectable()
@@ -16,6 +16,7 @@ export class NotesService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
     private readonly blobsService: AzblobService,
     private readonly esService: EsService,
   ) {
@@ -36,7 +37,7 @@ export class NotesService {
     body: string;
     include?: Prisma.NoteInclude;
   }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       const blobCuid = cuid();
       const note = await prisma.note.create({
         data: { id: cuid(), ...data, blobPointer: blobCuid },
@@ -70,7 +71,7 @@ export class NotesService {
     body: string;
     include?: Prisma.NoteInclude;
   }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       const blobCuid = cuid();
       const note = await prisma.note.create({
         data: { id: cuid(), ...data, draftBlobPointer: blobCuid },
@@ -85,7 +86,7 @@ export class NotesService {
   }
 
   findAll({ include = { _count: false } }: { include?: Prisma.NoteInclude } = {}) {
-    return prisma.note.findMany({ include });
+    return this.prisma.note.findMany({ include });
   }
 
   findOne({
@@ -95,7 +96,7 @@ export class NotesService {
     where: Prisma.NoteWhereUniqueInput;
     include?: Prisma.NoteInclude;
   }) {
-    return prisma.note.findUnique({ where, include });
+    return this.prisma.note.findUnique({ where, include });
   }
 
   findFirst({
@@ -107,7 +108,7 @@ export class NotesService {
     orderBy?: Prisma.Enumerable<Prisma.NoteOrderByWithRelationInput>;
     include?: Prisma.NoteInclude;
   }) {
-    return prisma.note.findFirst({ where, orderBy, include });
+    return this.prisma.note.findFirst({ where, orderBy, include });
   }
 
   findMany({
@@ -123,14 +124,14 @@ export class NotesService {
     skip?: number;
     take?: number;
   }) {
-    return prisma.$transaction([
-      prisma.note.findMany({ where, orderBy, include, skip, take }),
-      prisma.note.count({ where }),
+    return this.prisma.$transaction([
+      this.prisma.note.findMany({ where, orderBy, include, skip, take }),
+      this.prisma.note.count({ where }),
     ]);
   }
 
   count({ where }: { where: Prisma.NoteWhereInput }) {
-    return prisma.note.count({ where });
+    return this.prisma.note.count({ where });
   }
 
   update({
@@ -144,7 +145,7 @@ export class NotesService {
     body: string;
     include?: Prisma.NoteInclude;
   }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       const blobCuid = cuid();
       const note = await prisma.note.update({
         where,
@@ -186,7 +187,7 @@ export class NotesService {
     body: string;
     include?: Prisma.NoteInclude;
   }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       const current = await prisma.note.findUnique({ where });
 
       if (!current) {
@@ -214,7 +215,7 @@ export class NotesService {
 
   // update method required to both data and body, so we need a separate method for soft delete.
   softRemove({ where }: { where: Prisma.NoteWhereUniqueInput }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       const note = await prisma.note.update({
         where,
         data: { status: 'DELETED' },
@@ -238,7 +239,7 @@ export class NotesService {
     where: Prisma.NoteWhereUniqueInput;
     include?: Prisma.NoteInclude;
   }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       const note = await prisma.note.delete({ where, include });
       const esResponse = await this.esService.delete(this.esIndex, note.id);
       if (esResponse.result === 'deleted' || esResponse.result === 'not_found') {

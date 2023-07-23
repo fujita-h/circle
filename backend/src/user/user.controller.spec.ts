@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaService } from '../prisma.service';
 import { UserController } from './user.controller';
 import { UsersService } from '../users/users.service';
-import { ConfigModule } from '@nestjs/config';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { EsService } from '../es/es.service';
 import { AzblobService } from '../azblob/azblob.service';
@@ -32,6 +33,7 @@ describe('UserController', () => {
       controllers: [UserController],
       providers: [
         UsersService,
+        PrismaService,
         EsService,
         AzblobService,
         GroupsService,

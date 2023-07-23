@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaService } from '../prisma.service';
 import { GroupsController } from './groups.controller';
 import { GroupsService } from './groups.service';
-import { ConfigModule } from '@nestjs/config';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { NotesService } from '../notes/notes.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { EsService } from '../es/es.service';
 import { UsersService } from '../users/users.service';
-import { Prisma } from '@prisma/client';
 import { NotesController } from '../notes/notes.controller';
 import { CreateNoteDto } from 'src/notes/dto/create-note.dto';
 import { CommentsService } from '../comments/comments.service';
@@ -19,6 +19,7 @@ const testingModule = {
   controllers: [GroupsController, NotesController],
   providers: [
     GroupsService,
+    PrismaService,
     UsersService,
     NotesService,
     CommentsService,

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { StockLabelsService } from './stock-labels.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from '../prisma.service';
+import { StockLabelsService } from './stock-labels.service';
 
 describe('StockLabelsService', () => {
   let service: StockLabelsService;

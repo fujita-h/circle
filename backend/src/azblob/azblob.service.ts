@@ -7,7 +7,7 @@ export class AzblobService {
   private logger = new Logger(AzblobService.name);
   private blobClient: BlobServiceClient;
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.logger.log('Initializing Azure Blob Service...');
 
     // Initialize blob client

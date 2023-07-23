@@ -1,13 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient, Prisma } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { PrismaService } from '../prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class StockLabelsService {
   private logger = new Logger(StockLabelsService.name);
-  constructor(private configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     this.logger.log('Initializing Stocks Service...');
   }
 
@@ -18,7 +20,7 @@ export class StockLabelsService {
     data: Prisma.StockLabelCreateInput;
     include?: Prisma.StockLabelInclude;
   }) {
-    return prisma.stockLabel.create({ data, include });
+    return this.prisma.stockLabel.create({ data, include });
   }
 
   findOne({
@@ -28,7 +30,7 @@ export class StockLabelsService {
     where: Prisma.StockLabelWhereUniqueInput;
     include?: Prisma.StockLabelInclude;
   }) {
-    return prisma.stockLabel.findUnique({ where, include });
+    return this.prisma.stockLabel.findUnique({ where, include });
   }
 
   findFirst({
@@ -40,7 +42,7 @@ export class StockLabelsService {
     orderBy?: Prisma.Enumerable<Prisma.StockLabelOrderByWithRelationInput>;
     include?: Prisma.StockLabelInclude;
   }) {
-    return prisma.stockLabel.findFirst({ where, orderBy, include });
+    return this.prisma.stockLabel.findFirst({ where, orderBy, include });
   }
 
   findMany({
@@ -56,14 +58,14 @@ export class StockLabelsService {
     skip?: number;
     take?: number;
   }) {
-    return prisma.$transaction([
-      prisma.stockLabel.findMany({ where, orderBy, include, skip, take }),
-      prisma.stockLabel.count({ where }),
+    return this.prisma.$transaction([
+      this.prisma.stockLabel.findMany({ where, orderBy, include, skip, take }),
+      this.prisma.stockLabel.count({ where }),
     ]);
   }
 
   count({ where }: { where: Prisma.StockLabelWhereInput }) {
-    return prisma.stockLabel.count({ where });
+    return this.prisma.stockLabel.count({ where });
   }
 
   update({
@@ -75,7 +77,7 @@ export class StockLabelsService {
     data: Prisma.StockLabelUpdateInput;
     include?: Prisma.StockLabelInclude;
   }) {
-    return prisma.stockLabel.update({ where, data, include });
+    return this.prisma.stockLabel.update({ where, data, include });
   }
 
   delete({
@@ -85,6 +87,6 @@ export class StockLabelsService {
     where: Prisma.StockLabelWhereUniqueInput;
     include?: Prisma.StockLabelInclude;
   }) {
-    return prisma.stockLabel.delete({ where, include });
+    return this.prisma.stockLabel.delete({ where, include });
   }
 }

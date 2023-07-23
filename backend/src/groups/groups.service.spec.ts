@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { GroupsService } from './groups.service';
-import { ConfigService } from '@nestjs/config';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaService } from '../prisma.service';
 import { Prisma } from '@prisma/client';
+import { GroupsService } from './groups.service';
 import { EsService } from '../es/es.service';
 
 const testPrefix = 'x-test-groups-service-';
@@ -36,7 +36,7 @@ describe('GroupsService', () => {
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [GroupsService, ConfigService, EsService],
+      providers: [GroupsService, PrismaService, EsService],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],

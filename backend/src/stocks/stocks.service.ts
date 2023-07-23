@@ -1,14 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient, Prisma } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { PrismaService } from '../prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class StocksService {
   private logger = new Logger(StocksService.name);
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     this.logger.log('Initializing Stocks Service...');
   }
 
@@ -19,7 +21,7 @@ export class StocksService {
     data: Prisma.StockCreateInput;
     include?: Prisma.StockInclude;
   }) {
-    return prisma.stock.create({ data, include });
+    return this.prisma.stock.create({ data, include });
   }
 
   findOne({
@@ -29,7 +31,7 @@ export class StocksService {
     where: Prisma.StockWhereUniqueInput;
     include?: Prisma.StockInclude;
   }) {
-    return prisma.stock.findUnique({ where, include });
+    return this.prisma.stock.findUnique({ where, include });
   }
 
   findFirst({
@@ -41,7 +43,7 @@ export class StocksService {
     orderBy?: Prisma.Enumerable<Prisma.StockOrderByWithRelationInput>;
     include?: Prisma.StockInclude;
   }) {
-    return prisma.stock.findFirst({ where, orderBy, include });
+    return this.prisma.stock.findFirst({ where, orderBy, include });
   }
 
   findMany({
@@ -57,14 +59,14 @@ export class StocksService {
     skip?: number;
     take?: number;
   }) {
-    return prisma.$transaction([
-      prisma.stock.findMany({ where, orderBy, include, skip, take }),
-      prisma.stock.count({ where }),
+    return this.prisma.$transaction([
+      this.prisma.stock.findMany({ where, orderBy, include, skip, take }),
+      this.prisma.stock.count({ where }),
     ]);
   }
 
   count({ where }: { where: Prisma.StockWhereInput }) {
-    return prisma.stock.count({ where });
+    return this.prisma.stock.count({ where });
   }
 
   update({
@@ -76,7 +78,7 @@ export class StocksService {
     data: Prisma.StockUpdateInput;
     include?: Prisma.StockInclude;
   }) {
-    return prisma.stock.update({ where, data, include });
+    return this.prisma.stock.update({ where, data, include });
   }
 
   delete({
@@ -86,6 +88,6 @@ export class StocksService {
     where: Prisma.StockWhereUniqueInput;
     include?: Prisma.StockInclude;
   }) {
-    return prisma.stock.delete({ where, include });
+    return this.prisma.stock.delete({ where, include });
   }
 }

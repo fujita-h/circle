@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersService } from './users.service';
-import { ConfigService } from '@nestjs/config';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaService } from '../prisma.service';
+import { UsersService } from './users.service';
 import { Prisma } from '@prisma/client';
 import { EsService } from '../es/es.service';
 
@@ -17,7 +17,7 @@ describe('UsersService', () => {
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UsersService, ConfigService, EsService],
+      providers: [UsersService, PrismaService, EsService],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],

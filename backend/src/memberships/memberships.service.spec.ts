@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaService } from '../prisma.service';
 import { MembershipsService } from './memberships.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { GroupsService } from '../groups/groups.service';
 import { EsService } from '../es/es.service';
@@ -24,7 +25,7 @@ describe('MembershipsService', () => {
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [MembershipsService, ConfigService, UsersService, GroupsService, EsService],
+      providers: [MembershipsService, PrismaService, UsersService, GroupsService, EsService],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],

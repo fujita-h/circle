@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { PassportModule } from '@nestjs/passport';
+import { PrismaService } from './prisma.service';
 import { OidcJwtStrategy } from './guards/jwt.strategy';
 
 import { AzblobService } from './azblob/azblob.service';
@@ -45,6 +46,7 @@ import { WatchesService } from './watches/watches.service';
     UsersController,
   ],
   providers: [
+    PrismaService,
     OidcJwtStrategy,
     AzblobService,
     CommentsService,

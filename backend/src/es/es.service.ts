@@ -9,7 +9,7 @@ export class EsService {
   private logger = new Logger(EsService.name);
   private client: Client;
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.logger.log('Initializing Es Service...');
 
     // Initialize Elasticsearch Client

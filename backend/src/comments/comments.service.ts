@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaService } from '../prisma.service';
+import { Prisma } from '@prisma/client';
 import { init } from '@paralleldrive/cuid2';
 import { AzblobService } from '../azblob/azblob.service';
 
-const prisma = new PrismaClient();
 const cuid = init({ length: 24 });
 
 @Injectable()
@@ -12,7 +12,11 @@ export class CommentsService {
   private logger = new Logger(CommentsService.name);
   private blobContainerName = 'comment';
 
-  constructor(private configService: ConfigService, private readonly blobService: AzblobService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+    private readonly blobService: AzblobService,
+  ) {
     this.logger.log('Initializing Comments Service...');
     // Initialize blob container
     this.blobService.init(this.blobContainerName);
@@ -25,7 +29,7 @@ export class CommentsService {
     where: Prisma.CommentWhereUniqueInput;
     include?: Prisma.CommentInclude;
   }) {
-    return prisma.comment.findUnique({ where, include });
+    return this.prisma.comment.findUnique({ where, include });
   }
 
   findFirst({
@@ -37,7 +41,7 @@ export class CommentsService {
     orderBy?: Prisma.Enumerable<Prisma.CommentOrderByWithRelationInput>;
     include?: Prisma.CommentInclude;
   }) {
-    return prisma.comment.findFirst({ where, orderBy, include });
+    return this.prisma.comment.findFirst({ where, orderBy, include });
   }
 
   findMany({
@@ -53,14 +57,14 @@ export class CommentsService {
     skip?: number;
     take?: number;
   }) {
-    return prisma.$transaction([
-      prisma.comment.findMany({ where, orderBy, include, skip, take }),
-      prisma.comment.count({ where }),
+    return this.prisma.$transaction([
+      this.prisma.comment.findMany({ where, orderBy, include, skip, take }),
+      this.prisma.comment.count({ where }),
     ]);
   }
 
   count({ where }: { where: Prisma.CommentWhereInput }) {
-    return prisma.comment.count({ where });
+    return this.prisma.comment.count({ where });
   }
 
   create({
@@ -72,7 +76,7 @@ export class CommentsService {
     body: string;
     include?: Prisma.CommentInclude;
   }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       const blobCuid = cuid();
       const comment = await prisma.comment.create({
         data: { id: cuid(), ...data, blobPointer: blobCuid },
@@ -105,7 +109,7 @@ export class CommentsService {
     data: Prisma.CommentUpdateInput;
     include?: Prisma.CommentInclude;
   }) {
-    return prisma.comment.update({ where, data, include });
+    return this.prisma.comment.update({ where, data, include });
   }
 
   delete({
@@ -115,6 +119,6 @@ export class CommentsService {
     where: Prisma.CommentWhereUniqueInput;
     include?: Prisma.CommentInclude;
   }) {
-    return prisma.comment.delete({ where, include });
+    return this.prisma.comment.delete({ where, include });
   }
 }

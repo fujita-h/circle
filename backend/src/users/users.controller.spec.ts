@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaService } from '../prisma.service';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { NotesService } from '../notes/notes.service';
-import { ConfigModule } from '@nestjs/config';
 import { CreateUserDto } from './dto/create-user.dto';
 import { EsService } from '../es/es.service';
 import { AzblobService } from '../azblob/azblob.service';
@@ -29,7 +30,14 @@ describe('UsersController', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
-      providers: [UsersService, MembershipsService, NotesService, EsService, AzblobService],
+      providers: [
+        UsersService,
+        PrismaService,
+        MembershipsService,
+        NotesService,
+        EsService,
+        AzblobService,
+      ],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],

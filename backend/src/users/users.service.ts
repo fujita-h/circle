@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma.service';
 import { SearchRequest, SortOptions } from '@elastic/elasticsearch/lib/api/types';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { EsService } from '../es/es.service';
 import { init } from '@paralleldrive/cuid2';
 
-const prisma = new PrismaClient();
 const cuid = init({ length: 24 });
 
 @Injectable()
@@ -15,6 +15,7 @@ export class UsersService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
     private readonly esService: EsService,
   ) {
     this.logger.log('Initializing Users Service...');
@@ -30,7 +31,7 @@ export class UsersService {
     data: Prisma.UserCreateInput;
     include?: Prisma.UserInclude;
   }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       const user = await prisma.user.create({ data: { id: cuid(), ...data } });
       const esResponse = await this.esService.create(this.esIndex, user.id, { ...user });
       if (esResponse.result === 'created' || esResponse.result === 'updated') {
@@ -42,7 +43,7 @@ export class UsersService {
   }
 
   findAll({ include = { _count: false } }: { include?: Prisma.UserInclude } = {}) {
-    return prisma.user.findMany({ include });
+    return this.prisma.user.findMany({ include });
   }
 
   findMany({
@@ -58,14 +59,14 @@ export class UsersService {
     take?: number;
     skip?: number;
   }) {
-    return prisma.$transaction([
-      prisma.user.findMany({ where, orderBy, include, take, skip }),
-      prisma.user.count({ where }),
+    return this.prisma.$transaction([
+      this.prisma.user.findMany({ where, orderBy, include, take, skip }),
+      this.prisma.user.count({ where }),
     ]);
   }
 
   count({ where }: { where?: Prisma.UserWhereInput }) {
-    return prisma.user.count({ where });
+    return this.prisma.user.count({ where });
   }
 
   findFirst({
@@ -77,7 +78,7 @@ export class UsersService {
     orderBy?: Prisma.Enumerable<Prisma.UserOrderByWithRelationInput>;
     include?: Prisma.UserInclude;
   }) {
-    return prisma.user.findFirst({ where, orderBy, include });
+    return this.prisma.user.findFirst({ where, orderBy, include });
   }
 
   findOne({
@@ -87,7 +88,7 @@ export class UsersService {
     where: Prisma.UserWhereUniqueInput;
     include?: Prisma.UserInclude;
   }) {
-    return prisma.user.findUnique({ where, include });
+    return this.prisma.user.findUnique({ where, include });
   }
 
   search({
@@ -133,7 +134,7 @@ export class UsersService {
     data: Prisma.UserUpdateInput;
     include?: Prisma.UserInclude;
   }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       const user = await prisma.user.update({ where, data });
       const esResponse = await this.esService.create(this.esIndex, user.id, { ...user });
       if (esResponse.result === 'created' || esResponse.result === 'updated') {
@@ -151,7 +152,7 @@ export class UsersService {
     where: Prisma.UserWhereUniqueInput;
     include?: Prisma.UserInclude;
   }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       const user = await prisma.user.delete({ where, include });
       const esResponse = await this.esService.delete(this.esIndex, user.id);
       if (esResponse.result === 'deleted' || esResponse.result === 'not_found') {

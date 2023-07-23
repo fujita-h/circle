@@ -1,14 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient, Prisma } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { PrismaService } from '../prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class LikesService {
   private logger = new Logger(LikesService.name);
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     this.logger.log('Initializing Likes Service...');
   }
 
@@ -19,7 +21,7 @@ export class LikesService {
     where: Prisma.LikeWhereUniqueInput;
     include?: Prisma.LikeInclude;
   }) {
-    return prisma.like.findUnique({ where, include });
+    return this.prisma.like.findUnique({ where, include });
   }
 
   findFirst({
@@ -31,7 +33,7 @@ export class LikesService {
     orderBy?: Prisma.Enumerable<Prisma.LikeOrderByWithRelationInput>;
     include?: Prisma.LikeInclude;
   }) {
-    return prisma.like.findFirst({ where, orderBy, include });
+    return this.prisma.like.findFirst({ where, orderBy, include });
   }
 
   findMany({
@@ -47,18 +49,18 @@ export class LikesService {
     skip?: number;
     take?: number;
   }) {
-    return prisma.$transaction([
-      prisma.like.findMany({ where, orderBy, include, skip, take }),
-      prisma.like.count({ where }),
+    return this.prisma.$transaction([
+      this.prisma.like.findMany({ where, orderBy, include, skip, take }),
+      this.prisma.like.count({ where }),
     ]);
   }
 
   count({ where }: { where: Prisma.LikeWhereInput }) {
-    return prisma.like.count({ where });
+    return this.prisma.like.count({ where });
   }
 
   createIfNotExists({ userId, noteId }: { userId: string; noteId: string }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       let like;
       like = await prisma.like.findUnique({
         where: { userId_noteId: { userId, noteId } },
@@ -73,7 +75,7 @@ export class LikesService {
   }
 
   removeIfExist({ userId, noteId }: { userId: string; noteId: string }) {
-    return prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async (prisma) => {
       let like;
       like = await prisma.like.findUnique({
         where: { userId_noteId: { userId, noteId } },
