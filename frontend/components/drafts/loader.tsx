@@ -12,13 +12,9 @@ export function Loader({ activeDraftId }: { activeDraftId?: string }) {
   const account = useAccount(accounts[0] || {});
 
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
-  const { data: drafts, isLoading } = useSWR<{ data: any[]; meta: { total: number } }>(
-    `${environment.BACKEND_ENDPOINT}/drafts?skip=0&take=200`,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-    },
-  );
+  const { data: drafts, isLoading } = useSWR<{ data: any[]; meta: { total: number } }>(`${environment.BACKEND_ENDPOINT}/drafts`, fetcher, {
+    revalidateOnFocus: false,
+  });
 
   if (isLoading) {
     return <div>loading...</div>;

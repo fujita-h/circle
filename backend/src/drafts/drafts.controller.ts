@@ -16,6 +16,7 @@ import {
   ForbiddenException,
   UnauthorizedException,
   Delete,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
@@ -114,11 +115,10 @@ export class DraftsController {
   @Get()
   async findMany(
     @Request() request: any,
-    @Query('skip', ParseIntPipe) skip?: number,
-    @Query('take', ParseIntPipe) take?: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
   ) {
     const userId = request.user.id;
-
     if (!userId) {
       throw new UnauthorizedException();
     }
@@ -133,8 +133,8 @@ export class DraftsController {
         },
         orderBy: { createdAt: 'desc' },
         include: { User: true, Group: true },
-        skip,
-        take,
+        skip: skip > 0 ? skip : undefined,
+        take: take > 0 ? take : undefined,
       });
       drafts = { data, meta: { total } };
     } catch (e) {
