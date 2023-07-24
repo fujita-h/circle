@@ -8,7 +8,7 @@ import { useEnvironment } from '@/components/environment/providers';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { apiRequest } from '@/components/msal/requests';
-import { ArchiveBoxIcon } from '@heroicons/react/24/solid';
+import { ArchiveBoxIcon, FolderPlusIcon } from '@heroicons/react/24/solid';
 import { Stock } from '@/types';
 
 export function StockButton({ noteId }: { noteId: string }) {
@@ -19,17 +19,17 @@ export function StockButton({ noteId }: { noteId: string }) {
   const {
     data: stockedData,
     isLoading: isStockedLoading,
-    mutate,
+    mutate: stockDataMutate,
   } = useSWR<{ stocked: Stock[]; count: number }>(`${environment.BACKEND_ENDPOINT}/user/stocked/notes/${noteId}`, jsonFetcher, {
     revalidateOnFocus: false,
   });
-  const { data: labelData, isLoading: isLabelLoading } = useSWR<{ data: any[]; meta: { total: number } }>(
-    `${environment.BACKEND_ENDPOINT}/user/stocked/labels`,
-    jsonFetcher,
-    {
-      revalidateOnFocus: false,
-    },
-  );
+  const {
+    data: labelData,
+    isLoading: isLabelLoading,
+    mutate: labelDataMutate,
+  } = useSWR<{ data: any[]; meta: { total: number } }>(`${environment.BACKEND_ENDPOINT}/user/stocked/labels`, jsonFetcher, {
+    revalidateOnFocus: false,
+  });
 
   const handleStock = async (e: any) => {
     console.log(e.target.name, e.target.checked);
@@ -47,7 +47,29 @@ export function StockButton({ noteId }: { noteId: string }) {
       },
     });
     if (response.ok) {
-      mutate();
+      stockDataMutate();
+    }
+  };
+
+  const [newLabel, setNewLabel] = useState('');
+  const handleCreateLabel = async (e: any) => {
+    e.preventDefault();
+    if (!account) return;
+    const auth = await instance.acquireTokenSilent({
+      account,
+      scopes: apiRequest(environment).scopes,
+    });
+    const response = await fetch(`${environment.BACKEND_ENDPOINT}/user/stocked/labels`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${auth.accessToken}`,
+      },
+      body: JSON.stringify({ name: newLabel }),
+    });
+    if (response.ok) {
+      setNewLabel('');
+      labelDataMutate();
     }
   };
 
@@ -64,8 +86,8 @@ export function StockButton({ noteId }: { noteId: string }) {
           </Popover.Button>
           <div className="text-center font-bold text-gray-500">{stockedData.count}</div>
         </div>
-        <Popover.Panel className="absolute top-0 left-12 shadow-lg bg-white ring-1 ring-gray-300 rounded-md">
-          <div className="px-3 py-2 w-40">
+        <Popover.Panel className="absolute -top-3 left-12 shadow-xl bg-white ring-1 ring-gray-300 rounded-md" focus={true}>
+          <div className="p-4 w-80">
             <fieldset>
               <legend className="sr-only">Stock labels</legend>
               <div className="space-y-2">
@@ -90,6 +112,31 @@ export function StockButton({ noteId }: { noteId: string }) {
                 ))}
               </div>
             </fieldset>
+
+            <div className="flex gap-2 items-center mt-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1 pb-1">
+                    <FolderPlusIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                  </div>
+                  <input
+                    type="test"
+                    className="block w-full pl-8 text-sm border-0 ring-0 shadow-none border-b border-gray-400 focus:border-indigo-600 focus-visible:outline-none"
+                    placeholder="新規カテゴリー"
+                    value={newLabel}
+                    onChange={(e) => setNewLabel(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div>
+                <button
+                  className="rounded-md text-sm border border-gray-400 p-1 focus:ring-0 focus-visible:outline-indigo-500"
+                  onClick={handleCreateLabel}
+                >
+                  作成
+                </button>
+              </div>
+            </div>
           </div>
         </Popover.Panel>
       </div>

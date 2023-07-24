@@ -555,6 +555,25 @@ export class UserController {
     return labels;
   }
 
+  @Post('stocked/labels')
+  async createStockedLabel(@Request() request: any, @Body('name') name: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let label;
+    try {
+      label = await this.stockLabelsService.create({
+        data: { name, User: { connect: { id: userId } } },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return label;
+  }
+
   @Get('photo')
   async getPhoto(@Request() request: any, @Response() response: any) {
     const id = request.user.id;
