@@ -623,6 +623,21 @@ export class UserController {
     return label;
   }
 
+  @Delete('stocked/labels/:labelId')
+  async deleteStockedLabel(@Request() request: any, @Param('labelId') labelId: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    try {
+      await this.stockLabelsService.delete({ where: { id: labelId, userId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return {};
+  }
+
   @Get('photo')
   async getPhoto(@Request() request: any, @Response() response: any) {
     const id = request.user.id;
