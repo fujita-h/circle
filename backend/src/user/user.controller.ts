@@ -21,6 +21,7 @@ import {
   UnauthorizedException,
   ForbiddenException,
   DefaultValuePipe,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import * as Iron from '@hapi/iron';
 import { ConfigService } from '@nestjs/config';
@@ -560,6 +561,10 @@ export class UserController {
     const userId = request.user.id;
     if (!userId) {
       throw new UnauthorizedException();
+    }
+
+    if (!name) {
+      throw new UnprocessableEntityException();
     }
 
     let label;
