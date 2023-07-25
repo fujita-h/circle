@@ -588,6 +588,41 @@ export class UserController {
     return label;
   }
 
+  @Put('stocked/labels/:labelId')
+  async updateStockedLabel(
+    @Request() request: any,
+    @Param('labelId') labelId: string,
+    @Body('name') name: string,
+  ) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    if (!name) {
+      throw new UnprocessableEntityException();
+    }
+
+    let label;
+    try {
+      label = await this.stockLabelsService.update({
+        where: { id: labelId, userId },
+        data: { name },
+      });
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new ConflictException();
+        }
+        this.logger.error(JSON.stringify(e));
+      } else {
+        this.logger.error(e);
+      }
+      throw new InternalServerErrorException();
+    }
+    return label;
+  }
+
   @Get('photo')
   async getPhoto(@Request() request: any, @Response() response: any) {
     const id = request.user.id;
