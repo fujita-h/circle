@@ -22,6 +22,7 @@ import {
   ForbiddenException,
   DefaultValuePipe,
   UnprocessableEntityException,
+  ConflictException,
 } from '@nestjs/common';
 import * as Iron from '@hapi/iron';
 import { ConfigService } from '@nestjs/config';
@@ -39,6 +40,7 @@ import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RestError } from '@azure/storage-blob';
 import * as jdenticon from 'jdenticon';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('user')
@@ -573,7 +575,14 @@ export class UserController {
         data: { name, User: { connect: { id: userId } } },
       });
     } catch (e) {
-      this.logger.error(e);
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new ConflictException();
+        }
+        this.logger.error(JSON.stringify(e));
+      } else {
+        this.logger.error(e);
+      }
       throw new InternalServerErrorException();
     }
     return label;
