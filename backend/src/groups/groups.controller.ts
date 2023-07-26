@@ -1,39 +1,39 @@
+import { RestError } from '@azure/storage-blob';
 import {
+  Body,
   Controller,
+  DefaultValuePipe,
+  Delete,
+  ForbiddenException,
+  Get,
+  InternalServerErrorException,
   Logger,
-  UseGuards,
+  NotAcceptableException,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  Patch,
+  PayloadTooLargeException,
+  Post,
+  Query,
   Request,
   Response,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  Query,
-  Patch,
-  ParseIntPipe,
-  NotAcceptableException,
-  ForbiddenException,
-  NotFoundException,
-  InternalServerErrorException,
-  UseInterceptors,
-  UploadedFile,
   UnauthorizedException,
-  DefaultValuePipe,
   UnprocessableEntityException,
-  PayloadTooLargeException,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { GroupsService } from './groups.service';
-import { MembershipsService } from '../memberships/memberships.service';
-import { NotesService } from '../notes/notes.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as jdenticon from 'jdenticon';
 import { AzblobService } from '../azblob/azblob.service';
-import { CreateGroupDto } from './dto/create-group.dto';
-import { UpdateGroupDto } from './dto/update-group.dto';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { RestError } from '@azure/storage-blob';
-import * as jdenticon from 'jdenticon';
+import { MembershipsService } from '../memberships/memberships.service';
+import { NotesService } from '../notes/notes.service';
+import { CreateGroupDto } from './dto/create-group.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
+import { GroupsService } from './groups.service';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('groups')
