@@ -1,6 +1,7 @@
 import { RestError } from '@azure/storage-blob';
 import {
   Body,
+  ConflictException,
   Controller,
   DefaultValuePipe,
   Delete,
@@ -20,6 +21,7 @@ import {
   UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import * as jdenticon from 'jdenticon';
 import { AzblobService } from '../azblob/azblob.service';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
@@ -56,7 +58,6 @@ export class UsersController {
     try {
       this.checkHandle(data.handle);
     } catch (e) {
-      this.logger.error(e);
       throw new UnprocessableEntityException();
     }
 
@@ -64,6 +65,14 @@ export class UsersController {
     try {
       user = await this.usersService.create({ data });
     } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new ConflictException();
+        }
+        this.logger.error(JSON.stringify(e));
+      } else {
+        this.logger.error(e);
+      }
       throw new InternalServerErrorException();
     }
     return user;
@@ -300,6 +309,14 @@ export class UsersController {
     try {
       user = await this.usersService.update({ where: { id }, data });
     } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new ConflictException();
+        }
+        this.logger.error(JSON.stringify(e));
+      } else {
+        this.logger.error(e);
+      }
       throw new InternalServerErrorException();
     }
     if (!user) {
@@ -339,6 +356,11 @@ export class UsersController {
         data: { oid: null, handle: null, status: 'DELETED', Joined: { set: [] } },
       });
     } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        this.logger.error(JSON.stringify(e));
+      } else {
+        this.logger.error(e);
+      }
       throw new InternalServerErrorException();
     }
     if (!user) {
