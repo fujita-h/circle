@@ -10,16 +10,14 @@ import {
   Param,
   Delete,
   UseGuards,
-  HttpException,
-  HttpStatus,
   Query,
   ParseIntPipe,
   NotFoundException,
   InternalServerErrorException,
-  NotAcceptableException,
   UnauthorizedException,
   ForbiddenException,
   DefaultValuePipe,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { MembershipsService } from '../memberships/memberships.service';
@@ -59,7 +57,7 @@ export class UsersController {
       this.checkHandle(data.handle);
     } catch (e) {
       this.logger.error(e);
-      throw new NotAcceptableException();
+      throw new UnprocessableEntityException();
     }
 
     let user;
@@ -295,7 +293,7 @@ export class UsersController {
       this.checkHandle(data.handle);
     } catch (e) {
       this.logger.error(e);
-      throw new NotAcceptableException();
+      throw new UnprocessableEntityException();
     }
 
     let user;
