@@ -20,6 +20,8 @@ import {
   UploadedFile,
   UnauthorizedException,
   DefaultValuePipe,
+  UnprocessableEntityException,
+  PayloadTooLargeException,
 } from '@nestjs/common';
 import { GroupsService } from './groups.service';
 import { MembershipsService } from '../memberships/memberships.service';
@@ -64,7 +66,7 @@ export class GroupsController {
     try {
       this.checkHandle(data.handle);
     } catch (e) {
-      throw new NotAcceptableException();
+      throw new UnprocessableEntityException();
     }
     try {
       return await this.groupsService.create({
@@ -173,7 +175,7 @@ export class GroupsController {
       throw new InternalServerErrorException();
     }
     if (!group || !group.handle || group.status !== 'NORMAL') {
-      throw new NotAcceptableException('Invalid group');
+      throw new NotFoundException();
     }
     if (!group.Members) {
       throw new InternalServerErrorException();
@@ -190,7 +192,7 @@ export class GroupsController {
       throw new NotAcceptableException('Invalid file type');
     }
     if (file.size > 1024 * 128) {
-      throw new NotAcceptableException('File too large');
+      throw new PayloadTooLargeException('File too large');
     }
 
     try {
@@ -400,7 +402,7 @@ export class GroupsController {
       try {
         this.checkHandle(data.handle);
       } catch (e) {
-        throw new NotAcceptableException();
+        throw new UnprocessableEntityException();
       }
     }
 
