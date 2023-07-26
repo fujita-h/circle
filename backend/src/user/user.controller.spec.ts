@@ -10,6 +10,8 @@ import { GroupsService } from '../groups/groups.service';
 import { MembershipsService } from '../memberships/memberships.service';
 import { NotesService } from '../notes/notes.service';
 import { LikesService } from '../likes/likes.service';
+import { StocksService } from '../stocks/stocks.service';
+import { StockLabelsService } from '../stock-labels/stock-labels.service';
 
 class CreateUserDtoForTest extends CreateUserDto {
   id: string;
@@ -40,6 +42,8 @@ describe('UserController', () => {
         MembershipsService,
         NotesService,
         LikesService,
+        StocksService,
+        StockLabelsService,
       ],
       imports: [
         ConfigModule.forRoot({
