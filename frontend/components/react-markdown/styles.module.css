@@ -40,3 +40,31 @@
   margin-top: 1.2rem;
   margin-bottom: 1.4rem;
 }
+.comment h2 {
+  font-size: 1.2rem;
+  line-height: 1.2;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+  margin-top: 1.0rem;
+  margin-bottom: 1.2rem;
+}
+.comment h3, .comment h4, .comment h5 {
+  font-size: 1.0rem;
+  line-height: 1.0;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+  margin-top: 1.0rem;
+  margin-bottom: 1.0rem;
+}
+.comment p {
+  font-size: 0.9rem;
+}
+.comment blockquote {
+  font-size: 0.9rem;
+  margin-top: 0.8rem;
+  margin-bottom: 0.8rem;
+  padding-left: 0.6rem;
+  padding-top: 0.2rem;
+  padding-bottom: 0.3rem;
+  border-left: 4px solid #eee;
+}
