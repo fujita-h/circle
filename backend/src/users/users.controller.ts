@@ -1,34 +1,34 @@
+import { RestError } from '@azure/storage-blob';
 import {
+  Body,
   Controller,
-  Logger,
-  Request,
-  Response,
+  DefaultValuePipe,
+  Delete,
+  ForbiddenException,
   Get,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
   Post,
   Put,
-  Body,
-  Param,
-  Delete,
-  UseGuards,
   Query,
-  ParseIntPipe,
-  NotFoundException,
-  InternalServerErrorException,
+  Request,
+  Response,
   UnauthorizedException,
-  ForbiddenException,
-  DefaultValuePipe,
   UnprocessableEntityException,
+  UseGuards,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { MembershipsService } from '../memberships/memberships.service';
-import { NotesService } from '../notes/notes.service';
+import * as jdenticon from 'jdenticon';
 import { AzblobService } from '../azblob/azblob.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
-import { RestError } from '@azure/storage-blob';
-import * as jdenticon from 'jdenticon';
+import { MembershipsService } from '../memberships/memberships.service';
+import { NotesService } from '../notes/notes.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UsersService } from './users.service';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('users')
