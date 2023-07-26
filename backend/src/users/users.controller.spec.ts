@@ -90,7 +90,7 @@ describe('UsersController', () => {
 
   it('should return rejects for duplicated', async () => {
     const result = controller.create(testUser);
-    await expect(result).rejects.toHaveProperty('status', 500);
+    await expect(result).rejects.toHaveProperty('status', 409);
   });
 
   it('should return user objects in the loop', async () => {
