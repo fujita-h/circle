@@ -23,6 +23,7 @@ import {
   DefaultValuePipe,
   UnprocessableEntityException,
   ConflictException,
+  PayloadTooLargeException,
 } from '@nestjs/common';
 import * as Iron from '@hapi/iron';
 import { ConfigService } from '@nestjs/config';
@@ -101,7 +102,7 @@ export class UserController {
       try {
         this.checkHandle(data.handle);
       } catch (e) {
-        throw new NotAcceptableException();
+        throw new UnprocessableEntityException();
       }
     }
 
@@ -685,7 +686,7 @@ export class UserController {
       throw new NotAcceptableException('Invalid file type');
     }
     if (file.size > 1024 * 128) {
-      throw new NotAcceptableException('File too large');
+      throw new PayloadTooLargeException('File too large');
     }
     try {
       const result = await this.blobsService.uploadBlob(
