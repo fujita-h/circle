@@ -29,7 +29,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
 import * as jdenticon from 'jdenticon';
 import { AzblobService } from '../azblob/azblob.service';
 import { GroupsService } from '../groups/groups.service';
@@ -576,7 +576,7 @@ export class UserController {
         data: { name, User: { connect: { id: userId } } },
       });
     } catch (e) {
-      if (e instanceof PrismaClientKnownRequestError) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
           throw new ConflictException();
         }
@@ -611,7 +611,7 @@ export class UserController {
         data: { name },
       });
     } catch (e) {
-      if (e instanceof PrismaClientKnownRequestError) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
           throw new ConflictException();
         }
