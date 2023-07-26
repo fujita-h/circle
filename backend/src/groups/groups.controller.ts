@@ -92,15 +92,15 @@ export class GroupsController {
 
   @Get()
   async findMany(
-    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
-    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
   ) {
     let groups;
     try {
       const [data, total] = await this.groupsService.findMany({
         where: { handle: { not: null } },
-        take: take > 0 ? take : undefined,
-        skip: skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
+        skip: skip && skip > 0 ? skip : undefined,
       });
       groups = { data, meta: { total } };
     } catch (e) {
@@ -221,8 +221,8 @@ export class GroupsController {
   @Get(':id/members')
   async findMembers(
     @Param('id') id: string,
-    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
-    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
   ) {
     // get group
     let group;
@@ -244,8 +244,8 @@ export class GroupsController {
         where: {
           groupId: group.id,
         },
-        take: take > 0 ? take : undefined,
-        skip: skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
+        skip: skip && skip > 0 ? skip : undefined,
         orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
         include: { User: true },
       });

@@ -128,8 +128,8 @@ export class NotesController {
   @Get()
   async findNotes(
     @Request() request: any,
-    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
-    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
 
@@ -171,8 +171,8 @@ export class NotesController {
         },
         include: { User: true, Group: true },
         orderBy: { createdAt: 'desc' },
-        skip: skip > 0 ? skip : undefined,
-        take: take > 0 ? take : undefined,
+        skip: skip && skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
       });
       notes = { data, meta: { total } };
     } catch (e) {
@@ -330,8 +330,8 @@ export class NotesController {
   async getComments(
     @Request() request: any,
     @Param('id') id: string,
-    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
-    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
     if (!userId) {
@@ -373,8 +373,8 @@ export class NotesController {
         where: { noteId: note.id, status: 'NORMAL' },
         include: { User: true },
         orderBy: { createdAt: 'asc' },
-        skip: skip > 0 ? skip : undefined,
-        take: take > 0 ? take : undefined,
+        skip: skip && skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
       });
       comments = { data, meta: { total } };
     } catch (e) {

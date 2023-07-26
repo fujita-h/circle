@@ -115,8 +115,8 @@ export class DraftsController {
   @Get()
   async findMany(
     @Request() request: any,
-    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
-    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
     if (!userId) {
@@ -133,8 +133,8 @@ export class DraftsController {
         },
         orderBy: { createdAt: 'desc' },
         include: { User: true, Group: true },
-        skip: skip > 0 ? skip : undefined,
-        take: take > 0 ? take : undefined,
+        skip: skip && skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
       });
       drafts = { data, meta: { total } };
     } catch (e) {

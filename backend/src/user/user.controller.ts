@@ -152,8 +152,8 @@ export class UserController {
   @Get('joined/groups')
   async findJoinedGroups(
     @Request() request: any,
-    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
-    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
     if (!userId) {
@@ -165,8 +165,8 @@ export class UserController {
         where: { userId, role: { in: ['ADMIN', 'MEMBER'] } },
         orderBy: { createdAt: 'asc' },
         include: { Group: true },
-        skip: skip > 0 ? skip : undefined,
-        take: take > 0 ? take : undefined,
+        skip: skip && skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
       });
       memberships = { data, meta: { total } };
     } catch (e) {
@@ -264,8 +264,8 @@ export class UserController {
   @Get('liked/notes')
   async findLikedNotes(
     @Request() request: any,
-    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
-    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
     if (!userId) {
@@ -276,8 +276,8 @@ export class UserController {
       const [data, total] = await this.likesService.findMany({
         where: { userId },
         orderBy: { createdAt: 'asc' },
-        skip: skip > 0 ? skip : undefined,
-        take: take > 0 ? take : undefined,
+        skip: skip && skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
       });
       likes = { data, meta: { total } };
     } catch (e) {
@@ -386,8 +386,8 @@ export class UserController {
   @Get('stocked/notes')
   async findStockedNotes(
     @Request() request: any,
-    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
-    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
     if (!userId) {
@@ -399,8 +399,8 @@ export class UserController {
         where: { userId },
         orderBy: { createdAt: 'asc' },
         include: { Label: true },
-        skip: skip > 0 ? skip : undefined,
-        take: take > 0 ? take : undefined,
+        skip: skip && skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
       });
       stocks = { data, meta: { total } };
     } catch (e) {
@@ -536,8 +536,8 @@ export class UserController {
   @Get('stocked/labels')
   async findStockedLabels(
     @Request() request: any,
-    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
-    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
     if (!userId) {
@@ -548,8 +548,8 @@ export class UserController {
       const [data, total] = await this.stockLabelsService.findMany({
         where: { userId },
         orderBy: { name: 'asc' },
-        skip: skip > 0 ? skip : undefined,
-        take: take > 0 ? take : undefined,
+        skip: skip && skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
       });
       labels = { data, meta: { total } };
     } catch (e) {
