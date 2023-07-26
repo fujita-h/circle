@@ -1,31 +1,17 @@
+import { classNames } from '@/utils';
 import { Inter } from 'next/font/google';
-import Link from 'next/link';
 const inter = Inter({ subsets: ['latin'] });
 
 export default function Page() {
-  const date = new Date();
   return (
-    <>
-      <div>Authenticated</div>
-      <div>{date.toLocaleString()}</div>
-      <div>
-        <Link href={'/aaa'}>aaa</Link>
+    <div className="bg-slate-100 print:bg-white">
+      <div className="max-w-screen-2xl mx-auto">
+        <div className="p-4 md:p-8">
+          <div className="bg-white rounded-md p-4">
+            <div className={classNames('text-xl font-bold text-center', inter.className)}>Dashbord Area</div>
+          </div>
+        </div>
       </div>
-      <div>
-        <Link href={'/bbb'}>bbb</Link>
-      </div>
-      <div>
-        <Link href={'/ccc'}>ccc</Link>
-      </div>
-      <div>
-        <a href={'/xxx'}>xxx</a>
-      </div>
-      <div>
-        <a href={'/xxx/yyy'}>xxx/yyy</a>
-      </div>
-      <div>
-        <Link href={'/'}>ROOT</Link>
-      </div>
-    </>
+    </div>
   );
 }
