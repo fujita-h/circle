@@ -1,6 +1,7 @@
 import { RestError } from '@azure/storage-blob';
 import {
   Body,
+  ConflictException,
   Controller,
   DefaultValuePipe,
   Delete,
@@ -25,6 +26,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Prisma } from '@prisma/client';
 import * as jdenticon from 'jdenticon';
 import { AzblobService } from '../azblob/azblob.service';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
@@ -76,6 +78,14 @@ export class GroupsController {
         },
       });
     } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new ConflictException();
+        }
+        this.logger.error(JSON.stringify(e));
+      } else {
+        this.logger.error(e);
+      }
       throw new InternalServerErrorException();
     }
   }
@@ -413,6 +423,14 @@ export class GroupsController {
         data: { ...data },
       });
     } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new ConflictException();
+        }
+        this.logger.error(JSON.stringify(e));
+      } else {
+        this.logger.error(e);
+      }
       throw new InternalServerErrorException();
     }
     if (!updatedGroup) {
@@ -454,6 +472,11 @@ export class GroupsController {
         data: { handle: null, status: 'DELETED' },
       });
     } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        this.logger.error(JSON.stringify(e));
+      } else {
+        this.logger.error(e);
+      }
       throw new InternalServerErrorException();
     }
     if (!group) {
