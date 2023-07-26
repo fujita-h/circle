@@ -1,47 +1,47 @@
+import { RestError } from '@azure/storage-blob';
+import * as Iron from '@hapi/iron';
 import {
-  Controller,
-  Logger,
-  UseGuards,
-  Request,
-  Response,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  ConflictException,
+  Controller,
+  DefaultValuePipe,
   Delete,
-  UseInterceptors,
-  UploadedFile,
-  NotAcceptableException,
+  ForbiddenException,
+  Get,
   InternalServerErrorException,
+  Logger,
+  NotAcceptableException,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  Patch,
+  PayloadTooLargeException,
+  Post,
   Put,
   Query,
-  ParseIntPipe,
-  NotFoundException,
+  Request,
+  Response,
   UnauthorizedException,
-  ForbiddenException,
-  DefaultValuePipe,
   UnprocessableEntityException,
-  ConflictException,
-  PayloadTooLargeException,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import * as Iron from '@hapi/iron';
 import { ConfigService } from '@nestjs/config';
-import { UsersService } from '../users/users.service';
-import { GroupsService } from '../groups/groups.service';
-import { MembershipsService } from '../memberships/memberships.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import * as jdenticon from 'jdenticon';
 import { AzblobService } from '../azblob/azblob.service';
-import { NotesService } from '../notes/notes.service';
-import { LikesService } from '../likes/likes.service';
-import { StocksService } from '../stocks/stocks.service';
-import { StockLabelsService } from '../stock-labels/stock-labels.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { GroupsService } from '../groups/groups.service';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { RestError } from '@azure/storage-blob';
-import * as jdenticon from 'jdenticon';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { LikesService } from '../likes/likes.service';
+import { MembershipsService } from '../memberships/memberships.service';
+import { NotesService } from '../notes/notes.service';
+import { StockLabelsService } from '../stock-labels/stock-labels.service';
+import { StocksService } from '../stocks/stocks.service';
+import { UsersService } from '../users/users.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('user')
