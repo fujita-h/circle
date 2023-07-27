@@ -21,16 +21,16 @@ model User {
   name      String?    @db.VarChar(50)
   email     String?    @db.VarChar(254)
 
-  Joined        Membership[]
-  Comments      Comment[]
-  Notes         Note[]
-  Stocks        Stock[]
-  StockLabels   StockLabel[]
-  Likes         Like[]
-  Following     Follow[]       @relation("from")
-  Followed      Follow[]       @relation("to")
-  Watching      Watch[]
-  Notifications Notification[]
+  Joined          Membership[]
+  Comments        Comment[]
+  Notes           Note[]
+  Stocks          Stock[]
+  StockLabels     StockLabel[]
+  Likes           Like[]
+  FollowingUsers  FollowUser[]   @relation("from")
+  FollowedUsers   FollowUser[]   @relation("to")
+  FollowingGroups FollowGroup[]
+  Notifications   Notification[]
 
   @@index([type])
   @@index([status])
@@ -50,9 +50,9 @@ model Group {
   writeNoteCondition  ConditionWriteNote  @default(ALLOWED) @map("write_note_condition")
   joinGroupCondition  ConditionJoinGroup  @default(DENIED) @map("join_group_condition")
 
-  Members Membership[]
-  Notes   Note[]
-  Watched Watch[]
+  Members  Membership[]
+  Notes    Note[]
+  Followed FollowGroup[]
 
   @@index([status])
   @@map("group")
@@ -179,7 +179,7 @@ model Like {
   @@map("like")
 }
 
-model Follow {
+model FollowUser {
   From      User     @relation("from", fields: [fromId], references: [id], onDelete: Cascade)
   fromId    String   @map("from_id")
   To        User     @relation("to", fields: [toId], references: [id], onDelete: Cascade)
@@ -188,10 +188,10 @@ model Follow {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@id([fromId, toId])
-  @@map("follow")
+  @@map("follow_user")
 }
 
-model Watch {
+model FollowGroup {
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @map("user_id")
   Group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -200,7 +200,7 @@ model Watch {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@id([userId, groupId])
-  @@map("watch")
+  @@map("follow_group")
 }
 
 model Notification {
