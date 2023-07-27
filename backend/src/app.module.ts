@@ -25,7 +25,6 @@ import { TagsService } from './tags/tags.service';
 import { UserController } from './user/user.controller';
 import { UsersController } from './users/users.controller';
 import { UsersService } from './users/users.service';
-import { WatchesService } from './watches/watches.service';
 
 @Module({
   imports: [
@@ -61,7 +60,6 @@ import { WatchesService } from './watches/watches.service';
     StocksService,
     TagsService,
     UsersService,
-    WatchesService,
   ],
 })
 export class AppModule {}
