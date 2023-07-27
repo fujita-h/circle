@@ -257,6 +257,7 @@ export class UsersController {
     return user;
   }
 
+  /** @deprecated */
   @Get('handle/:handle/joined/groups')
   async findJoinedGroupsByHandle(
     @Param('handle') handle: string,
@@ -276,6 +277,7 @@ export class UsersController {
     return this.findJoinedGroups(user.id, skip, take);
   }
 
+  /** @deprecated */
   @Get('handle/:handle/notes')
   async findNotesByHandle(
     @Request() request: any,

@@ -330,6 +330,7 @@ export class GroupsController {
     return group;
   }
 
+  /** @deprecated */
   @Get('handle/:handle/photo')
   async getPhotoByHandle(@Param('handle') handle: string, @Response() response: any) {
     const group = await this.groupsService.findOne({ where: { handle } });
@@ -339,6 +340,7 @@ export class GroupsController {
     return this.getPhoto(group.id, response);
   }
 
+  /** @deprecated */
   @Get('handle/:handle/members')
   async findMembersByHandle(
     @Param('handle') handle: string,
@@ -359,6 +361,7 @@ export class GroupsController {
     return this.findMembers(group.id, skip, take);
   }
 
+  /** @deprecated */
   @Get('handle/:handle/notes')
   async findNotesByHandle(
     @Request() request: any,
