@@ -176,28 +176,6 @@ export class UserController {
     return memberships;
   }
 
-  /** @deprecated */
-  @Get('joined/groups/handle/:handle')
-  async findJoinedGroupByHandle(@Request() request: any, @Param('handle') handle: string) {
-    const userId = request.user.id;
-    if (!userId) {
-      throw new UnauthorizedException();
-    }
-    let membership;
-    try {
-      membership = await this.membershipsService.findFirst({
-        where: { userId, role: { in: ['ADMIN', 'MEMBER'] }, Group: { handle } },
-      });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!membership) {
-      throw new NotFoundException();
-    }
-    return membership;
-  }
-
   @Put('joined/groups/:groupId')
   async joinGroup(@Request() request: any, @Param('groupId') groupId: string) {
     const userId = request.user.id;

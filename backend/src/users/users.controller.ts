@@ -257,47 +257,6 @@ export class UsersController {
     return user;
   }
 
-  /** @deprecated */
-  @Get('handle/:handle/joined/groups')
-  async findJoinedGroupsByHandle(
-    @Param('handle') handle: string,
-    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
-    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
-  ) {
-    let user;
-    try {
-      user = await this.usersService.findOne({ where: { handle } });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!user) {
-      throw new NotFoundException();
-    }
-    return this.findJoinedGroups(user.id, skip, take);
-  }
-
-  /** @deprecated */
-  @Get('handle/:handle/notes')
-  async findNotesByHandle(
-    @Request() request: any,
-    @Param('handle') handle: string,
-    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
-    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
-  ) {
-    let id;
-    try {
-      id = await this.usersService.findOne({ where: { handle } });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!id) {
-      throw new NotFoundException();
-    }
-    return this.findNotes(request, id.id, skip, take);
-  }
-
   @Put(':id')
   async update(@Param('id') id: string, @Body() data: UpdateUserDto) {
     try {

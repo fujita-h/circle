@@ -330,59 +330,6 @@ export class GroupsController {
     return group;
   }
 
-  /** @deprecated */
-  @Get('handle/:handle/photo')
-  async getPhotoByHandle(@Param('handle') handle: string, @Response() response: any) {
-    const group = await this.groupsService.findOne({ where: { handle } });
-    if (!group || !group.id) {
-      throw new NotFoundException();
-    }
-    return this.getPhoto(group.id, response);
-  }
-
-  /** @deprecated */
-  @Get('handle/:handle/members')
-  async findMembersByHandle(
-    @Param('handle') handle: string,
-    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
-    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
-  ) {
-    let group;
-    try {
-      group = await this.groupsService.findOne({ where: { handle } });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!group || group.status === 'DELETED') {
-      throw new NotFoundException();
-    }
-
-    return this.findMembers(group.id, skip, take);
-  }
-
-  /** @deprecated */
-  @Get('handle/:handle/notes')
-  async findNotesByHandle(
-    @Request() request: any,
-    @Param('handle') handle: string,
-    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip: number,
-    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take: number,
-  ) {
-    let group;
-    try {
-      group = await this.groupsService.findOne({ where: { handle } });
-    } catch (e) {
-      this.logger.error(e);
-      throw new InternalServerErrorException();
-    }
-    if (!group || group.status === 'DELETED') {
-      throw new NotFoundException();
-    }
-
-    return this.findNotes(request, group.id, skip, take);
-  }
-
   @Patch(':id')
   async update(@Request() request: any, @Param('id') id: string, @Body() data: UpdateGroupDto) {
     const userId = request.user.id;
