@@ -265,8 +265,8 @@ export class GroupsController {
   async findNotes(
     @Request() request: any,
     @Param('id') id: string,
-    @Query('skip') skip?: number,
-    @Query('take') take?: number,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
   ) {
     const userId = request.user.id;
     let notes;
@@ -302,7 +302,7 @@ export class GroupsController {
             }, // readNotePermission is ALL
           ],
         },
-        include: { User: true, Group: true },
+        include: { User: true, Group: true, _count: { select: { Liked: true } } },
         orderBy: { createdAt: 'desc' },
         skip,
         take,

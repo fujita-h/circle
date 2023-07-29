@@ -50,7 +50,7 @@ export function List({ notes }: { notes: SomeRequired<Note, 'User'>[] }) {
   );
 }
 
-export function CardList({ notes }: { notes: SomeRequired<Note, 'User' | '_count'>[] }) {
+export function CardList({ notes, isGroupList = false }: { notes: SomeRequired<Note, 'User' | '_count'>[]; isGroupList?: boolean }) {
   return (
     <ul role="list" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {notes.map((note) => {
@@ -59,8 +59,8 @@ export function CardList({ notes }: { notes: SomeRequired<Note, 'User' | '_count
         return (
           <li key={note.id} className="relative col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow">
             <div className="p-3 flex gap-x-2">
-              <div className="w-16 h-16 flex items-center justify-center">
-                {note.Group ? (
+              <div className="w-16 h-16 flex items-center justify-center flex-none">
+                {note.Group && !isGroupList ? (
                   <div className="relative pr-1">
                     <BackendImage
                       src={`/groups/${note.Group.id}/photo`}
@@ -95,7 +95,7 @@ export function CardList({ notes }: { notes: SomeRequired<Note, 'User' | '_count
                   <Link className="z-10 hover:underline" href={`/u/${note.User.handle}`}>
                     <span>@{note.User.handle}</span>
                     {note.User.name ? <span> ({note.User.name})</span> : <></>}
-                    {note.Group ? <span> in {note.Group.name || note.Group.handle}</span> : <></>}
+                    {note.Group && !isGroupList ? <span> in {note.Group.name || note.Group.handle}</span> : <></>}
                   </Link>
                 </div>
                 <div className="text-sm text-gray-600">

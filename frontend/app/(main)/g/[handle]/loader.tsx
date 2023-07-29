@@ -4,10 +4,11 @@ import { useEnvironment } from '@/components/environment/providers';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { CardList } from '@/components/notes/list';
 import { LinkPagination } from '@/components/paginations';
+import { Group } from '@/types';
 import { useAccount, useMsal } from '@azure/msal-react';
 import useSWR from 'swr';
 
-export function Loader({ pathname, page, take }: { pathname: string; page: number; take: number }) {
+export function Loader({ group, pathname, page, take }: { group: Group; pathname: string; page: number; take: number }) {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
@@ -18,7 +19,7 @@ export function Loader({ pathname, page, take }: { pathname: string; page: numbe
   // fetch data
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
   const { data: notes, isLoading } = useSWR<{ data: any[]; meta: { total: number } }>(
-    `${environment.BACKEND_ENDPOINT}/notes?take=${take}&skip=${skip}`,
+    `${environment.BACKEND_ENDPOINT}/groups/${group.id}/notes?take=${take}&skip=${skip}`,
     fetcher,
     { revalidateOnFocus: false },
   );
@@ -35,7 +36,7 @@ export function Loader({ pathname, page, take }: { pathname: string; page: numbe
 
   return (
     <>
-      <CardList notes={notes.data} />
+      <CardList notes={notes.data} isGroupList={true} />
       <LinkPagination pathname={pathname} page={page} total={notes.meta.total} take={take} />
     </>
   );

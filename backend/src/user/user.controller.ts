@@ -176,6 +176,28 @@ export class UserController {
     return memberships;
   }
 
+  @Get('joined/groups/:groupId')
+  async findJoinedGroup(@Request() request: any, @Param('groupId') groupId: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let membership;
+    try {
+      membership = await this.membershipsService.findFirst({
+        where: { userId, groupId },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!membership) {
+      throw new NotFoundException();
+    }
+    return membership;
+  }
+
   @Put('joined/groups/:groupId')
   async joinGroup(@Request() request: any, @Param('groupId') groupId: string) {
     const userId = request.user.id;
@@ -208,7 +230,7 @@ export class UserController {
       throw new InternalServerErrorException();
     }
 
-    return membership || {};
+    return membership;
   }
 
   @Delete('joined/groups/:groupId')
