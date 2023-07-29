@@ -145,6 +145,7 @@ export class NotesController {
           User: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
           OR: [
             { userId: userId }, // user is owner
+            { status: 'NORMAL', groupId: null }, // group is not assigned
             {
               status: 'NORMAL',
               Group: {
