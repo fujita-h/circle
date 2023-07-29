@@ -170,7 +170,11 @@ export class NotesController {
             }, // readNotePermission is ALL
           ],
         },
-        include: { User: true, Group: true },
+        include: {
+          User: true,
+          Group: true,
+          _count: { select: { Liked: true } },
+        },
         orderBy: { createdAt: 'desc' },
         skip: skip && skip > 0 ? skip : undefined,
         take: take && take > 0 ? take : undefined,

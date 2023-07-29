@@ -11,7 +11,17 @@ import { apiRequest } from '@/components/msal/requests';
 import { ArchiveBoxIcon, FolderPlusIcon } from '@heroicons/react/24/solid';
 import { Stock } from '@/types';
 
-export function StockButton({ noteId }: { noteId: string }) {
+export function StockButton({
+  noteId,
+  showCounter = true,
+  showRing = true,
+  popoverDirection = 'right',
+}: {
+  noteId: string;
+  showCounter?: boolean;
+  showRing?: boolean;
+  popoverDirection?: 'left' | 'right';
+}) {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
@@ -32,7 +42,6 @@ export function StockButton({ noteId }: { noteId: string }) {
   });
 
   const handleStock = async (e: any) => {
-    console.log(e.target.name, e.target.checked);
     const labelId = e.target.name || 'default';
     if (!account) return;
     const auth = await instance.acquireTokenSilent({
@@ -79,14 +88,29 @@ export function StockButton({ noteId }: { noteId: string }) {
 
   return (
     <Popover>
-      <div className="relative">
+      <div className="relative z-20">
         <div className="flex flex-col w-10">
-          <Popover.Button as="div" className="h-10 rounded-full ring-1 ring-gray-300 flex items-center justify-center hover:cursor-pointer">
-            <ArchiveBoxIcon className={classNames('w-6 h-6', stockedData.stocked.length > 0 ? 'text-blue-600' : 'text-gray-300')} />
+          <Popover.Button
+            as="div"
+            className={classNames(
+              'h-10 rounded-full bg-white flex items-center justify-center hover:cursor-pointer',
+              showRing ? 'ring-1 ring-gray-300' : 'ring-0',
+              stockedData.stocked.length > 0 ? 'text-blue-600 hover:text-blue-500' : 'text-gray-300 hover:text-gray-400',
+            )}
+          >
+            <ArchiveBoxIcon className={classNames('w-6 h-6')} />
           </Popover.Button>
-          <div className="text-center font-bold text-gray-500">{stockedData.count}</div>
+          {showCounter ? <div className="text-center font-bold text-gray-500">{stockedData.count}</div> : <></>}
         </div>
-        <Popover.Panel className="absolute -top-3 left-12 shadow-xl bg-white ring-1 ring-gray-300 rounded-md" focus={true}>
+        <Popover.Overlay className="fixed inset-0" />
+        <Popover.Panel
+          className={classNames(
+            popoverDirection === 'right' ? '-top-3 left-12' : '',
+            popoverDirection === 'left' ? '-top-3 right-12' : '',
+            'absolute shadow-xl bg-white ring-1 ring-gray-300 rounded-md',
+          )}
+          focus={true}
+        >
           <div className="p-4 w-80">
             <fieldset>
               <legend className="sr-only">Stock labels</legend>
