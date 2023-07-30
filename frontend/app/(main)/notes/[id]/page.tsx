@@ -93,7 +93,7 @@ export default function Page({ params }: { params: any }) {
                 </div>
               </div>
             </div>
-            <div className="flex space-x-1">
+            <div className="flex space-x-4">
               <div className="order-0 hidden md:block w-12 print:hidden">
                 <div></div>
                 <div className="sticky top-0">
@@ -106,7 +106,7 @@ export default function Page({ params }: { params: any }) {
                   </div>
                 </div>
               </div>
-              <div className="order-2 hidden lg:block w-80 pl-2 print:hidden">
+              <div className="order-2 hidden lg:block w-80 print:hidden">
                 <div>
                   <div className="rounded-md bg-white ring-1 ring-gray-200 p-4 flex flex-col divide-y divide-gray-300 ">
                     <div className="pb-2">
