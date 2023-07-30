@@ -11,7 +11,7 @@ import { Parser } from '@/components/react-markdown/parser';
 import { ReactiveToC } from '@/components/react-markdown/reactive-toc';
 import { Comments } from '@/components/comments';
 import { BackendImage } from '@/components/backend-image';
-import { Fragment } from 'react';
+import { Fragment, useEffect } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import { LikeButton, StockButton } from '@/components/notes';
 import { SomeRequired, Note } from '@/types';
@@ -44,6 +44,12 @@ export default function Page({ params }: { params: any }) {
   } = useSWR<SomeRequired<Note, 'User' | 'Group' | '_count'>>(`${environment.BACKEND_ENDPOINT}/notes/${id}`, jsonFetcher, {
     revalidateOnFocus: false,
   });
+
+  useEffect(() => {
+    if (!document) return;
+    if (!note) return;
+    document.title = `${note.title}`;
+  }, [note]);
 
   if (isTokenLoading || isNoteLoading) {
     return <div>loading...</div>;
@@ -89,7 +95,9 @@ export default function Page({ params }: { params: any }) {
               <div className="order-0 hidden md:block w-12 print:hidden"></div>
               <div className="order-1 flex-1">
                 <div className="space-y-1 sm:space-y-2">
-                  <div className="mx-4 text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:tracking-tight">{note.title}</div>
+                  <div id="note_title" className="mx-4 text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:tracking-tight">
+                    {note.title}
+                  </div>
                 </div>
               </div>
             </div>
