@@ -1,3 +1,3 @@
-import { TabItem } from '@/components/category-header.types';
+import { TabItem } from '@/components/tabs';
 
 export const itemTabs: TabItem[] = [{ name: 'All', href: '/notes/all', current: false }];

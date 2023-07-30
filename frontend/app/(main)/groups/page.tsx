@@ -30,7 +30,7 @@ interface FormType {
   description: string;
 }
 
-export function CreateGroupSliderButton() {
+function CreateGroupSliderButton() {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
