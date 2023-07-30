@@ -56,7 +56,7 @@ function Layout({ group, children }: { group: Group; children: React.ReactNode }
   }
 
   const tabs: TabItem[] = [
-    { name: 'Notes', href: `/g/${group.handle}`, current: false },
+    { name: 'Notes', href: `/g/${group.handle}/notes`, current: false },
     { name: 'Members', href: `/g/${group.handle}/members`, current: false },
   ];
 
