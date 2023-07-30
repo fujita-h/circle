@@ -192,7 +192,7 @@ export class UserController {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
-    return membership;
+    return { membership };
   }
 
   @Put('joined/groups/:groupId')

@@ -47,9 +47,13 @@ function Layout({ group, children }: { group: Group; children: React.ReactNode }
   const account = useAccount(accounts[0] || {});
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
 
-  const { data, isLoading, mutate } = useSWR<Membership>(`${environment.BACKEND_ENDPOINT}/user/joined/groups/${group.id}`, fetcher, {
-    revalidateOnFocus: false,
-  });
+  const { data, isLoading, mutate } = useSWR<{ membership: Membership }>(
+    `${environment.BACKEND_ENDPOINT}/user/joined/groups/${group.id}`,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+    },
+  );
 
   if (isLoading) {
     return <div>loading...</div>;
@@ -60,7 +64,7 @@ function Layout({ group, children }: { group: Group; children: React.ReactNode }
     { name: 'Members', href: `/g/${group.handle}/members`, current: false },
   ];
 
-  if (data?.role === 'ADMIN') {
+  if (data?.membership?.role === 'ADMIN') {
     tabs.push({ name: 'Settings', href: `/g/${group.handle}/settings`, current: false });
   }
 
