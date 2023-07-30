@@ -41,7 +41,26 @@ export function StockButton({
     revalidateOnFocus: false,
   });
 
-  const handleStock = async (e: any) => {
+  const handleStockDefault = async () => {
+    if (!account) return;
+    const auth = await instance.acquireTokenSilent({
+      account,
+      scopes: apiRequest(environment).scopes,
+    });
+    const response = await fetch(`${environment.BACKEND_ENDPOINT}/user/stocked/notes/${noteId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${auth.accessToken}`,
+      },
+    });
+    if (response.ok) {
+      labelDataMutate();
+      stockDataMutate();
+    }
+  };
+
+  const handleStockWithLabel = async (e: any) => {
     const labelId = e.target.name || 'default';
     if (!account) return;
     const auth = await instance.acquireTokenSilent({
@@ -97,6 +116,11 @@ export function StockButton({
               showRing ? 'ring-1 ring-gray-300' : 'ring-0',
               stockedData.stocked.length > 0 ? 'text-blue-600 hover:text-blue-500' : 'text-gray-300 hover:text-gray-400',
             )}
+            onClick={() => {
+              if (stockedData.stocked.length == 0) {
+                handleStockDefault();
+              }
+            }}
           >
             <ArchiveBoxIcon className={classNames('w-6 h-6')} />
           </Popover.Button>
@@ -124,7 +148,7 @@ export function StockButton({
                         type="checkbox"
                         className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                         checked={stockedData.stocked.find((stock) => stock.labelId === label.id) ? true : false}
-                        onChange={handleStock}
+                        onChange={handleStockWithLabel}
                       />
                     </div>
                     <div className="ml-3 text-sm leading-6">

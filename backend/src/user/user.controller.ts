@@ -445,6 +445,62 @@ export class UserController {
     return { stocked, count };
   }
 
+  @Put('stocked/notes/:noteId')
+  async stockNote(@Request() request: any, @Param('noteId') noteId: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let note;
+    try {
+      note = await this.notesService.findOne({ where: { id: noteId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new NotFoundException();
+    }
+
+    try {
+      note = await this.notesService._exFindNoteUnderPermission({ userId, noteId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!note) {
+      throw new ForbiddenException();
+    }
+
+    let label;
+    try {
+      label = await this.stockLabelsService.findFirst({ where: { userId: userId, default: true } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!label) {
+      try {
+        label = await this.stockLabelsService.create({
+          data: { name: 'あとで読む', default: true, User: { connect: { id: userId } } },
+        });
+      } catch (e) {
+        this.logger.error(e);
+        throw new InternalServerErrorException();
+      }
+    }
+
+    let stock;
+    try {
+      stock = await this.stocksService.createIfNotExists({ userId, noteId, labelId: label.id });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return stock;
+  }
+
   @Put('stocked/notes/:noteId/labels/:labelId')
   async stockNoteWithLabel(
     @Request() request: any,
@@ -495,7 +551,7 @@ export class UserController {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
-    return stock || {};
+    return stock;
   }
 
   @Delete('stocked/notes/:noteId/labels/:labelId')
@@ -544,7 +600,7 @@ export class UserController {
     try {
       const [data, total] = await this.stockLabelsService.findMany({
         where: { userId },
-        orderBy: { name: 'asc' },
+        orderBy: [{ default: 'desc' }, { name: 'asc' }],
         skip: skip && skip > 0 ? skip : undefined,
         take: take && take > 0 ? take : undefined,
       });
