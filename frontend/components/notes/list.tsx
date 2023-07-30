@@ -52,7 +52,7 @@ export function List({ notes }: { notes: SomeRequired<Note, 'User'>[] }) {
 
 export function CardList({ notes, isGroupList = false }: { notes: SomeRequired<Note, 'User' | '_count'>[]; isGroupList?: boolean }) {
   return (
-    <ul role="list" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <ul role="list" className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
       {notes.map((note) => {
         const createdAt = new Date(note.createdAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' });
         const updatedAt = new Date(note.updatedAt);
