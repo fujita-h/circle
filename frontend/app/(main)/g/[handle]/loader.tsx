@@ -37,7 +37,9 @@ export function Loader({ group, pathname, page, take }: { group: Group; pathname
   return (
     <>
       <CardList notes={notes.data} isGroupList={true} />
-      <LinkPagination pathname={pathname} page={page} total={notes.meta.total} take={take} />
+      <div className="py-5">
+        <LinkPagination pathname={pathname} page={page} total={notes.meta.total} take={take} />
+      </div>
     </>
   );
 }

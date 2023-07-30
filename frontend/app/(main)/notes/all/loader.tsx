@@ -36,7 +36,9 @@ export function Loader({ pathname, page, take }: { pathname: string; page: numbe
   return (
     <>
       <CardList notes={notes.data} />
-      <LinkPagination pathname={pathname} page={page} total={notes.meta.total} take={take} />
+      <div className="py-5">
+        <LinkPagination pathname={pathname} page={page} total={notes.meta.total} take={take} />
+      </div>
     </>
   );
 }

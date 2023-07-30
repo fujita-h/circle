@@ -9,7 +9,7 @@ export function Pagination({ pathname, page, total, take }: { pathname: string; 
   const nextPage = page + 1 < Math.ceil(total / take) ? page + 1 : Math.ceil(total / take);
   return (
     <>
-      <nav className="flex items-center justify-between px-4 py-3 sm:px-6" aria-label="Pagination">
+      <nav className="flex items-center justify-between" aria-label="Pagination">
         <div className="hidden sm:block">
           <p className="text-sm text-gray-700">
             Showing <span className="font-medium">{startItem}</span> to <span className="font-medium">{endItem}</span> of{' '}
