@@ -5,8 +5,7 @@ import { Inter } from 'next/font/google';
 import { classNames, capitalize } from '@/utils';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { useEnvironment } from '@/components/environment/providers';
-import { CategoryHeader } from '@/components/category-header';
-import { TabItem } from '@/components/category-header.types';
+import { LargeTabs, TabItem } from '@/components/tabs';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import useSWR from 'swr';
 import {
@@ -72,7 +71,7 @@ function Layout({ group, children }: { group: Group; children: React.ReactNode }
       <div className="pt-4 bg-white ring-1 ring-gray-200">
         <div className="max-w-screen-2xl mx-auto">
           <div className="px-4 lg:px-8">
-            <div className="p-8">
+            <div className="py-8 px-12">
               <div className="flex gap-8">
                 <div className="flex-none">
                   <BackendImage src={`/groups/${group.id}/photo`} className="w-24 h-24 rounded-md border border-gray-200" />
@@ -100,7 +99,7 @@ function Layout({ group, children }: { group: Group; children: React.ReactNode }
                 </div>
               </div>
             </div>
-            <CategoryHeader tabs={tabs} />
+            <LargeTabs tabs={tabs} />
           </div>
         </div>
       </div>

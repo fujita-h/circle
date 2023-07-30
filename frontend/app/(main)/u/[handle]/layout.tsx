@@ -7,8 +7,7 @@ import { UserIcon } from '@heroicons/react/20/solid';
 
 import { useAccount, useMsal } from '@azure/msal-react';
 import { useEnvironment } from '@/components/environment/providers';
-import { CategoryHeader } from '@/components/category-header';
-import { TabItem } from '@/components/category-header.types';
+import { ResponsiveTabs, TabItem } from '@/components/tabs';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { BackendImage } from '@/components/backend-image';
 import useSWR from 'swr';
@@ -54,7 +53,7 @@ export default function Layout({ params, children }: { params: any; children: Re
               </div>
             </div>
             <div className="my-4">
-              <CategoryHeader tabs={tabs} />
+              <ResponsiveTabs tabs={tabs} />
             </div>
             <div>{children}</div>
           </div>

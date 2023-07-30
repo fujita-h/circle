@@ -2,41 +2,19 @@
 
 import { classNames } from '@/utils';
 import { usePathname } from 'next/navigation';
-import { TabItem } from './category-header.types';
+import { TabItem } from './types';
 import Link from 'next/link';
 import React from 'react';
 
-export function CategoryHeader({ children, title, tabs }: { children?: React.ReactNode; title?: string; tabs: TabItem[] }) {
+export function ResponsiveTabs({ tabs }: { tabs: TabItem[] }) {
   const pathname = usePathname();
   tabs.forEach((tab) => {
     tab.current = tab.href === pathname;
   });
 
   return (
-    <div className="relative border-b border-gray-200 pb-5 sm:pb-0">
-      <div className="md:flex md:items-center md:justify-between">
-        {title ? <h3 className="text-base font-semibold leading-6 text-gray-900">{title}</h3> : <></>}
-        {children}
-        {/**
-         * Sample for buttons children
-         * 
-        <div className="mt-3 flex md:absolute md:right-0 md:top-3 md:mt-0">
-          <button
-            type="button"
-            className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-          >
-            Share
-          </button>
-          <button
-            type="button"
-            className="ml-3 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            Create
-          </button>
-        </div>
-        */}
-      </div>
-      <div className="mt-4">
+    <div className="border-b border-gray-200 pb-5 sm:pb-0">
+      <div>
         <div className="sm:hidden">
           <label htmlFor="current-tab" className="sr-only">
             Select a tab
