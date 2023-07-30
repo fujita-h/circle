@@ -47,10 +47,8 @@ function Layout({ group, children }: { group: Group; children: React.ReactNode }
   const account = useAccount(accounts[0] || {});
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
 
-  // if user not joined this group, this api returns 404. so "data" may be undefined.
   const { data, isLoading, mutate } = useSWR<Membership>(`${environment.BACKEND_ENDPOINT}/user/joined/groups/${group.id}`, fetcher, {
     revalidateOnFocus: false,
-    errorRetryCount: 0,
   });
 
   if (isLoading) {

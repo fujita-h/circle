@@ -192,9 +192,6 @@ export class UserController {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
-    if (!membership) {
-      throw new NotFoundException();
-    }
     return membership;
   }
 
