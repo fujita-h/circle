@@ -8,6 +8,7 @@ export type EnvironmentContextType = {
   AAD_BACKEND_CLIENT_ID: string;
   AAD_BACKEND_API_SCOPE_NAME: string;
   BACKEND_ENDPOINT: string;
+  WEBSITE_NAME: string;
 };
 
 export let EnvironmentContext: React.Context<EnvironmentContextType>;

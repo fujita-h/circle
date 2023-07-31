@@ -45,11 +45,16 @@ export default function Page({ params }: { params: any }) {
     revalidateOnFocus: false,
   });
 
+  // update document title
   useEffect(() => {
     if (!document) return;
     if (!note) return;
     document.title = `${note.title}`;
-  }, [note]);
+    return () => {
+      // this calls when component will unmount
+      document.title = environment.WEBSITE_NAME;
+    };
+  }, [note, environment.WEBSITE_NAME]);
 
   if (isTokenLoading || isNoteLoading) {
     return <div>loading...</div>;

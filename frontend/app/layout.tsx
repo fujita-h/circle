@@ -3,16 +3,17 @@ import { EnvironmentContextType, ConfigProvider } from '@/components/environment
 import { AuthenticatedAlwaysTemplate } from '@/components/msal/templates';
 import './globals.css';
 
-export const metadata = {
-  title: process.env.SITE_TITLE || 'Group',
-};
-
 const environment: EnvironmentContextType = {
   AAD_TENANT_ID: process.env.AAD_TENANT_ID || '',
   AAD_FRONTEND_CLIENT_ID: process.env.AAD_FRONTEND_CLIENT_ID || '',
   AAD_BACKEND_CLIENT_ID: process.env.AAD_BACKEND_CLIENT_ID || '',
   AAD_BACKEND_API_SCOPE_NAME: process.env.AAD_BACKEND_API_SCOPE_NAME || '',
   BACKEND_ENDPOINT: process.env.BACKEND_ENDPOINT || 'http://localhost:3001',
+  WEBSITE_NAME: process.env.WEBSITE_NAME || 'Circle',
+};
+
+export const metadata = {
+  title: environment.WEBSITE_NAME,
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
