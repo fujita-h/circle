@@ -33,8 +33,8 @@ export default function Page({ params }: { params: any }) {
   }
 
   return (
-    <>
+    <div className="px-4">
       <Loader group={data} pathname={pathname} page={page} take={20} />
-    </>
+    </div>
   );
 }

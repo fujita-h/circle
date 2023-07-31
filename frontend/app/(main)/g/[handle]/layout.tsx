@@ -101,7 +101,9 @@ function Layout({ group, children }: { group: Group; children: React.ReactNode }
                 </div>
               </div>
             </div>
-            <LargeTabs tabs={tabs} />
+            <div className="px-4">
+              <LargeTabs tabs={tabs} />
+            </div>
           </div>
         </div>
       </div>
