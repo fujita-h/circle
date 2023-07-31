@@ -16,7 +16,7 @@ export function LargeTabs({ tabs }: { tabs: TabItem[] }) {
   });
 
   return (
-    <div className="border-b border-gray-200 pb-5 sm:pb-0">
+    <div className="pb-5 sm:pb-0">
       <nav className="-mb-px flex space-x-4">
         {tabs.map((tab) => (
           <Link

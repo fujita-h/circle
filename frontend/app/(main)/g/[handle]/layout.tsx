@@ -107,7 +107,7 @@ function Layout({ group, children }: { group: Group; children: React.ReactNode }
           </div>
         </div>
       </div>
-      <div className="bg-slate-100 print:bg-white">
+      <div className="bg-slate-100 print:bg-white border-t border-gray-200">
         <div className="max-w-screen-2xl mx-auto">
           <div className="p-4 md:p-8">{children}</div>
         </div>

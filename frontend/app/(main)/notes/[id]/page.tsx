@@ -73,7 +73,7 @@ export default function Page({ params }: { params: any }) {
   return (
     <div>
       {note.Group ? (
-        <div className="py-4 bg-white ring-1 ring-gray-200">
+        <div className="py-4 bg-white border-t border-gray-200">
           <div className="max-w-screen-2xl mx-auto">
             <div className="px-4 lg:px-8">
               <Link href={`/g/${note.Group.handle}`}>
@@ -93,7 +93,7 @@ export default function Page({ params }: { params: any }) {
       ) : (
         <></>
       )}
-      <div className="bg-slate-100 print:bg-white">
+      <div className="bg-slate-100 print:bg-white border-t border-gray-200">
         <div className="max-w-screen-2xl mx-auto">
           <div className="p-4 md:p-8">
             <div className="flex space-x-1 mb-4">

@@ -1,20 +1,28 @@
 import { classNames } from '@/utils';
 import Link from 'next/link';
 import { Inter } from 'next/font/google';
+import { LargeTabs, TabItem } from '@/components/tabs';
 
 const inter = Inter({ subsets: ['latin'] });
+const tabs: TabItem[] = [
+  { name: 'Trendig', href: `/`, current: false },
+  { name: 'Following', href: `/notes`, current: false },
+  { name: 'Explore', href: `/notes`, current: false },
+];
 
 export default function Page() {
   return (
     <div>
       {/* Header area */}
-      <div className="py-4 bg-white ring-1 ring-gray-200">
+      <div className="pt-4 bg-white">
         <div className="max-w-screen-2xl mx-auto">
-          <div className="px-4 lg:px-8">header area</div>
+          <div className="px-4 lg:px-20">
+            <LargeTabs tabs={tabs} />
+          </div>
         </div>
       </div>
 
-      <div className="bg-slate-100 print:bg-white">
+      <div className="bg-slate-100 print:bg-white border-t border-gray-200">
         <div className="max-w-screen-2xl mx-auto">
           <div className="p-4 md:p-8">
             <div className="bg-white rounded-md p-4">
