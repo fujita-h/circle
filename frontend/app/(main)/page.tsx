@@ -14,9 +14,9 @@ export default function Page() {
   return (
     <div>
       {/* Header area */}
-      <div className="pt-4 bg-white">
+      <div className="pt-1 bg-white">
         <div className="max-w-screen-2xl mx-auto">
-          <div className="px-4 lg:px-20">
+          <div className="px-4 lg:px-8">
             <LargeTabs tabs={tabs} />
           </div>
         </div>
