@@ -1,1 +1,1 @@
-export { NavbarWithSearch } from './navbar-with-search';
+export { Navbar } from './navbar';

@@ -23,7 +23,7 @@ const userNavigation = [
   { name: 'Settings', href: '/settings' },
 ];
 
-export function NavbarWithSearch() {
+export function Navbar() {
   const router = useRouter();
   const [query, setQuery] = useState('');
 
