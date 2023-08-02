@@ -1,14 +1,9 @@
 import { classNames } from '@/utils';
-import Link from 'next/link';
 import { Inter } from 'next/font/google';
-import { LargeTabs, TabItem } from '@/components/tabs';
+import { LargeTabs } from '@/components/tabs';
+import { secondaryTabItems } from '@/components/navbar';
 
 const inter = Inter({ subsets: ['latin'] });
-const tabs: TabItem[] = [
-  { name: 'Trendig', href: `/`, current: false },
-  { name: 'Following', href: `/notes`, current: false },
-  { name: 'Explore', href: `/notes`, current: false },
-];
 
 export default function Page() {
   return (
@@ -16,8 +11,8 @@ export default function Page() {
       {/* Header area */}
       <div className="pt-1 bg-white">
         <div className="max-w-screen-2xl mx-auto">
-          <div className="px-4 lg:px-8">
-            <LargeTabs tabs={tabs} />
+          <div className="pt-2 lg:pt-0 px-6 lg:px-8">
+            <LargeTabs tabs={secondaryTabItems} />
           </div>
         </div>
       </div>
