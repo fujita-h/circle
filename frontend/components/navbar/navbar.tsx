@@ -1,37 +1,28 @@
 'use client';
 
-import { FormEvent, Fragment, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
+import { BackendImage } from '@/components/backend-image';
+import { useEnvironment } from '@/components/environment/providers';
+import { classNames } from '@/utils';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MagnifyingGlassIcon, UserIcon } from '@heroicons/react/20/solid';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { BackendImage } from '@/components/backend-image';
-import { classNames } from '@/utils';
-import { UserName, UserEmail } from './user-data';
+import { Inter } from 'next/font/google';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Fragment } from 'react';
+import { UserEmail, UserName } from './user-data';
 
-const navigation = [
-  { name: 'Dashboard', href: '/', current: false },
-  { name: 'グループ', href: '/groups', current: false },
-  { name: 'ユーザー', href: '/users', current: false },
-  { name: '記事', href: '/notes', current: false },
-];
-
+const inter = Inter({ subsets: ['latin'] });
+const navigation: any[] = [];
 const userNavigation = [
   { name: 'Drafts', href: '/drafts' },
   { name: 'Settings', href: '/settings' },
 ];
 
 export function Navbar() {
+  const environment = useEnvironment();
   const router = useRouter();
-  const [query, setQuery] = useState('');
-
-  const handleSearchSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    router.push(`/search?q=${query}`);
-    setQuery('');
-  };
 
   return (
     <Disclosure as="nav" className="bg-white">
@@ -42,7 +33,16 @@ export function Navbar() {
               <div className="flex px-2 lg:px-0">
                 <div className="flex flex-shrink-0 items-center">
                   <Link href="/">
-                    <Image src="/assets/images/circle_logo.png" alt="logo" width={32} height={32} />
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <Image src="/assets/images/circle_logo.png" alt="logo" width={32} height={32} />
+                      </div>
+                      <div className="pt-3">
+                        <span className={classNames('text-xl text-gray-700 font-semibold', inter.className)}>
+                          {environment.WEBSITE_NAME}
+                        </span>
+                      </div>
+                    </div>
                   </Link>
                 </div>
                 <div className="hidden lg:ml-6 lg:flex lg:space-x-8">
@@ -61,27 +61,6 @@ export function Navbar() {
                   ))}
                 </div>
               </div>
-              <form className="flex flex-1 items-center justify-center px-2 lg:ml-6 lg:justify-end" onSubmit={handleSearchSubmit}>
-                <div className="w-full max-w-lg lg:max-w-xs">
-                  <label htmlFor="search" className="sr-only">
-                    Search
-                  </label>
-                  <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                    </div>
-                    <input
-                      id="search"
-                      name="search"
-                      className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                      placeholder="Search"
-                      type="search"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </form>
               <div className="flex items-center lg:hidden">
                 {/* Mobile menu button */}
                 <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
@@ -93,17 +72,24 @@ export function Navbar() {
                   )}
                 </Disclosure.Button>
               </div>
-              <div className="hidden lg:ml-4 lg:flex lg:items-center">
+              <div className="hidden lg:ml-4 lg:flex lg:items-center lg:gap-1">
+                <button
+                  type="button"
+                  className="flex-shrink-0 rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  onClick={() => router.push('/search')}
+                >
+                  <span className="sr-only">Search</span>
+                  <MagnifyingGlassIcon className="h-7 w-7" aria-hidden="true" />
+                </button>
                 <button
                   type="button"
                   className="flex-shrink-0 rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 >
                   <span className="sr-only">View notifications</span>
-                  <BellIcon className="h-6 w-6" aria-hidden="true" />
+                  <BellIcon className="h-7 w-7" aria-hidden="true" />
                 </button>
-
                 {/* Profile dropdown */}
-                <Menu as="div" className="relative ml-4 flex-shrink-0">
+                <Menu as="div" className="ml-1 relative flex-shrink-0">
                   <div>
                     <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                       <span className="sr-only">Open user menu</span>
@@ -141,7 +127,7 @@ export function Navbar() {
                   </Transition>
                 </Menu>
                 <Link href="/drafts/new">
-                  <div className="ml-3 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 hover:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                  <div className="ml-2 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 hover:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                     投稿する
                   </div>
                 </Link>
@@ -182,13 +168,23 @@ export function Navbar() {
                     <UserEmail />
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className="ml-auto flex-shrink-0 rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  <span className="sr-only">View notifications</span>
-                  <BellIcon className="h-6 w-6" aria-hidden="true" />
-                </button>
+                <div className="ml-auto flex-shrink-0 flex gap-2">
+                  <button
+                    type="button"
+                    className=" rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    onClick={() => router.push('/search')}
+                  >
+                    <span className="sr-only">Search</span>
+                    <MagnifyingGlassIcon className="h-6 w-6" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
+                    <span className="sr-only">View notifications</span>
+                    <BellIcon className="h-6 w-6" aria-hidden="true" />
+                  </button>
+                </div>
               </div>
               <div className="mt-3 space-y-1">
                 {userNavigation.map((item) => (
