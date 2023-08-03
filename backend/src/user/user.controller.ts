@@ -126,6 +126,73 @@ export class UserController {
     return user;
   }
 
+  @Get('following/notes')
+  async findFollowingNotes(
+    @Request() request: any,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
+  ) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let notes;
+    try {
+      const [data, total] = await this.notesService.findMany({
+        where: {
+          AND: [
+            {
+              blobPointer: { not: null }, // only notes with blobPointer
+              User: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+              OR: [
+                { userId: userId }, // user is owner
+                { status: 'NORMAL', groupId: null }, // group is not assigned
+                {
+                  status: 'NORMAL',
+                  Group: {
+                    handle: { not: null },
+                    status: 'NORMAL',
+                    readNotePermission: 'ADMIN',
+                    Members: { some: { userId: userId, role: 'ADMIN' } },
+                  },
+                }, // readNotePermission is ADMIN and user is admin of group
+                {
+                  status: 'NORMAL',
+                  Group: {
+                    handle: { not: null },
+                    status: 'NORMAL',
+                    readNotePermission: 'MEMBER',
+                    Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                  },
+                }, // readNotePermission is MEMBER and user is member of group
+                {
+                  status: 'NORMAL',
+                  Group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+                }, // readNotePermission is ALL
+              ],
+            },
+            {
+              // following users or groups
+              OR: [
+                { User: { FollowedUsers: { some: { fromId: userId } } } },
+                { Group: { Followed: { some: { userId: userId } } } },
+              ],
+            },
+          ],
+        },
+        orderBy: { createdAt: 'desc' },
+        include: { User: true, Group: true, _count: { select: { Liked: true } } },
+        skip: skip && skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
+      });
+      notes = { data, meta: { total } };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return notes;
+  }
+
   @Get('groups/postable')
   async findPostable(@Request() request: any) {
     const userId = request.user.id;
