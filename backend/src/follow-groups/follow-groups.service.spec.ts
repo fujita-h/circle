@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from '../prisma.service';
-import { FollowsService } from './follows.service';
+import { FollowGroupsService } from './follow-groups.service';
 
-describe('FollowsService', () => {
-  let service: FollowsService;
+describe('FollowGroupsService', () => {
+  let service: FollowGroupsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [FollowsService, PrismaService],
+      providers: [FollowGroupsService, PrismaService],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],
@@ -16,7 +16,7 @@ describe('FollowsService', () => {
       ],
     }).compile();
 
-    service = module.get<FollowsService>(FollowsService);
+    service = module.get<FollowGroupsService>(FollowGroupsService);
   });
 
   it('should be defined', () => {

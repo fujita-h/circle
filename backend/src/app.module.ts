@@ -18,7 +18,8 @@ import { UsersController } from './users/users.controller';
 import { AzblobService } from './azblob/azblob.service';
 import { CommentsService } from './comments/comments.service';
 import { EsService } from './es/es.service';
-import { FollowsService } from './follows/follows.service';
+import { FollowGroupsService } from './follow-groups/follow-groups.service';
+import { FollowUsersService } from './follow-users/follow-users.service';
 import { GroupsService } from './groups/groups.service';
 import { LikesService } from './likes/likes.service';
 import { MembershipsService } from './memberships/memberships.service';
@@ -53,7 +54,8 @@ import { UsersService } from './users/users.service';
     AzblobService,
     CommentsService,
     EsService,
-    FollowsService,
+    FollowGroupsService,
+    FollowUsersService,
     GroupsService,
     LikesService,
     MembershipsService,
