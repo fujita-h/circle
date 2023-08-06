@@ -30,6 +30,7 @@ import { EsService } from '../es/es.service';
 import { SearchRequest } from '@elastic/elasticsearch/lib/api/types';
 import { CommentsService } from '../comments/comments.service';
 import { CreateCommentDto } from '../comments/dto/create-comment.dto';
+import { RedisService } from '../redis.service';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('notes')
@@ -44,6 +45,7 @@ export class NotesController {
     private readonly commentsService: CommentsService,
     private readonly blobsService: AzblobService,
     private readonly esService: EsService,
+    private readonly redisService: RedisService,
   ) {
     this.logger.log('Initializing Groups Controller...');
     this.blobsService.init(this.blobContainerName);
@@ -326,6 +328,13 @@ export class NotesController {
         }
       }
       throw new InternalServerErrorException();
+    }
+
+    try {
+      const date = new Date().toISOString().split('T')[0];
+      await this.redisService.zincrby(`notes/view/${date}`, 1, note.id);
+    } catch (e) {
+      this.logger.error(e);
     }
 
     return { ...note, body };

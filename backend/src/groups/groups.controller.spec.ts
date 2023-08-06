@@ -13,6 +13,7 @@ import { CreateNoteDto } from 'src/notes/dto/create-note.dto';
 import { CommentsService } from '../comments/comments.service';
 import { MembershipsService } from '../memberships/memberships.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { RedisService } from '../redis.service';
 
 const testPrefix = 'x-test-groups-controller-';
 const testingModule = {
@@ -26,6 +27,7 @@ const testingModule = {
     AzblobService,
     EsService,
     MembershipsService,
+    RedisService,
   ],
   imports: [
     ConfigModule.forRoot({

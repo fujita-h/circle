@@ -120,6 +120,7 @@ export class StocksService {
   }) {
     return this.prisma.$transaction(async (prisma) => {
       let stock;
+      let created = false;
       stock = await prisma.stock.findUnique({
         where: { userId_noteId_labelId: { userId, noteId, labelId } },
       });
@@ -127,8 +128,9 @@ export class StocksService {
         stock = await prisma.stock.create({
           data: { userId, noteId, labelId },
         });
+        created = true;
       }
-      return stock;
+      return { data: stock, created };
     });
   }
 
@@ -143,6 +145,7 @@ export class StocksService {
   }) {
     return this.prisma.$transaction(async (prisma) => {
       let stock;
+      let deleted = false;
       stock = await prisma.stock.findUnique({
         where: { userId_noteId_labelId: { userId, noteId, labelId } },
       });
@@ -150,8 +153,9 @@ export class StocksService {
         stock = await prisma.stock.delete({
           where: { userId_noteId_labelId: { userId, noteId, labelId } },
         });
+        deleted = true;
       }
-      return stock;
+      return { data: stock, deleted };
     });
   }
 }

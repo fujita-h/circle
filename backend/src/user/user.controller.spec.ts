@@ -12,6 +12,7 @@ import { NotesService } from '../notes/notes.service';
 import { LikesService } from '../likes/likes.service';
 import { StocksService } from '../stocks/stocks.service';
 import { StockLabelsService } from '../stock-labels/stock-labels.service';
+import { RedisService } from '../redis.service';
 
 class CreateUserDtoForTest extends CreateUserDto {
   id: string;
@@ -44,6 +45,7 @@ describe('UserController', () => {
         LikesService,
         StocksService,
         StockLabelsService,
+        RedisService,
       ],
       imports: [
         ConfigModule.forRoot({

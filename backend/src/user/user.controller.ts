@@ -38,6 +38,7 @@ import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { LikesService } from '../likes/likes.service';
 import { MembershipsService } from '../memberships/memberships.service';
 import { NotesService } from '../notes/notes.service';
+import { RedisService } from '../redis.service';
 import { StockLabelsService } from '../stock-labels/stock-labels.service';
 import { StocksService } from '../stocks/stocks.service';
 import { UsersService } from '../users/users.service';
@@ -58,6 +59,7 @@ export class UserController {
     private readonly likesService: LikesService,
     private readonly stocksService: StocksService,
     private readonly stockLabelsService: StockLabelsService,
+    private readonly redisService: RedisService,
   ) {
     if (!this.configService.get<string>('IRON_SECRET')) {
       this.logger.error('IRON_SECRET is not defined');
@@ -416,7 +418,17 @@ export class UserController {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
-    return like || {};
+
+    try {
+      if (like.created) {
+        const date = new Date().toISOString().split('T')[0];
+        await this.redisService.zincrby(`notes/like/${date}`, 1, note.id);
+      }
+    } catch (e) {
+      this.logger.error(e);
+    }
+
+    return like;
   }
 
   @Delete('liked/notes/:noteId')
@@ -444,7 +456,17 @@ export class UserController {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
-    return like || {};
+
+    try {
+      if (like.deleted) {
+        const date = new Date().toISOString().split('T')[0];
+        await this.redisService.zincrby(`notes/like/${date}`, -1, note.id);
+      }
+    } catch (e) {
+      this.logger.error(e);
+    }
+
+    return like;
   }
 
   @Get('stocked/notes')
@@ -565,6 +587,16 @@ export class UserController {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
+
+    try {
+      if (stock.created) {
+        const date = new Date().toISOString().split('T')[0];
+        await this.redisService.zincrby(`notes/stock/${date}`, 1, note.id);
+      }
+    } catch (e) {
+      this.logger.error(e);
+    }
+
     return stock;
   }
 
@@ -618,6 +650,16 @@ export class UserController {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
+
+    try {
+      if (stock.created) {
+        const date = new Date().toISOString().split('T')[0];
+        await this.redisService.zincrby(`notes/stock/${date}`, 1, note.id);
+      }
+    } catch (e) {
+      this.logger.error(e);
+    }
+
     return stock;
   }
 
@@ -650,7 +692,17 @@ export class UserController {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
-    return stock || {};
+
+    try {
+      if (stock.deleted) {
+        const date = new Date().toISOString().split('T')[0];
+        await this.redisService.zincrby(`notes/stock/${date}`, -1, note.id);
+      }
+    } catch (e) {
+      this.logger.error(e);
+    }
+
+    return stock;
   }
 
   @Get('stocked/labels')

@@ -25,6 +25,7 @@ import { LikesService } from './likes/likes.service';
 import { MembershipsService } from './memberships/memberships.service';
 import { NotesService } from './notes/notes.service';
 import { NotificationsService } from './notifications/notifications.service';
+import { RedisService } from './redis.service';
 import { StockLabelsService } from './stock-labels/stock-labels.service';
 import { StocksService } from './stocks/stocks.service';
 import { TagsService } from './tags/tags.service';
@@ -61,6 +62,7 @@ import { UsersService } from './users/users.service';
     MembershipsService,
     NotesService,
     NotificationsService,
+    RedisService,
     StockLabelsService,
     StocksService,
     TagsService,

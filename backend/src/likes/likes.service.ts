@@ -62,6 +62,7 @@ export class LikesService {
   createIfNotExists({ userId, noteId }: { userId: string; noteId: string }) {
     return this.prisma.$transaction(async (prisma) => {
       let like;
+      let created = false;
       like = await prisma.like.findUnique({
         where: { userId_noteId: { userId, noteId } },
       });
@@ -69,14 +70,16 @@ export class LikesService {
         like = await prisma.like.create({
           data: { userId, noteId },
         });
+        created = true;
       }
-      return like;
+      return { data: like, created };
     });
   }
 
   removeIfExist({ userId, noteId }: { userId: string; noteId: string }) {
     return this.prisma.$transaction(async (prisma) => {
       let like;
+      let deleted = false;
       like = await prisma.like.findUnique({
         where: { userId_noteId: { userId, noteId } },
       });
@@ -84,8 +87,9 @@ export class LikesService {
         like = await prisma.like.delete({
           where: { userId_noteId: { userId, noteId } },
         });
+        deleted = true;
       }
-      return like;
+      return { data: like, deleted };
     });
   }
 }

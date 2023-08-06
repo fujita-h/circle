@@ -13,6 +13,7 @@ import { GroupsController } from '../groups/groups.controller';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { CommentsService } from '../comments/comments.service';
 import { MembershipsService } from '../memberships/memberships.service';
+import { RedisService } from '../redis.service';
 
 describe('NotesController', () => {
   let controller: NotesController;
@@ -59,6 +60,7 @@ describe('NotesController', () => {
         GroupsService,
         CommentsService,
         MembershipsService,
+        RedisService,
       ],
       imports: [
         ConfigModule.forRoot({
