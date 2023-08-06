@@ -14,7 +14,7 @@ export class EsService {
 
     // Initialize Elasticsearch Client
     this.client = new Client({
-      node: this.configService.get<string>('ES_ENDPOINT') || 'https://localhost:9200',
+      node: this.configService.get<string>('ES_ENDPOINT') || 'https://127.0.0.1:9200',
       auth: {
         username: this.configService.get<string>('ES_USERNAME') || 'elastic',
         password: this.configService.get<string>('ES_PASSWORD') || 'elastic',
