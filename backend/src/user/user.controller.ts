@@ -195,6 +195,90 @@ export class UserController {
     return notes;
   }
 
+  @Get('trending/notes/weekly')
+  async findWeeklyTrendingNotes(
+    @Request() request: any,
+    @Query('take', new DefaultValuePipe(20), ParseIntPipe) take?: number,
+  ) {
+    return this._findTrendingNotes('notes/trending/weekly', request, take);
+  }
+
+  @Get('trending/notes/monthly')
+  async findMonthlyTrendingNotes(
+    @Request() request: any,
+    @Query('take', new DefaultValuePipe(20), ParseIntPipe) take?: number,
+  ) {
+    return this._findTrendingNotes('notes/trending/monthly', request, take);
+  }
+
+  async _findTrendingNotes(index: string, @Request() request: any, take?: number) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let trendingNotes;
+    try {
+      trendingNotes = await this.redisService.zrange(index, 0, -1, 'REV');
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+
+    let notes;
+    try {
+      const [data, total] = await this.notesService.findMany({
+        where: {
+          AND: [
+            {
+              id: { in: trendingNotes },
+              blobPointer: { not: null }, // only notes with blobPointer
+              User: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+              OR: [
+                { userId: userId }, // user is owner
+                { status: 'NORMAL', groupId: null }, // group is not assigned
+                {
+                  status: 'NORMAL',
+                  Group: {
+                    handle: { not: null },
+                    status: 'NORMAL',
+                    readNotePermission: 'ADMIN',
+                    Members: { some: { userId: userId, role: 'ADMIN' } },
+                  },
+                }, // readNotePermission is ADMIN and user is admin of group
+                {
+                  status: 'NORMAL',
+                  Group: {
+                    handle: { not: null },
+                    status: 'NORMAL',
+                    readNotePermission: 'MEMBER',
+                    Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                  },
+                }, // readNotePermission is MEMBER and user is member of group
+                {
+                  status: 'NORMAL',
+                  Group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+                }, // readNotePermission is ALL
+              ],
+            },
+          ],
+        },
+        include: { User: true, Group: true, _count: { select: { Liked: true } } },
+      });
+      notes = {
+        data: trendingNotes
+          .map((id) => data.find((note: any) => note.id === id))
+          .filter(Boolean)
+          .slice(0, take),
+        meta: { total },
+      };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return notes;
+  }
+
   @Get('groups/postable')
   async findPostable(@Request() request: any) {
     const userId = request.user.id;

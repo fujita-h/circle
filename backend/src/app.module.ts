@@ -3,9 +3,12 @@ import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import { OidcJwtStrategy } from './guards/jwt.strategy';
 import { PrismaService } from './prisma.service';
+import { RedisService } from './redis.service';
+import { TasksService } from './tasks.service';
 
 import { CommentsController } from './comments/comments.controller';
 import { DraftsController } from './drafts/drafts.controller';
@@ -25,7 +28,6 @@ import { LikesService } from './likes/likes.service';
 import { MembershipsService } from './memberships/memberships.service';
 import { NotesService } from './notes/notes.service';
 import { NotificationsService } from './notifications/notifications.service';
-import { RedisService } from './redis.service';
 import { StockLabelsService } from './stock-labels/stock-labels.service';
 import { StocksService } from './stocks/stocks.service';
 import { TagsService } from './tags/tags.service';
@@ -39,6 +41,7 @@ import { UsersService } from './users/users.service';
     }),
     CacheModule.register(),
     PassportModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [
     CommentsController,
@@ -50,6 +53,7 @@ import { UsersService } from './users/users.service';
     UsersController,
   ],
   providers: [
+    TasksService,
     PrismaService,
     OidcJwtStrategy,
     AzblobService,
