@@ -94,7 +94,9 @@ describe('UsersController', () => {
   });
 
   it('should return user objects in the loop', async () => {
-    const take = 2;
+    const result = await controller.findMany(1, 0);
+    const total = result.meta.total;
+    const take = Math.floor(total / 10) + 1;
     let skip = 0;
     let end = false;
     while (!end) {
