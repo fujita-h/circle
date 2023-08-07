@@ -76,6 +76,7 @@ model Note {
   id                     String                 @id @default(cuid())
   createdAt              DateTime               @default(now()) @map("created_at")
   updatedAt              DateTime               @updatedAt @map("updated_at")
+  publishedAt            DateTime?              @map("published_at")
   User                   User                   @relation(fields: [userId], references: [id])
   userId                 String                 @map("user_id")
   Group                  Group?                 @relation(fields: [groupId], references: [id], onDelete: SetNull) // group is null if the note is drafted.

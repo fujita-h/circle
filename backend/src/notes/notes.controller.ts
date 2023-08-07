@@ -118,6 +118,7 @@ export class NotesController {
               : 'NORMAL'
             : 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
+          publishedAt: new Date(),
         },
         body: data.body,
       });
@@ -548,6 +549,7 @@ export class NotesController {
               : 'NORMAL'
             : 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
+          publishedAt: new Date(),
         },
         body: data.body,
       });
