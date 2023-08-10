@@ -21,10 +21,15 @@ export default function Page() {
       <div className="bg-slate-100 print:bg-white border-t border-gray-200">
         <div className="max-w-screen-2xl mx-auto">
           <div className="p-4 md:p-8">
-            <div className="bg-white rounded-md p-4">
-              <div className={classNames('text-xl font-bold text-center', inter.className)}>Dashbord Area</div>
+            <div className="px-4">
+              <div className="ml-1">
+                <p className={classNames(inter.className, 'text-3xl font-bold')}>Trending</p>
+                <p className="text-base text-gray-500">注目されている記事</p>
+              </div>
+              <div className="mt-6">
+                <Loader cat="weekly" take={20} />
+              </div>
             </div>
-            <Loader cat="weekly" take={12} />
           </div>
         </div>
       </div>
