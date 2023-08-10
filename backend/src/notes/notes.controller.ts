@@ -178,7 +178,7 @@ export class NotesController {
           Group: true,
           _count: { select: { Liked: true } },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
         skip: skip && skip > 0 ? skip : undefined,
         take: take && take > 0 ? take : undefined,
       });
@@ -270,7 +270,7 @@ export class NotesController {
           },
         },
       },
-      sort: [{ _score: { order: 'desc' } }, { createdAt: 'desc' }],
+      sort: [{ _score: { order: 'desc' } }, { publishedAt: 'desc' }, { createdAt: 'desc' }],
       from: skip > 0 ? skip : undefined,
       size: take > 0 ? take : undefined,
     };

@@ -182,7 +182,7 @@ export class UserController {
             },
           ],
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
         include: { User: true, Group: true, _count: { select: { Liked: true } } },
         skip: skip && skip > 0 ? skip : undefined,
         take: take && take > 0 ? take : undefined,

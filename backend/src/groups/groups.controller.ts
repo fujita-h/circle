@@ -303,7 +303,7 @@ export class GroupsController {
           ],
         },
         include: { User: true, Group: true, _count: { select: { Liked: true } } },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
         skip,
         take,
       });

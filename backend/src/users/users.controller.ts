@@ -228,7 +228,7 @@ export class UsersController {
           ],
         },
         include: { User: true, Group: true },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { createdAt: 'desc' }],
         skip: skip && skip > 0 ? skip : undefined,
         take: take && take > 0 ? take : undefined,
       });
