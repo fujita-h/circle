@@ -8,12 +8,15 @@ import { TabItem } from './types';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export function ResponsiveTabs({ tabs }: { tabs: TabItem[] }) {
+export function ResponsiveTabs({ tabs, dynamic = true }: { tabs: TabItem[]; dynamic?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
-  tabs.forEach((tab) => {
-    tab.current = tab.href === pathname;
-  });
+
+  if (dynamic) {
+    tabs.forEach((tab) => {
+      tab.current = tab.href === pathname;
+    });
+  }
 
   return (
     <div className="border-b border-gray-200 pb-5 sm:pb-0">
