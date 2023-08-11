@@ -9,7 +9,6 @@ import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Inter } from 'next/font/google';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Fragment } from 'react';
 import { UserEmail, UserName } from './user-data';
 
@@ -22,8 +21,6 @@ const userNavigation = [
 
 export function Navbar() {
   const environment = useEnvironment();
-  const router = useRouter();
-
   return (
     <Disclosure as="nav" className="bg-white">
       {({ open }) => (
@@ -96,6 +93,7 @@ export function Navbar() {
                         src="/user/photo"
                         className="h-8 w-8 rounded-full"
                         alt="user-icon"
+                        loading={<div className="h-8 w-8 rounded-full bg-gray-100 text-gray-400"></div>}
                         fallback={<UserIcon className="h-8 w-8 rounded-full bg-gray-100 text-gray-400" />}
                       />
                     </Menu.Button>
@@ -157,7 +155,13 @@ export function Navbar() {
             <div className="border-t mb-4 border-gray-200 pb-3 pt-4">
               <div className="flex items-center px-4">
                 <div className="flex-shrink-0">
-                  <BackendImage src="/user/photo" className="h-10 w-10 rounded-full" alt="user-icon" />
+                  <BackendImage
+                    src="/user/photo"
+                    className="h-10 w-10 rounded-full"
+                    alt="user-icon"
+                    loading={<div className="h-10 w-10 rounded-full bg-gray-100 text-gray-400"></div>}
+                    fallback={<UserIcon className="h-10 w-10 rounded-full bg-gray-100 text-gray-400" />}
+                  />
                 </div>
                 <div className="ml-3">
                   <div className="text-base font-medium text-gray-800">
