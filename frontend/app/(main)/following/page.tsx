@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { LargeTabs } from '@/components/tabs';
+import { NavigationTabs } from '@/components/tabs';
 import { navTabItems } from '@/components/navbar';
 import { classNames } from '@/utils';
 import { Inter } from 'next/font/google';
@@ -22,7 +22,7 @@ export default function Page() {
       <div className="pt-1 bg-white">
         <div className="max-w-screen-2xl mx-auto">
           <div className="px-4 lg:px-8">
-            <LargeTabs tabs={navTabItems} />
+            <NavigationTabs tabs={navTabItems} />
           </div>
         </div>
       </div>

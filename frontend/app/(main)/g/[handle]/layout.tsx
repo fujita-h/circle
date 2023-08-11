@@ -5,7 +5,7 @@ import { Inter } from 'next/font/google';
 import { classNames, capitalize } from '@/utils';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { useEnvironment } from '@/components/environment/providers';
-import { LargeTabs, TabItem } from '@/components/tabs';
+import { NavigationTabs, TabItem } from '@/components/tabs';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import useSWR from 'swr';
 import {
@@ -102,7 +102,7 @@ function Layout({ group, children }: { group: Group; children: React.ReactNode }
               </div>
             </div>
             <div className="px-4">
-              <LargeTabs tabs={tabs} />
+              <NavigationTabs tabs={tabs} />
             </div>
           </div>
         </div>

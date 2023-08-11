@@ -9,7 +9,7 @@ import { Inter } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export function LargeTabs({ tabs }: { tabs: TabItem[] }) {
+export function NavigationTabs({ tabs }: { tabs: TabItem[] }) {
   const pathname = usePathname();
   tabs.forEach((tab) => {
     tab.current = tab.href === pathname;

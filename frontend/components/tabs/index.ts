@@ -1,3 +1,3 @@
 export type { TabItem } from './types';
-export { LargeTabs } from './large-tabs';
+export { NavigationTabs } from './navigation-tabs';
 export { ResponsiveTabs } from './responsive-tabs';
