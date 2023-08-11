@@ -1,7 +1,7 @@
 import { classNames } from '@/utils';
 import { Inter } from 'next/font/google';
 import { LargeTabs } from '@/components/tabs';
-import { secondaryTabItems } from '@/components/navbar';
+import { navTabItems } from '@/components/navbar';
 import { Loader } from './loader';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -13,7 +13,7 @@ export default function Page() {
       <div className="pt-1 bg-white">
         <div className="max-w-screen-2xl mx-auto">
           <div className="pt-2 lg:pt-0 px-6 lg:px-8">
-            <LargeTabs tabs={secondaryTabItems} />
+            <LargeTabs tabs={navTabItems} />
           </div>
         </div>
       </div>

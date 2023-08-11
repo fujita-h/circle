@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import { LargeTabs } from '@/components/tabs';
-import { secondaryTabItems } from '@/components/navbar';
+import { navTabItems } from '@/components/navbar';
 import { classNames } from '@/utils';
 import { Inter } from 'next/font/google';
 import { Loader } from './loader';
@@ -22,7 +22,7 @@ export default function Page() {
       <div className="pt-1 bg-white">
         <div className="max-w-screen-2xl mx-auto">
           <div className="px-4 lg:px-8">
-            <LargeTabs tabs={secondaryTabItems} />
+            <LargeTabs tabs={navTabItems} />
           </div>
         </div>
       </div>
