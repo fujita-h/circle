@@ -506,7 +506,11 @@ export class UserController {
     try {
       if (like.created) {
         const date = new Date().toISOString().split('T')[0];
-        await this.redisService.zincrby(`notes/like/${date}`, 1, note.id);
+        await this.redisService
+          .multi()
+          .zincrby(`notes/like/${date}`, 1, note.id)
+          .expire(`notes/like/${date}`, 60 * 60 * 24 * 30)
+          .exec();
       }
     } catch (e) {
       this.logger.error(e);
@@ -544,7 +548,11 @@ export class UserController {
     try {
       if (like.deleted) {
         const date = new Date().toISOString().split('T')[0];
-        await this.redisService.zincrby(`notes/like/${date}`, -1, note.id);
+        await this.redisService
+          .multi()
+          .zincrby(`notes/like/${date}`, -1, note.id)
+          .expire(`notes/like/${date}`, 60 * 60 * 24 * 30)
+          .exec();
       }
     } catch (e) {
       this.logger.error(e);
@@ -675,7 +683,11 @@ export class UserController {
     try {
       if (stock.created) {
         const date = new Date().toISOString().split('T')[0];
-        await this.redisService.zincrby(`notes/stock/${date}`, 1, note.id);
+        await this.redisService
+          .multi()
+          .zincrby(`notes/stock/${date}`, 1, note.id)
+          .expire(`notes/stock/${date}`, 60 * 60 * 24 * 30)
+          .exec();
       }
     } catch (e) {
       this.logger.error(e);
@@ -738,7 +750,11 @@ export class UserController {
     try {
       if (stock.created) {
         const date = new Date().toISOString().split('T')[0];
-        await this.redisService.zincrby(`notes/stock/${date}`, 1, note.id);
+        await this.redisService
+          .multi()
+          .zincrby(`notes/stock/${date}`, 1, note.id)
+          .expire(`notes/stock/${date}`, 60 * 60 * 24 * 30)
+          .exec();
       }
     } catch (e) {
       this.logger.error(e);
@@ -780,7 +796,11 @@ export class UserController {
     try {
       if (stock.deleted) {
         const date = new Date().toISOString().split('T')[0];
-        await this.redisService.zincrby(`notes/stock/${date}`, -1, note.id);
+        await this.redisService
+          .multi()
+          .zincrby(`notes/stock/${date}`, -1, note.id)
+          .expire(`notes/stock/${date}`, 60 * 60 * 24 * 30)
+          .exec();
       }
     } catch (e) {
       this.logger.error(e);

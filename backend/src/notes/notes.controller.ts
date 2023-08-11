@@ -333,7 +333,11 @@ export class NotesController {
 
     try {
       const date = new Date().toISOString().split('T')[0];
-      await this.redisService.zincrby(`notes/view/${date}`, 1, note.id);
+      await this.redisService
+        .multi()
+        .zincrby(`notes/view/${date}`, 1, note.id)
+        .expire(`notes/view/${date}`, 60 * 60 * 24 * 30)
+        .exec();
     } catch (e) {
       this.logger.error(e);
     }
