@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import { NavigationTabs } from '@/components/tabs';
-import { navTabItems } from '@/components/navbar';
+import { navTabItems } from '@/app/(main)/nav-tab-items';
 import { classNames } from '@/utils';
 import { Inter } from 'next/font/google';
 import { Loader } from './loader';

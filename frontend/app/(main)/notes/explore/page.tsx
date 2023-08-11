@@ -3,7 +3,7 @@
 import { classNames } from '@/utils';
 import { Inter } from 'next/font/google';
 import { ButtonTabs, NavigationTabs, ResponsiveTabs, TabItem } from '@/components/tabs';
-import { navTabItems } from '@/components/navbar';
+import { navTabItems } from '@/app/(main)/nav-tab-items';
 import { exploreTabItems } from '@/app/(main)/explore-tab-items';
 import { Loader } from './loader';
 import { useSearchParams } from 'next/navigation';

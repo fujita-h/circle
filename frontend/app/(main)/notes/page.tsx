@@ -5,7 +5,7 @@ import { Loader } from './loader';
 import { Inter } from 'next/font/google';
 import { classNames } from '@/utils';
 import { NavigationTabs } from '@/components/tabs';
-import { navTabItems } from '@/components/navbar';
+import { navTabItems } from '@/app/(main)/nav-tab-items';
 
 const inter = Inter({ subsets: ['latin'] });
 
