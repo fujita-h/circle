@@ -11,7 +11,7 @@ export class TasksService {
     this.logger.log('Initializing Tasks Service...');
   }
 
-  @Cron('30 */30 * * * *')
+  @Cron('5 */30 * * * *')
   handleWeeklyTrending() {
     const keysArr = [];
     const weightsArr = [];
@@ -48,11 +48,11 @@ export class TasksService {
     );
   }
 
-  @Cron('3 3 */3 * *')
+  @Cron('10 0 */2 * *')
   handleMonthlyTrending() {
     const keysArr = [];
     const weightsArr = [];
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 28; i++) {
       const date = new Date();
       date.setUTCDate(date.getUTCDate() - i);
       const formattedDate = date.toISOString().split('T')[0];
