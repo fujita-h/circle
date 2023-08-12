@@ -8,8 +8,6 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { Loader } from './loader';
 
-import { JoinedGroupListLoader } from '@/components/users/joined';
-
 export default function Page({ params }: { params: any }) {
   const handle = params.handle;
   const environment = useEnvironment();
