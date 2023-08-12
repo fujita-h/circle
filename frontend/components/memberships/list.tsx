@@ -2,8 +2,12 @@
 
 import { BackendImage } from '@/components/backend-image';
 import { Membership, SomeRequired } from '@/types';
+import { classNames } from '@/utils';
 import { UserIcon } from '@heroicons/react/20/solid';
+import { Inter } from 'next/font/google';
 import Link from 'next/link';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export function CardList({ members }: { members: SomeRequired<Membership, 'User'>[] }) {
   return (
@@ -18,21 +22,24 @@ export function CardList({ members }: { members: SomeRequired<Membership, 'User'
                 alt="user-icon"
                 fallback={<UserIcon className="mx-auto h-32 w-32 flex-shrink-0 rounded-full bg-gray-100 text-gray-400" />}
               />
-              <h3 className="mt-6 text-base font-medium text-gray-900 group-hover:underline">{member.User.name}</h3>
-              <dl className="mt-1 flex flex-grow flex-col justify-between">
-                <dt className="sr-only">Title</dt>
-                <dd className="text-sm text-gray-500">{''}</dd>
-                <dt className="sr-only">Role</dt>
-                <dd className="mt-3">
-                  {member.role === 'ADMIN' ? (
-                    <span className="capitalize inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                      {member.role.toLowerCase()}
-                    </span>
-                  ) : (
-                    <></>
-                  )}
-                </dd>
-              </dl>
+              <div className="mt-6">
+                <div className={classNames('text-sm text-gray-600 group-hover:underline', inter.className)}>@{member.User.handle}</div>
+                <div className="text-base font-medium text-gray-900 group-hover:underline">{member.User.name}</div>
+                <dl className="mt-1 flex flex-grow flex-col justify-between">
+                  <dt className="sr-only">Title</dt>
+                  <dd className="text-sm text-gray-500">{''}</dd>
+                  <dt className="sr-only">Role</dt>
+                  <dd className="mt-3">
+                    {member.role === 'ADMIN' ? (
+                      <span className="capitalize inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                        {member.role.toLowerCase()}
+                      </span>
+                    ) : (
+                      <></>
+                    )}
+                  </dd>
+                </dl>
+              </div>
             </div>
           </Link>
         </li>
