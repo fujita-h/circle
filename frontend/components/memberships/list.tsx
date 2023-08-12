@@ -1,10 +1,10 @@
 'use client';
 
-import { ChevronRightIcon, UserIcon } from '@heroicons/react/20/solid';
-import { capitalize, classNames } from '@/utils';
-import Link from 'next/link';
 import { BackendImage } from '@/components/backend-image';
-import { SomeRequired, Membership } from '@/types';
+import { Membership, SomeRequired } from '@/types';
+import { capitalize } from '@/utils';
+import { ChevronRightIcon, UserIcon } from '@heroicons/react/20/solid';
+import Link from 'next/link';
 
 export function List({ members }: { members: SomeRequired<Membership, 'User'>[] }) {
   return (
