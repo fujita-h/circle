@@ -92,11 +92,22 @@ export function CardList({ notes, isGroupList = false }: { notes: SomeRequired<N
                   </Link>
                 </div>
                 <div className="text-sm flex gap-x-2">
-                  <Link className="z-10 hover:underline" href={`/u/${note.User.handle}`}>
-                    <span>@{note.User.handle}</span>
-                    {note.User.name ? <span> ({note.User.name})</span> : <></>}
-                    {note.Group && !isGroupList ? <span> in {note.Group.name || note.Group.handle}</span> : <></>}
-                  </Link>
+                  <div className="z-10">
+                    <Link className=" hover:underline" href={`/u/${note.User.handle}`}>
+                      <span>@{note.User.handle}</span>
+                      {note.User.name ? <span> ({note.User.name})</span> : <></>}
+                    </Link>
+                    {note.Group && !isGroupList ? (
+                      <span>
+                        <span> in </span>
+                        <Link className=" hover:underline" href={`/g/${note.Group.handle}`}>
+                          {note.Group.name || note.Group.handle}
+                        </Link>
+                      </span>
+                    ) : (
+                      <></>
+                    )}
+                  </div>
                 </div>
                 <div className="text-sm text-gray-600">
                   <span>{createdAt}</span>{' '}
