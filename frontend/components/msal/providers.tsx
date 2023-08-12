@@ -1,7 +1,7 @@
 'use client';
 
 import { MsalProvider as _MsalProvider } from '@azure/msal-react';
-import { AuthenticationResult, EventType, PublicClientApplication } from '@azure/msal-browser';
+import { AuthenticationResult, EventMessage, EventType, PublicClientApplication } from '@azure/msal-browser';
 import { aadConfig } from './configs';
 import { useEnvironment } from '@/components/environment/providers';
 
@@ -14,9 +14,9 @@ export function MsalProvider({ children }: { children: React.ReactNode }) {
     msalInstance.setActiveAccount(accounts[0]);
   }
 
-  msalInstance.addEventCallback((event) => {
-    if (event.eventType === EventType.LOGIN_SUCCESS) {
-      const payload = event.payload as AuthenticationResult;
+  msalInstance.addEventCallback((message: EventMessage) => {
+    if (message.eventType === EventType.LOGIN_SUCCESS) {
+      const payload = message.payload as AuthenticationResult;
       if (payload) {
         const account = payload.account;
         msalInstance.setActiveAccount(account);
