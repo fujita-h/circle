@@ -316,10 +316,55 @@ export class GroupsController {
   }
 
   @Get('handle/:handle')
-  async findOneByHandle(@Param('handle') handle: string) {
+  async findOneByHandle(@Request() request: any, @Param('handle') handle: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
     let group;
     try {
-      group = await this.groupsService.findOne({ where: { handle } });
+      group = await this.groupsService.findOne({
+        where: { handle, status: 'NORMAL' },
+        include: {
+          _count: {
+            select: {
+              Members: true,
+              Notes: {
+                where: {
+                  blobPointer: { not: null }, // only notes with blobPointer
+                  User: { handle: { not: null }, status: 'NORMAL' }, // only notes of existing users
+                  //groupId: id,
+                  OR: [
+                    { userId: userId }, // user is owner
+                    {
+                      status: 'NORMAL',
+                      Group: {
+                        handle: { not: null },
+                        status: 'NORMAL',
+                        readNotePermission: 'ADMIN',
+                        Members: { some: { userId: userId, role: 'ADMIN' } },
+                      },
+                    }, // readNotePermission is ADMIN and user is admin of group
+                    {
+                      status: 'NORMAL',
+                      Group: {
+                        handle: { not: null },
+                        status: 'NORMAL',
+                        readNotePermission: 'MEMBER',
+                        Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                      },
+                    }, // readNotePermission is MEMBER and user is member of group
+                    {
+                      status: 'NORMAL',
+                      Group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+                    }, // readNotePermission is ALL
+                  ],
+                },
+              },
+            },
+          },
+        },
+      });
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();

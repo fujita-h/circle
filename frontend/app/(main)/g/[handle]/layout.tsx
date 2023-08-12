@@ -15,8 +15,9 @@ import {
   JoinGroupConditionBadge,
 } from '@/components/groups/badges';
 import { apiRequest } from '@/components/msal/requests';
-import { Group, Membership } from '@/types';
+import { Group, Membership, SomeRequired } from '@/types';
 import { BackendImage } from '@/components/backend-image';
+import { UserGroupIcon } from '@heroicons/react/24/solid';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -26,9 +27,11 @@ export default function HandleWrapper({ params, children }: { params: any; child
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
-  const { data, isLoading, mutate } = useSWR<Group>(`${environment.BACKEND_ENDPOINT}/groups/handle/${handle}`, fetcher, {
-    revalidateOnFocus: false,
-  });
+  const { data, isLoading, mutate } = useSWR<SomeRequired<Group, '_count'>>(
+    `${environment.BACKEND_ENDPOINT}/groups/handle/${handle}`,
+    fetcher,
+    { revalidateOnFocus: false },
+  );
 
   if (isLoading) {
     return <></>;
@@ -41,7 +44,7 @@ export default function HandleWrapper({ params, children }: { params: any; child
   return <Layout group={data}>{children}</Layout>;
 }
 
-function Layout({ group, children }: { group: Group; children: React.ReactNode }) {
+function Layout({ group, children }: { group: SomeRequired<Group, '_count'>; children: React.ReactNode }) {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
@@ -60,8 +63,8 @@ function Layout({ group, children }: { group: Group; children: React.ReactNode }
   }
 
   const tabs: TabItem[] = [
-    { name: 'Notes', href: `/g/${group.handle}/notes`, current: false },
-    { name: 'Members', href: `/g/${group.handle}/members`, current: false },
+    { name: 'Notes', href: `/g/${group.handle}/notes`, current: false, count: group._count.Notes },
+    { name: 'Members', href: `/g/${group.handle}/members`, current: false, count: group._count.Members },
   ];
 
   if (data?.membership?.role === 'ADMIN') {
@@ -76,7 +79,11 @@ function Layout({ group, children }: { group: Group; children: React.ReactNode }
             <div className="py-8 px-12">
               <div className="flex gap-8">
                 <div className="flex-none">
-                  <BackendImage src={`/groups/${group.id}/photo`} className="w-24 h-24 rounded-md border border-gray-200" />
+                  <BackendImage
+                    src={`/groups/${group.id}/photo`}
+                    className="w-24 h-24 rounded-md border border-gray-200 bg-gray-50"
+                    fallback={<UserGroupIcon className="w-24 h-24 rounded-full border border-gray-200 bg-gray-100 text-gray-400" />}
+                  />
                 </div>
                 <div className="flex-1">
                   <div>

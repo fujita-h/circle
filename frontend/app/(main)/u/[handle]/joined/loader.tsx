@@ -1,15 +1,14 @@
 'use client';
 
-import { useSearchParams, usePathname } from 'next/navigation';
 import { useEnvironment } from '@/components/environment/providers';
 import { useAccount, useMsal } from '@azure/msal-react';
 import useSWR from 'swr';
-import { Group } from '@/types';
+import { User, Membership, Group, SomeRequired } from '@/types';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
-import { MemberList, CardList } from '@/components/groups/members/list';
+import { CardList } from '@/components/groups/list';
 import { LinkPagination } from '@/components/paginations';
 
-export function Loader({ group, pathname, page, take }: { group: Group; pathname: string; page: number; take: number }) {
+export function Loader({ user, pathname, page, take }: { user: User; pathname: string; page: number; take: number }) {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
@@ -19,8 +18,8 @@ export function Loader({ group, pathname, page, take }: { group: Group; pathname
 
   // fetch data
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
-  const { data: members, isLoading } = useSWR<{ data: any[]; meta: { total: number } }>(
-    `${environment.BACKEND_ENDPOINT}/groups/${group.id}/members?take=${take}&skip=${skip}`,
+  const { data: members, isLoading } = useSWR<{ data: SomeRequired<Membership, 'Group'>[]; meta: { total: number } }>(
+    `${environment.BACKEND_ENDPOINT}/users/${user.id}/joined/groups?take=${take}&skip=${skip}`,
     fetcher,
     { revalidateOnFocus: false },
   );
@@ -36,11 +35,11 @@ export function Loader({ group, pathname, page, take }: { group: Group; pathname
   }
 
   return (
-    <div>
-      <CardList members={members.data} />
+    <>
+      <CardList memberships={members.data} />
       <div className="py-5">
         <LinkPagination pathname={pathname} page={page} total={members.meta.total} take={take} />
       </div>
-    </div>
+    </>
   );
 }

@@ -31,6 +31,16 @@ export function NavigationTabs({ tabs }: { tabs: TabItem[] }) {
           aria-current={tab.current ? 'page' : undefined}
         >
           {tab.name}
+          {tab.count !== undefined ? (
+            <span
+              className={classNames(
+                tab.current ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-900',
+                'ml-3 hidden rounded-full py-0.5 px-2.5 text-xs font-medium md:inline-block',
+              )}
+            >
+              {tab.count}
+            </span>
+          ) : null}
         </Link>
       ))}
     </nav>

@@ -227,7 +227,7 @@ export class UsersController {
             }, // readNotePermission is ALL
           ],
         },
-        include: { User: true, Group: true },
+        include: { User: true, Group: true, _count: { select: { Liked: true } } },
         orderBy: [{ createdAt: 'desc' }, { createdAt: 'desc' }],
         skip: skip && skip > 0 ? skip : undefined,
         take: take && take > 0 ? take : undefined,
@@ -241,11 +241,49 @@ export class UsersController {
   }
 
   @Get('handle/:handle')
-  async findOneByHandle(@Param('handle') handle: string) {
+  async findOneByHandle(@Request() request: any, @Param('handle') handle: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
     let user;
     try {
-      user = await this.usersService.findFirst({
+      user = await this.usersService.findOne({
         where: { handle, status: 'NORMAL' },
+        include: {
+          _count: {
+            select: {
+              Joined: true,
+              Notes: {
+                where: {
+                  blobPointer: { not: null }, // only notes with blobPointer
+                  //userId: id, // only notes of existing users
+                  OR: [
+                    { groupId: null },
+                    {
+                      status: 'NORMAL',
+                      Group: {
+                        readNotePermission: 'ADMIN',
+                        Members: { some: { userId: userId, role: 'ADMIN' } },
+                      },
+                    }, // readNotePermission is ADMIN and user is admin of group
+                    {
+                      status: 'NORMAL',
+                      Group: {
+                        readNotePermission: 'MEMBER',
+                        Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                      },
+                    }, // readNotePermission is MEMBER and user is member of group
+                    {
+                      status: 'NORMAL',
+                      Group: { readNotePermission: 'ALL' },
+                    }, // readNotePermission is ALL
+                  ],
+                },
+              },
+            },
+          },
+        },
       });
     } catch (e) {
       this.logger.error(e);
