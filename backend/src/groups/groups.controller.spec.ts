@@ -189,7 +189,8 @@ describe('GroupsController/Base', () => {
   });
 
   it('Group1をhandleから取得', async () => {
-    const result = controller.findOneByHandle(group1.handle);
+    const req = { user: { id: user1.id } };
+    const result = controller.findOneByHandle(req, group1.handle);
     await expect(result).resolves.toHaveProperty('id', group1.id);
     await expect(result).resolves.toHaveProperty('handle', testGroup1.handle);
     await expect(result).resolves.toHaveProperty('name', testGroup1.name);
@@ -214,7 +215,8 @@ describe('GroupsController/Base', () => {
   });
 
   it('Group2をhandleから取得', async () => {
-    const result = controller.findOneByHandle(group2.handle);
+    const req = { user: { id: user1.id } };
+    const result = controller.findOneByHandle(req, group2.handle);
     await expect(result).resolves.toHaveProperty('id', group2.id);
     await expect(result).resolves.toHaveProperty('handle', testGroup2.handle);
     await expect(result).resolves.toHaveProperty('name', testGroup2.name);
