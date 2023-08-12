@@ -9,6 +9,7 @@ export interface Note {
   id: string;
   createdAt: string;
   updatedAt: string;
+  publishedAt?: string;
   User?: User;
   userId: string;
   Group?: Group;

@@ -1,6 +1,6 @@
 export type SomeRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 export type { Comment, CommentStatus, CommentType } from './comment';
-export type { Follow } from './follow';
+export type { FollowUser as Follow } from './follow-user';
 export type { Group, ConditionJoinGroup, ConditionWriteNote, GroupStatus, PermissionReadNote, PermissionWriteNote } from './group';
 export type { Like } from './like';
 export type { Membership, MembershipRole } from './membership';
@@ -10,4 +10,4 @@ export type { Stock } from './stock';
 export type { TagMap } from './tag-map';
 export type { Tag } from './tag';
 export type { User, UserStatus, UserType } from './user';
-export type { Watch } from './watch';
+export type { FollowGroup as Watch } from './follow-group';

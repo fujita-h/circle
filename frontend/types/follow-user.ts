@@ -1,5 +1,5 @@
 import { User } from './user';
-export interface Follow {
+export interface FollowUser {
   From?: User;
   fromId: string;
   To?: User;

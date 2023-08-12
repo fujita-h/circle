@@ -6,6 +6,7 @@ export interface StockLabel {
   User?: User;
   userId: string;
   name: string;
+  default: boolean;
   createdAt: string;
   updatedAt: string;
   Stocks?: Stock[];

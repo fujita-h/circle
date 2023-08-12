@@ -1,6 +1,6 @@
 import { Membership } from './membership';
 import { Note } from './note';
-import { Watch } from './watch';
+import { FollowGroup } from './follow-group';
 
 export interface Group {
   id: string;
@@ -16,7 +16,13 @@ export interface Group {
   joinGroupCondition: ConditionJoinGroup;
   Members?: Membership[];
   Notes?: Note[];
-  Watched?: Watch[];
+  Watched?: FollowGroup[];
+
+  // include count
+  _count?: {
+    Members?: number;
+    Notes?: number;
+  };
 }
 
 export type GroupStatus = 'NORMAL' | 'DELETED';

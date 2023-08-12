@@ -4,8 +4,8 @@ import { Note } from './note';
 import { Stock } from './stock';
 import { StockLabel } from './stock-label';
 import { Like } from './like';
-import { Follow } from './follow';
-import { Watch } from './watch';
+import { FollowUser } from './follow-user';
+import { FollowGroup } from './follow-group';
 import { Notification } from './notification';
 
 export interface User {
@@ -24,10 +24,16 @@ export interface User {
   Stocks?: Stock[];
   StockLabels?: StockLabel[];
   Likes?: Like[];
-  Following?: Follow[];
-  Followed?: Follow[];
-  Watching?: Watch[];
+  FollowingUsers?: FollowUser[];
+  FollowedUsers?: FollowUser[];
+  FollowingGroups?: FollowGroup[];
   Notifications?: Notification[];
+
+  // include count
+  _count?: {
+    Joined?: number;
+    Notes?: number;
+  };
 }
 
 export type UserType = 'NORMAL';
