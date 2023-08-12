@@ -1,5 +1,5 @@
+import { ConfigProvider, EnvironmentContextType } from '@/components/environment/providers';
 import { MsalProvider } from '@/components/msal/providers';
-import { EnvironmentContextType, ConfigProvider } from '@/components/environment/providers';
 import { AuthenticatedAlwaysTemplate } from '@/components/msal/templates';
 import './globals.css';
 
@@ -22,7 +22,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <ConfigProvider environment={environment}>
           <MsalProvider>
-            <AuthenticatedAlwaysTemplate> {children}</AuthenticatedAlwaysTemplate>
+            <AuthenticatedAlwaysTemplate>{children}</AuthenticatedAlwaysTemplate>
           </MsalProvider>
         </ConfigProvider>
       </body>
