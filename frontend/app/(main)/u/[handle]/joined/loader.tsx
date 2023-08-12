@@ -1,12 +1,12 @@
 'use client';
 
 import { useEnvironment } from '@/components/environment/providers';
+import { CardList } from '@/components/groups';
+import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
+import { LinkPagination } from '@/components/paginations';
+import { Group, Membership, SomeRequired, User } from '@/types';
 import { useAccount, useMsal } from '@azure/msal-react';
 import useSWR from 'swr';
-import { User, Membership, Group, SomeRequired } from '@/types';
-import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
-import { CardList } from '@/components/groups/list';
-import { LinkPagination } from '@/components/paginations';
 
 export function Loader({ user, pathname, page, take }: { user: User; pathname: string; page: number; take: number }) {
   const environment = useEnvironment();
