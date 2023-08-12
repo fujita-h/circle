@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { BackendImage } from '@/components/backend-image';
 import { SomeRequired, Membership } from '@/types';
 
-export function MemberList({ members }: { members: SomeRequired<Membership, 'User'>[] }) {
+export function List({ members }: { members: SomeRequired<Membership, 'User'>[] }) {
   return (
     <ul role="list" className="divide-y divide-gray-100">
       {members.map((member) => (

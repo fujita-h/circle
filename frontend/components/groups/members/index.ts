@@ -1,1 +1,1 @@
-export { Loader as GroupMemberLoader } from './loader';
+export { List, CardList } from './list';

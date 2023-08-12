@@ -6,7 +6,7 @@ import { useAccount, useMsal } from '@azure/msal-react';
 import useSWR from 'swr';
 import { Group } from '@/types';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
-import { MemberList, CardList } from '@/components/groups/members/list';
+import { CardList } from '@/components/groups/members/list';
 import { LinkPagination } from '@/components/paginations';
 
 export function Loader({ group, pathname, page, take }: { group: Group; pathname: string; page: number; take: number }) {
