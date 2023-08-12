@@ -36,7 +36,7 @@ export function Loader({ user, pathname, page, take }: { user: User; pathname: s
 
   return (
     <>
-      <CardList memberships={members.data} />
+      <CardList groups={members.data.map((x) => x.Group).filter((x): x is Group => x !== undefined)} />
       <div className="py-5">
         <LinkPagination pathname={pathname} page={page} total={members.meta.total} take={take} />
       </div>
