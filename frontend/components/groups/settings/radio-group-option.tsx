@@ -8,20 +8,20 @@ export function RadioGroupOption({
   label,
   name,
   values,
-  value,
+  defaultValue,
   disabled,
   onChange,
 }: {
   label: string;
   name: string;
   values: any[];
-  value: string;
+  defaultValue: string;
   disabled: boolean;
   onChange: (name: string, value: string) => void;
 }) {
   return (
     <RadioGroup
-      value={value}
+      defaultValue={defaultValue}
       disabled={disabled}
       onChange={(e) => {
         onChange(name, e);

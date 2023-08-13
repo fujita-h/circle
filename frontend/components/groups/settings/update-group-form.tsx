@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { SuccessAlert, FailedAlert, WarningWithAccent } from './alert';
 import { RadioGroupOption } from './radio-group-option';
+import { Group } from '@/types';
 
 type RadioGroupOptionItem = {
   name: string;
@@ -56,7 +57,6 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
-  const [formState, setFormState] = useState<any>(null);
   const [formUpdates, setFormUpdates] = useState<any>({});
   const [formLocked, setFormLocked] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -68,12 +68,13 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
     revalidateOnFocus: false,
   });
 
-  useEffect(() => {
-    if (!data) {
-      return;
-    }
-    setFormState(data);
-  }, [data]);
+  if (isLoading) {
+    return <div>loading...</div>;
+  }
+
+  if (!data) {
+    return <div>error</div>;
+  }
 
   const handleClick = async () => {
     setSuccessMessage('');
@@ -94,13 +95,14 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
           body: JSON.stringify({ ...formUpdates }),
         });
         if (response.ok) {
+          const newData = await response.json();
           setSuccessMessage('更新が完了しました');
           setFormUpdates({});
           mutate(`${environment.BACKEND_ENDPOINT}/groups/${groupId}`);
-          if (data.handle !== formState.handle) {
-            router.replace(`/g/${formState.handle}/settings`);
-          } else {
+          if (newData.handle === data.handle) {
             mutate(`${environment.BACKEND_ENDPOINT}/groups/handle/${data.handle}`);
+          } else {
+            router.replace(`/g/${newData.handle}/settings`);
           }
         } else {
           setFailedMessage('更新に失敗しました');
@@ -125,25 +127,19 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setSuccessMessage('');
     setFailedMessage('');
-    setFormState({ ...formState, [e.target.name]: e.target.value });
     setFormUpdates({ ...formUpdates, [e.target.name]: e.target.value });
   };
 
   const handleRadioChange = (name: string, value: string) => {
     setSuccessMessage('');
     setFailedMessage('');
-    setFormState({ ...formState, [name]: value });
     setFormUpdates({ ...formUpdates, [name]: value });
   };
 
-  if (isLoading) {
-    return <div>loading...</div>;
-  }
-
   const permissionMissmatch =
-    (formState?.readNotePermission === 'ADMIN' && formState?.writeNotePermission == 'MEMBER') ||
-    (formState?.readNotePermission === 'ADMIN' && formState?.writeNotePermission == 'ALL') ||
-    (formState?.readNotePermission === 'MEMBER' && formState?.writeNotePermission == 'ALL');
+    (data.readNotePermission === 'ADMIN' && data.writeNotePermission == 'MEMBER') ||
+    (data.readNotePermission === 'ADMIN' && data.writeNotePermission == 'ALL') ||
+    (data.readNotePermission === 'MEMBER' && data.writeNotePermission == 'ALL');
 
   return (
     <>
@@ -158,7 +154,7 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
                 type="text"
                 name="handle"
                 id="handle"
-                value={formState?.handle}
+                defaultValue={data.handle}
                 disabled={formLocked}
                 onChange={handleInputChange}
                 className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-slate-400/40 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6 disabled:bg-slate-100"
@@ -178,7 +174,7 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
                 type="text"
                 name="name"
                 id="name"
-                value={formState?.name}
+                defaultValue={data.name}
                 disabled={formLocked}
                 onChange={handleInputChange}
                 className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-slate-400/40 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6 disabled:bg-slate-100"
@@ -195,7 +191,7 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
                 name="description"
                 id="description"
                 rows={5}
-                value={formState?.description}
+                defaultValue={data.description}
                 disabled={formLocked}
                 onChange={handleInputChange}
                 className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-slate-400/40 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6 disabled:bg-slate-100"
@@ -208,7 +204,7 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
               label="アイテムの閲覧制限"
               name="readNotePermission"
               values={PermissionReadNotes}
-              value={formState?.readNotePermission}
+              defaultValue={data.readNotePermission}
               disabled={formLocked}
               onChange={handleRadioChange}
             />
@@ -219,7 +215,7 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
               label="アイテムの投稿制限"
               name="writeNotePermission"
               values={PermissionWriteNotes}
-              value={formState?.writeNotePermission}
+              defaultValue={data.writeNotePermission}
               disabled={formLocked}
               onChange={handleRadioChange}
             />
@@ -237,7 +233,7 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
               label="メンバーの加入設定"
               name={'joinGroupCondition'}
               values={conditionJoinGroups}
-              value={formState?.joinGroupCondition}
+              defaultValue={data.joinGroupCondition}
               disabled={formLocked}
               onChange={handleRadioChange}
             />
@@ -248,7 +244,7 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
               label="アイテムの投稿条件"
               name="writeNoteCondition"
               values={ConditionWriteNotes}
-              value={formState?.writeNoteCondition}
+              defaultValue={data.writeNoteCondition}
               disabled={formLocked}
               onChange={handleRadioChange}
             />
