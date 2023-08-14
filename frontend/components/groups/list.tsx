@@ -4,7 +4,7 @@ import { BackendImage } from '@/components/backend-image';
 import { Group } from '@/types';
 import { UserGroupIcon } from '@heroicons/react/20/solid';
 import Link from 'next/link';
-import { JoinGroupConditionBadge, ReadNotePermissionBadge, WriteNoteConditionBadge, WriteNotePermissionBadge } from './badges';
+import { JoinGroupConditionBadge, WriteNotePermissionBadge, ReadNotePermissionBadge } from './badges';
 
 export function CardList({ groups }: { groups: Group[] }) {
   return (
@@ -23,10 +23,9 @@ export function CardList({ groups }: { groups: Group[] }) {
                   />
                   <h3 className="truncate break-all text-base font-medium text-gray-900 group-hover:underline">{group.name}</h3>
                   <div className="flex space-x-2">
-                    <ReadNotePermissionBadge permission={group.readNotePermission} />
-                    <WriteNotePermissionBadge permission={group.writeNotePermission} />
-                    <WriteNoteConditionBadge condition={group.writeNoteCondition} />
                     <JoinGroupConditionBadge condition={group.joinGroupCondition} />
+                    <WriteNotePermissionBadge permission={group.writeNotePermission} />
+                    <ReadNotePermissionBadge permission={group.readNotePermission} />
                   </div>
                 </div>
               </div>

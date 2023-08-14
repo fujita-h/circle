@@ -112,11 +112,7 @@ export class NotesController {
           User: { connect: { id: userId } },
           Group: group ? { connect: { id: groupId } } : undefined,
           title: data.title,
-          status: group
-            ? group.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL'
-              ? 'PENDING_APPROVAL'
-              : 'NORMAL'
-            : 'NORMAL',
+          status: 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
           publishedAt: new Date(),
         },
@@ -547,11 +543,7 @@ export class NotesController {
           title: data.title,
           User: { connect: { id: userId } },
           Group: group ? { connect: { id: groupId } } : { disconnect: true },
-          status: group
-            ? group.writeNoteCondition === 'REQUIRE_ADMIN_APPROVAL'
-              ? 'PENDING_APPROVAL'
-              : 'NORMAL'
-            : 'NORMAL',
+          status: 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
           publishedAt: new Date(),
         },

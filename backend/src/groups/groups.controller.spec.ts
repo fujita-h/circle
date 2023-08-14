@@ -77,17 +77,15 @@ const User = (handle: string, name: string): CreateUserDto => ({
 const Group = (
   handle: string,
   name: string,
-  rp?: 'ADMIN' | 'MEMBER' | 'ALL',
-  wp?: 'ADMIN' | 'MEMBER' | 'ALL',
-  wc?: 'REQUIRE_ADMIN_APPROVAL' | 'ALLOWED',
   jc?: 'DENIED' | 'REQUIRE_ADMIN_APPROVAL' | 'ALLOWED',
+  wp?: 'ADMIN' | 'MEMBER' | 'ALL',
+  rp?: 'ADMIN' | 'MEMBER' | 'ALL',
 ): CreateGroupDto => ({
   handle: testPrefix + handle,
   name: testPrefix + name,
-  readNotePermission: rp,
-  writeNotePermission: wp,
-  writeNoteCondition: wc,
   joinGroupCondition: jc,
+  writeNotePermission: wp,
+  readNotePermission: rp,
 });
 
 describe('GroupsController/Template', () => {

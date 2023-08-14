@@ -45,10 +45,9 @@ model Group {
   handle              String?             @unique // Set null if the group is deleted.
   name                String?             @db.VarChar(50)
   description         String?             @db.Text
-  readNotePermission  PermissionReadNote  @default(ADMIN) @map("read_note_permission")
-  writeNotePermission PermissionWriteNote @default(ADMIN) @map("write_note_permission")
-  writeNoteCondition  ConditionWriteNote  @default(ALLOWED) @map("write_note_condition")
   joinGroupCondition  ConditionJoinGroup  @default(DENIED) @map("join_group_condition")
+  writeNotePermission PermissionWriteNote @default(ADMIN) @map("write_note_permission")
+  readNotePermission  PermissionReadNote  @default(ADMIN) @map("read_note_permission")
 
   Members  Membership[]
   Notes    Note[]
@@ -231,10 +230,10 @@ enum UserStatus {
   DELETED
 }
 
-enum PermissionReadNote {
-  ADMIN
-  MEMBER
-  ALL
+enum ConditionJoinGroup {
+  DENIED
+  REQUIRE_ADMIN_APPROVAL
+  ALLOWED
 }
 
 enum PermissionWriteNote {
@@ -243,15 +242,10 @@ enum PermissionWriteNote {
   ALL
 }
 
-enum ConditionWriteNote {
-  REQUIRE_ADMIN_APPROVAL
-  ALLOWED
-}
-
-enum ConditionJoinGroup {
-  DENIED
-  REQUIRE_ADMIN_APPROVAL
-  ALLOWED
+enum PermissionReadNote {
+  ADMIN
+  MEMBER
+  ALL
 }
 
 enum PermissionWriteComment {

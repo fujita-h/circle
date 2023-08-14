@@ -37,7 +37,6 @@ describe('NotesController', () => {
     id: testPrefix + 'g1-0123-456789',
     handle: testPrefix + 'g1-handle',
     name: testPrefix + 'g1-name',
-    writeNoteCondition: 'ALLOWED',
     joinGroupCondition: 'ALLOWED',
   };
   const testNote1: CreateNoteDto = {

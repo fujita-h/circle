@@ -43,15 +43,6 @@ const conditionJoinGroups: RadioGroupOptionItem[] = [
   { name: '誰でも参加できる', description: '誰でもグループに参加できます。', value: 'ALLOWED' },
 ];
 
-const ConditionWriteNotes: RadioGroupOptionItem[] = [
-  {
-    name: '管理者の承認が必要',
-    description: '投稿は保留状態になります。管理者が承認すると記事が投稿されます。',
-    value: 'REQUIRE_ADMIN_APPROVAL',
-  },
-  { name: '投稿はすぐに反映', description: '投稿はすぐに公開されます。', value: 'ALLOWED' },
-];
-
 export function UpdateGroupForm({ groupId }: { groupId: string }) {
   const router = useRouter();
   const environment = useEnvironment();
@@ -216,36 +207,7 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
 
           <div className="col-span-full">
             <RadioGroupOption
-              label="アイテムの閲覧制限"
-              name="readNotePermission"
-              values={PermissionReadNotes}
-              defaultValue={data.readNotePermission}
-              disabled={formLocked}
-              onChange={handleRadioChange}
-            />
-          </div>
-
-          <div className="col-span-full">
-            <RadioGroupOption
-              label="アイテムの投稿制限"
-              name="writeNotePermission"
-              values={PermissionWriteNotes}
-              defaultValue={data.writeNotePermission}
-              disabled={formLocked}
-              onChange={handleRadioChange}
-            />
-            {permissionMissmatch ? (
-              <div className="mt-2">
-                <WarningWithAccent message="アイテムの投稿制限が閲覧制限よりも弱く設定されています。" />
-              </div>
-            ) : (
-              <> </>
-            )}
-          </div>
-
-          <div className="col-span-full">
-            <RadioGroupOption
-              label="メンバーの加入設定"
+              label="メンバーの加入"
               name={'joinGroupCondition'}
               values={conditionJoinGroups}
               defaultValue={data.joinGroupCondition}
@@ -256,13 +218,31 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
 
           <div className="col-span-full">
             <RadioGroupOption
-              label="アイテムの投稿条件"
-              name="writeNoteCondition"
-              values={ConditionWriteNotes}
-              defaultValue={data.writeNoteCondition}
+              label="ノートの投稿制限"
+              name="writeNotePermission"
+              values={PermissionWriteNotes}
+              defaultValue={data.writeNotePermission}
               disabled={formLocked}
               onChange={handleRadioChange}
             />
+          </div>
+
+          <div className="col-span-full">
+            <RadioGroupOption
+              label="ノートの閲覧制限"
+              name="readNotePermission"
+              values={PermissionReadNotes}
+              defaultValue={data.readNotePermission}
+              disabled={formLocked}
+              onChange={handleRadioChange}
+            />
+            {permissionMissmatch ? (
+              <div className="mt-2">
+                <WarningWithAccent message="ノートの閲覧制限が投稿制限よりも強く設定されています。通常、閲覧制限は投稿設定と同じかそれより弱く設定します。" />
+              </div>
+            ) : (
+              <> </>
+            )}
           </div>
         </div>
 

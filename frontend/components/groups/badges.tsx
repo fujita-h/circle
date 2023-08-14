@@ -26,15 +26,6 @@ export function WriteNotePermissionBadge({ permission }: { permission: string })
   }
 }
 
-export function WriteNoteConditionBadge({ condition }: { condition: string }) {
-  switch (condition) {
-    case 'REQUIRE_ADMIN_APPROVAL':
-      return <Badge label="記事の公開に管理者の承認が必要" color="red" />;
-    default:
-      return <></>;
-  }
-}
-
 export function JoinGroupConditionBadge({ condition }: { condition: string }) {
   switch (condition) {
     case 'REQUIRE_ADMIN_APPROVAL':

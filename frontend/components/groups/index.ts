@@ -1,2 +1,2 @@
 export { CardList } from './list';
-export { JoinGroupConditionBadge, ReadNotePermissionBadge, WriteNoteConditionBadge, WriteNotePermissionBadge } from './badges';
+export { JoinGroupConditionBadge, WriteNotePermissionBadge, ReadNotePermissionBadge } from './badges';

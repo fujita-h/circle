@@ -10,10 +10,9 @@ export interface Group {
   handle?: string;
   name?: string;
   description?: string;
-  readNotePermission: PermissionReadNote;
-  writeNotePermission: PermissionWriteNote;
-  writeNoteCondition: ConditionWriteNote;
   joinGroupCondition: ConditionJoinGroup;
+  writeNotePermission: PermissionWriteNote;
+  readNotePermission: PermissionReadNote;
   Members?: Membership[];
   Notes?: Note[];
   Watched?: FollowGroup[];
@@ -27,7 +26,6 @@ export interface Group {
 
 export type GroupStatus = 'NORMAL' | 'DELETED';
 
-export type PermissionReadNote = 'ADMIN' | 'MEMBER' | 'ALL';
-export type PermissionWriteNote = 'ADMIN' | 'MEMBER' | 'ALL';
-export type ConditionWriteNote = 'REQUIRE_ADMIN_APPROVAL' | 'ALLOWED';
 export type ConditionJoinGroup = 'DENIED' | 'REQUIRE_ADMIN_APPROVAL' | 'ALLOWED';
+export type PermissionWriteNote = 'ADMIN' | 'MEMBER' | 'ALL';
+export type PermissionReadNote = 'ADMIN' | 'MEMBER' | 'ALL';

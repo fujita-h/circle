@@ -8,12 +8,7 @@ import { useEnvironment } from '@/components/environment/providers';
 import { NavigationTabs, TabItem } from '@/components/tabs';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import useSWR from 'swr';
-import {
-  ReadNotePermissionBadge,
-  WriteNotePermissionBadge,
-  WriteNoteConditionBadge,
-  JoinGroupConditionBadge,
-} from '@/components/groups/badges';
+import { JoinGroupConditionBadge, WriteNotePermissionBadge, ReadNotePermissionBadge } from '@/components/groups/badges';
 import { apiRequest } from '@/components/msal/requests';
 import { Group, Membership, SomeRequired } from '@/types';
 import { BackendImage } from '@/components/backend-image';
@@ -100,10 +95,9 @@ function Layout({ group, children }: { group: SomeRequired<Group, '_count'>; chi
                     <span>{group.description}</span>
                   </div>
                   <div className="mb-1 flex flex-wrap gap-2">
-                    <ReadNotePermissionBadge permission={group.readNotePermission} />
-                    <WriteNotePermissionBadge permission={group.writeNotePermission} />
-                    <WriteNoteConditionBadge condition={group.writeNoteCondition} />
                     <JoinGroupConditionBadge condition={group.joinGroupCondition} />
+                    <WriteNotePermissionBadge permission={group.writeNotePermission} />
+                    <ReadNotePermissionBadge permission={group.readNotePermission} />
                   </div>
                 </div>
               </div>

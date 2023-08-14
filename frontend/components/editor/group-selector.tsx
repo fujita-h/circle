@@ -7,7 +7,7 @@ import { useAccount, useMsal } from '@azure/msal-react';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { Listbox, Transition } from '@headlessui/react';
 import { classNames } from '@/utils';
-import { ReadNotePermissionBadge, WriteNoteConditionBadge } from '@/components/groups/badges';
+import { ReadNotePermissionBadge } from '@/components/groups/badges';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 
 export function GroupSelector({ groupId, onChange }: { groupId?: string; onChange?: Function }) {
@@ -49,7 +49,6 @@ export function GroupSelector({ groupId, onChange }: { groupId?: string; onChang
               <span className="block truncate space-x-2">
                 <span>{selected?.name || selected?.id || '未設定'}</span>
                 <ReadNotePermissionBadge permission={selected.readNotePermission} />
-                <WriteNoteConditionBadge condition={selected.writeNoteCondition} />
               </span>
               <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                 <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -97,7 +96,6 @@ export function GroupSelector({ groupId, onChange }: { groupId?: string; onChang
                         <span className={classNames(selected ? 'font-semibold' : 'font-normal', 'block truncate space-x-2')}>
                           <span>{group.name || group.id}</span>
                           <ReadNotePermissionBadge permission={group.readNotePermission} />
-                          <WriteNoteConditionBadge condition={group.writeNoteCondition} />
                         </span>
                         {selected ? (
                           <span
