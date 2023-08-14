@@ -59,6 +59,8 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
   const account = useAccount(accounts[0] || {});
   const [formUpdates, setFormUpdates] = useState<any>({});
   const [formLocked, setFormLocked] = useState(false);
+  const [readNotePermission, setReadNotePermission] = useState(-1);
+  const [writeNotePermission, setWriteNotePermission] = useState(-1);
   const [successMessage, setSuccessMessage] = useState('');
   const [failedMessage, setFailedMessage] = useState('');
 
@@ -67,6 +69,22 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
   const { data, isLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/groups/${groupId}`, fetcher, {
     revalidateOnFocus: false,
   });
+
+  useEffect(() => {
+    if (data) {
+      setReadNotePermission(PermissionReadNotes.findIndex((item) => item.value === data.readNotePermission));
+      setWriteNotePermission(PermissionWriteNotes.findIndex((item) => item.value === data.writeNotePermission));
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (formUpdates.readNotePermission) {
+      setReadNotePermission(PermissionReadNotes.findIndex((item) => item.value === formUpdates.readNotePermission));
+    }
+    if (formUpdates.writeNotePermission) {
+      setWriteNotePermission(PermissionWriteNotes.findIndex((item) => item.value === formUpdates.writeNotePermission));
+    }
+  }, [formUpdates]);
 
   if (isLoading) {
     return <div>loading...</div>;
@@ -136,10 +154,7 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
     setFormUpdates({ ...formUpdates, [name]: value });
   };
 
-  const permissionMissmatch =
-    (data.readNotePermission === 'ADMIN' && data.writeNotePermission == 'MEMBER') ||
-    (data.readNotePermission === 'ADMIN' && data.writeNotePermission == 'ALL') ||
-    (data.readNotePermission === 'MEMBER' && data.writeNotePermission == 'ALL');
+  const permissionMissmatch = readNotePermission >= 0 && writeNotePermission >= 0 && readNotePermission < writeNotePermission;
 
   return (
     <>
