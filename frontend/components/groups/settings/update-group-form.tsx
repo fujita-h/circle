@@ -66,7 +66,7 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
 
   const { mutate } = useSWRConfig();
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
-  const { data, isLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/groups/${groupId}`, fetcher, {
+  const { data, isLoading } = useSWR<Group>(`${environment.BACKEND_ENDPOINT}/groups/${groupId}`, fetcher, {
     revalidateOnFocus: false,
   });
 
