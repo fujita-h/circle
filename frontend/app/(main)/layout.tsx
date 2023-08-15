@@ -7,7 +7,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <header className="bg-white max-w-screen-2xl mx-auto">
         <Navbar />
       </header>
-      <main>{children}</main>
+      <main className="relative z-[1]">{children}</main>
       <footer className="sticky top-[100vh]">
         <Footer />
       </footer>
