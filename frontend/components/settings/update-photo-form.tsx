@@ -1,10 +1,11 @@
 'use client';
 
+import { BackendImage } from '@/components/backend-image';
 import { useEnvironment } from '@/components/environment/providers';
 import { apiRequest } from '@/components/msal/requests';
 import { useAccount, useMsal } from '@azure/msal-react';
+import { PhotoIcon } from '@heroicons/react/24/outline';
 import { ChangeEvent } from 'react';
-import { BackendImage } from '../backend-image';
 import { useSWRConfig } from 'swr';
 
 export function UpdatePhotoForm() {
@@ -51,7 +52,12 @@ export function UpdatePhotoForm() {
       <div className="md:col-span-2">
         <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
           <div className="col-span-full flex items-center gap-x-8">
-            <BackendImage src="/user/photo" className="h-24 w-24 flex-none rounded-full bg-gray-800 object-cover" alt="user-icon" />
+            <BackendImage
+              src="/user/photo"
+              className="h-24 w-24 flex-none rounded-full bg-gray-800 object-cover"
+              alt="user-icon"
+              fallback={<PhotoIcon className="h-24 w-24 text-gray-300" />}
+            />
             <div>
               <button
                 type="button"
