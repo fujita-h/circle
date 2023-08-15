@@ -127,66 +127,76 @@ export function StockButton({
           {showCounter ? <div className="text-center font-bold text-gray-500">{stockedData.count}</div> : <></>}
         </div>
         <Popover.Overlay className="fixed inset-0" />
-        <Popover.Panel
-          className={classNames(
-            popoverDirection === 'right' ? '-top-3 left-12' : '',
-            popoverDirection === 'left' ? '-top-3 right-12' : '',
-            'absolute shadow-xl bg-white ring-1 ring-gray-300 rounded-md',
-          )}
-          focus={true}
+        <Transition
+          as={Fragment}
+          enter="transition ease-out duration-100"
+          enterFrom="transform opacity-0 scale-95"
+          enterTo="transform opacity-100 scale-100"
+          leave="transition ease-in duration-75"
+          leaveFrom="transform opacity-100 scale-100"
+          leaveTo="transform opacity-0 scale-95"
         >
-          <div className="p-4 w-80">
-            <fieldset>
-              <legend className="sr-only">Stock labels</legend>
-              <div className="space-y-2">
-                {labelData?.data.map((label) => (
-                  <div key={label.id} className="relative flex items-start">
-                    <div className="flex h-6 items-center">
-                      <input
-                        id={label.id}
-                        name={label.id}
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                        checked={stockedData.stocked.find((stock) => stock.labelId === label.id) ? true : false}
-                        onChange={handleStockWithLabel}
-                      />
+          <Popover.Panel
+            className={classNames(
+              popoverDirection === 'right' ? '-top-3 left-12' : '',
+              popoverDirection === 'left' ? '-top-3 right-12' : '',
+              'absolute shadow-xl bg-white ring-1 ring-gray-300 rounded-md',
+            )}
+            focus={true}
+          >
+            <div className="p-4 w-80">
+              <fieldset>
+                <legend className="sr-only">Stock labels</legend>
+                <div className="space-y-2">
+                  {labelData?.data.map((label) => (
+                    <div key={label.id} className="relative flex items-start">
+                      <div className="flex h-6 items-center">
+                        <input
+                          id={label.id}
+                          name={label.id}
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                          checked={stockedData.stocked.find((stock) => stock.labelId === label.id) ? true : false}
+                          onChange={handleStockWithLabel}
+                        />
+                      </div>
+                      <div className="ml-3 text-sm leading-6">
+                        <label htmlFor={label.id} className="font-medium text-gray-900">
+                          {label.name}
+                        </label>
+                      </div>
                     </div>
-                    <div className="ml-3 text-sm leading-6">
-                      <label htmlFor={label.id} className="font-medium text-gray-900">
-                        {label.name}
-                      </label>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </fieldset>
+                  ))}
+                </div>
+              </fieldset>
 
-            <div className="flex gap-2 items-center mt-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1 pb-1">
-                    <FolderPlusIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+              <div className="flex gap-2 items-center mt-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1 pb-1">
+                      <FolderPlusIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                    </div>
+                    <input
+                      type="test"
+                      className="block w-full pl-8 text-sm border-0 ring-0 shadow-none border-b border-gray-400 focus:border-indigo-600 focus-visible:outline-none"
+                      placeholder="新規カテゴリー"
+                      value={newLabel}
+                      onChange={(e) => setNewLabel(e.target.value)}
+                    />
                   </div>
-                  <input
-                    type="test"
-                    className="block w-full pl-8 text-sm border-0 ring-0 shadow-none border-b border-gray-400 focus:border-indigo-600 focus-visible:outline-none"
-                    placeholder="新規カテゴリー"
-                    value={newLabel}
-                    onChange={(e) => setNewLabel(e.target.value)}
-                  />
+                </div>
+                <div>
+                  <button
+                    className="rounded-md text-sm border border-gray-400 p-1 focus:ring-0 focus-visible:outline-indigo-500"
+                    onClick={handleCreateLabel}
+                  >
+                    作成
+                  </button>
                 </div>
               </div>
-              <div>
-                <button
-                  className="rounded-md text-sm border border-gray-400 p-1 focus:ring-0 focus-visible:outline-indigo-500"
-                  onClick={handleCreateLabel}
-                >
-                  作成
-                </button>
-              </div>
             </div>
-          </div>
-        </Popover.Panel>
+          </Popover.Panel>
+        </Transition>
       </div>
     </Popover>
   );
