@@ -254,7 +254,7 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
               onClick={handleClick}
               className="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:bg-opacity-50 disabled:cursor-not-allowed"
             >
-              Save
+              グループ設定を反映
             </button>
           </div>
           {successMessage ? <SuccessAlert message={successMessage} /> : <></>}

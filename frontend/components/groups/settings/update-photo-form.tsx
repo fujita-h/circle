@@ -1,16 +1,18 @@
 'use client';
 
+import { BackendImage } from '@/components/backend-image';
 import { useEnvironment } from '@/components/environment/providers';
 import { apiRequest } from '@/components/msal/requests';
 import { useAccount, useMsal } from '@azure/msal-react';
-import { ChangeEvent, useState } from 'react';
-import { BackendImage } from '@/components/backend-image';
 import { PhotoIcon } from '@heroicons/react/24/outline';
+import { ChangeEvent } from 'react';
+import { useSWRConfig } from 'swr';
 
 export function UpdatePhotoForm({ groupId }: { groupId: string }) {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
+  const { mutate } = useSWRConfig();
 
   const handleSelected = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!account) return;
@@ -34,6 +36,12 @@ export function UpdatePhotoForm({ groupId }: { groupId: string }) {
         },
         body: formData,
       });
+      if (response.ok) {
+        mutate(`${environment.BACKEND_ENDPOINT}/groups/${groupId}/photo`);
+      } else if (response.status === 406) {
+        const error = await response.json();
+        console.error(error);
+      }
     } catch (e) {
       console.error(e);
     }
