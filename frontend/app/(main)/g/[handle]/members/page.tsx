@@ -2,13 +2,13 @@
 
 import { useEnvironment } from '@/components/environment/providers';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
-import { Group } from '@/types';
+import { Group, Membership } from '@/types';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { Loader } from './loader';
 
-export default function Page({ params }: { params: any }) {
+export default function PageWrapper({ params }: { params: any }) {
   const handle = params.handle;
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
@@ -18,12 +18,6 @@ export default function Page({ params }: { params: any }) {
     revalidateOnFocus: false,
   });
 
-  // path and pagination data
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const pageParam = searchParams.get('page');
-  const page = Number(pageParam) ? (Number(pageParam) > 0 ? Number(pageParam) : 1) : 1;
-
   if (isLoading) {
     return <></>;
   }
@@ -32,9 +26,42 @@ export default function Page({ params }: { params: any }) {
     return <>Group Not Found</>;
   }
 
+  return <Page group={data} />;
+}
+
+function Page({ group }: { group: Group }) {
+  const environment = useEnvironment();
+  const { instance, accounts } = useMsal();
+  const account = useAccount(accounts[0] || {});
+  const fetcher = swrMsalTokenFetcher(instance, account, environment);
+
+  const { data, isLoading, mutate } = useSWR<{ membership: Membership }>(
+    `${environment.BACKEND_ENDPOINT}/user/joined/groups/${group.id}`,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+    },
+  );
+
+  // path and pagination data
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const pageParam = searchParams.get('page');
+  const page = Number(pageParam) ? (Number(pageParam) > 0 ? Number(pageParam) : 1) : 1;
+
+  if (isLoading) {
+    return <div>loading...</div>;
+  }
+
+  if (!data) {
+    return <>Group Not Found</>;
+  }
+
+  const isAdmin = data?.membership?.role === 'ADMIN';
+
   return (
     <>
-      <Loader group={data} pathname={pathname} page={page} take={20} />
+      <Loader group={group} pathname={pathname} page={page} take={20} isAdmin={isAdmin} />
     </>
   );
 }

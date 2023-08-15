@@ -8,7 +8,19 @@ import { Group } from '@/types';
 import { useAccount, useMsal } from '@azure/msal-react';
 import useSWR from 'swr';
 
-export function Loader({ group, pathname, page, take }: { group: Group; pathname: string; page: number; take: number }) {
+export function Loader({
+  group,
+  pathname,
+  page,
+  take,
+  isAdmin,
+}: {
+  group: Group;
+  pathname: string;
+  page: number;
+  take: number;
+  isAdmin: boolean;
+}) {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
@@ -36,7 +48,7 @@ export function Loader({ group, pathname, page, take }: { group: Group; pathname
 
   return (
     <div>
-      <CardList members={members.data} />
+      <CardList members={members.data} showAdminMenu={isAdmin} />
       <div className="py-5">
         <LinkPagination pathname={pathname} page={page} total={members.meta.total} take={take} />
       </div>
