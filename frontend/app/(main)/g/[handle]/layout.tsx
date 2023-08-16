@@ -1,18 +1,18 @@
 'use client';
 
-import Link from 'next/link';
-import { Inter } from 'next/font/google';
-import { classNames, capitalize } from '@/utils';
-import { useAccount, useMsal } from '@azure/msal-react';
-import { useEnvironment } from '@/components/environment/providers';
-import { NavigationTabs, TabItem } from '@/components/tabs';
-import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
-import useSWR from 'swr';
-import { JoinGroupConditionBadge, WriteNotePermissionBadge, ReadNotePermissionBadge } from '@/components/groups/badges';
-import { apiRequest } from '@/components/msal/requests';
-import { Group, Membership, SomeRequired } from '@/types';
 import { BackendImage } from '@/components/backend-image';
-import { UserGroupIcon } from '@heroicons/react/24/solid';
+import { useEnvironment } from '@/components/environment/providers';
+import { JoinGroupConditionBadge, ReadNotePermissionBadge, WriteNotePermissionBadge } from '@/components/groups/badges';
+import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
+import { apiRequest } from '@/components/msal/requests';
+import { NavigationTabs, TabItem } from '@/components/tabs';
+import { Group, Membership, SomeRequired } from '@/types';
+import { classNames } from '@/utils';
+import { useAccount, useMsal } from '@azure/msal-react';
+import { Disclosure } from '@headlessui/react';
+import { ChevronRightIcon, UserGroupIcon } from '@heroicons/react/24/solid';
+import { Inter } from 'next/font/google';
+import useSWR, { useSWRConfig } from 'swr';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,11 +22,9 @@ export default function HandleWrapper({ params, children }: { params: any; child
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
-  const { data, isLoading, mutate } = useSWR<SomeRequired<Group, '_count'>>(
-    `${environment.BACKEND_ENDPOINT}/groups/handle/${handle}`,
-    fetcher,
-    { revalidateOnFocus: false },
-  );
+  const { data, isLoading } = useSWR<SomeRequired<Group, '_count'>>(`${environment.BACKEND_ENDPOINT}/groups/handle/${handle}`, fetcher, {
+    revalidateOnFocus: false,
+  });
 
   if (isLoading) {
     return <></>;
@@ -44,8 +42,9 @@ function Layout({ group, children }: { group: SomeRequired<Group, '_count'>; chi
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
+  const { mutate } = useSWRConfig();
 
-  const { data, isLoading, mutate } = useSWR<{ membership: Membership }>(
+  const { data, isLoading } = useSWR<{ membership: Membership }>(
     `${environment.BACKEND_ENDPOINT}/user/joined/groups/${group.id}`,
     fetcher,
     {
@@ -71,33 +70,73 @@ function Layout({ group, children }: { group: SomeRequired<Group, '_count'>; chi
       <div className="pt-4 bg-white ring-1 ring-gray-200">
         <div className="max-w-screen-2xl mx-auto">
           <div className="px-4 lg:px-8">
-            <div className="py-8 px-12">
-              <div className="flex gap-8">
-                <div className="flex-none">
+            <div className="py-8 px-4 lg:px-8">
+              <div className="flex flex-col sm:flex-row gap-4 lg:gap-8">
+                <div className="flex-none mx-auto">
                   <BackendImage
                     src={`/groups/${group.id}/photo`}
-                    className="w-24 h-24 rounded-md border border-gray-200 bg-gray-50"
+                    className="w-16 h-16 lg:w-24 lg:h-24 rounded-md border border-gray-200 bg-gray-50"
                     fallback={<UserGroupIcon className="w-24 h-24 rounded-full border border-gray-200 bg-gray-100 text-gray-400" />}
                   />
                 </div>
-                <div className="flex-1">
-                  <div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-center sm:text-left">
                     <span
                       className={classNames(
                         inter.className,
-                        'mb-1 text-2xl font-semibold leading-7 text-gray-900 break-all sm:text-3xl sm:tracking-tight',
+                        'mb-1 text-xl md:text-2xl lg:text-3xl font-semibold leading-7 text-gray-900 break-all  sm:tracking-tight',
                       )}
                     >
                       {group.name || group.handle}
                     </span>
                   </div>
-                  <div>
-                    <span>{group.description}</span>
-                  </div>
-                  <div className="mb-1 flex flex-wrap gap-2">
+                  {group.description ? (
+                    <div className="flex justify-center sm:justify-normal">
+                      <Disclosure>
+                        {({ open }) => (
+                          <>
+                            <Disclosure.Button as="div" className="flex items-start min-w-0 hover:cursor-pointer">
+                              <ChevronRightIcon
+                                className={classNames('flex-none inline-block w-4 h-4 mt-1', open ? 'rotate-90 transform' : '')}
+                              />
+                              <p className={classNames('ml-[6px] flex-1 truncate', open ? 'hidden' : '')}>{group.description}</p>
+                            </Disclosure.Button>
+                            <Disclosure.Panel className="ml-4">
+                              {({ close }) => (
+                                <div
+                                  className="hover:cursor-pointer"
+                                  onClick={() => {
+                                    close();
+                                  }}
+                                >
+                                  {group.description}
+                                </div>
+                              )}
+                            </Disclosure.Panel>
+                          </>
+                        )}
+                      </Disclosure>
+                    </div>
+                  ) : (
+                    <></>
+                  )}
+                  <div className="my-1 flex flex-wrap gap-2 justify-center sm:justify-normal">
                     <JoinGroupConditionBadge condition={group.joinGroupCondition} />
                     <WriteNotePermissionBadge permission={group.writeNotePermission} />
                     <ReadNotePermissionBadge permission={group.readNotePermission} />
+                  </div>
+                </div>
+                <div className="flex-none">
+                  <div className="flex flex-row sm:flex-col justify-center sm:justify-normal gap-4">
+                    <JoinGroupButton
+                      group={group}
+                      membership={data?.membership}
+                      onSuccess={() => {
+                        mutate(`${environment.BACKEND_ENDPOINT}/groups/handle/${group.handle}`);
+                        mutate(`${environment.BACKEND_ENDPOINT}/user/joined/groups/${group.id}`);
+                      }}
+                    />
+                    {/** Follow button here */}
                   </div>
                 </div>
               </div>
@@ -117,7 +156,7 @@ function Layout({ group, children }: { group: SomeRequired<Group, '_count'>; chi
   );
 }
 
-function JoinGroupButton({ groupId, onSuccess }: { groupId: string; onSuccess: () => void }) {
+function JoinGroupButton({ group, membership, onSuccess }: { group: Group; membership: Membership | undefined; onSuccess: () => void }) {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
@@ -128,7 +167,7 @@ function JoinGroupButton({ groupId, onSuccess }: { groupId: string; onSuccess: (
       account,
       scopes: apiRequest(environment).scopes,
     });
-    const response = await fetch(`${environment.BACKEND_ENDPOINT}/user/joined/groups/${groupId}`, {
+    const response = await fetch(`${environment.BACKEND_ENDPOINT}/user/joined/groups/${group.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -141,13 +180,33 @@ function JoinGroupButton({ groupId, onSuccess }: { groupId: string; onSuccess: (
     }
   };
 
-  return (
-    <button
-      type="button"
-      className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-pointer"
-      onClick={handleJoin}
-    >
-      このグループに参加する
-    </button>
-  );
+  if (membership?.role === 'PENDING_APPROVAL') {
+    return (
+      <div className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+        申請を申請しました
+      </div>
+    );
+  } else if (membership?.role) {
+    return (
+      <div className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+        グループに参加済み
+      </div>
+    );
+  } else if (group.joinGroupCondition === 'DENIED') {
+    return (
+      <div className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-not-allowed">
+        このグループに参加できません
+      </div>
+    );
+  } else {
+    return (
+      <button
+        type="button"
+        className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-pointer"
+        onClick={handleJoin}
+      >
+        このグループに参加する
+      </button>
+    );
+  }
 }
