@@ -31,10 +31,14 @@ import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Prisma } from '@prisma/client';
 import * as jdenticon from 'jdenticon';
-import { AzblobService } from '../azblob/azblob.service';
-import { GroupsService } from '../groups/groups.service';
+
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
+
+import { AzblobService } from '../azblob/azblob.service';
+import { FollowGroupsService } from '../follow-groups/follow-groups.service';
+import { FollowUsersService } from '../follow-users/follow-users.service';
+import { GroupsService } from '../groups/groups.service';
 import { LikesService } from '../likes/likes.service';
 import { MembershipsService } from '../memberships/memberships.service';
 import { NotesService } from '../notes/notes.service';
@@ -51,15 +55,17 @@ export class UserController {
   private IRON_SECRET: string;
   constructor(
     private readonly configService: ConfigService,
-    private readonly usersService: UsersService,
-    private readonly groupsService: GroupsService,
-    private readonly membershipsService: MembershipsService,
     private readonly blobsService: AzblobService,
-    private readonly notesService: NotesService,
+    private readonly followUsersService: FollowUsersService,
+    private readonly followGroupsService: FollowGroupsService,
+    private readonly groupsService: GroupsService,
     private readonly likesService: LikesService,
-    private readonly stocksService: StocksService,
-    private readonly stockLabelsService: StockLabelsService,
+    private readonly membershipsService: MembershipsService,
+    private readonly notesService: NotesService,
     private readonly redisService: RedisService,
+    private readonly stockLabelsService: StockLabelsService,
+    private readonly stocksService: StocksService,
+    private readonly usersService: UsersService,
   ) {
     if (!this.configService.get<string>('IRON_SECRET')) {
       this.logger.error('IRON_SECRET is not defined');
@@ -126,6 +132,123 @@ export class UserController {
       throw new NotFoundException();
     }
     return user;
+  }
+
+  @Get('following/groups')
+  async findFollowingGroups(
+    @Request() request: any,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
+  ) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let followGroups;
+    try {
+      const [data, total] = await this.followGroupsService.findMany({
+        where: { userId, Group: { handle: { not: null }, status: 'NORMAL' } },
+        orderBy: { createdAt: 'asc' },
+        include: { Group: true },
+        skip: skip && skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
+      });
+      followGroups = { data, meta: { total } };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return followGroups;
+  }
+
+  @Get('following/groups/:groupId')
+  async findFollowingGroup(@Request() request: any, @Param('groupId') groupId: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let group;
+    try {
+      group = await this.groupsService.findFirst({
+        where: { id: groupId, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!group) {
+      throw new NotFoundException();
+    }
+
+    let followGroup;
+    try {
+      followGroup = await this.followGroupsService.findFirst({
+        where: { userId, groupId },
+        include: { Group: true },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return { ...followGroup };
+  }
+
+  @Put('following/groups/:groupId')
+  async followGroup(@Request() request: any, @Param('groupId') groupId: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let group;
+    try {
+      group = await this.groupsService.findFirst({
+        where: { id: groupId, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!group) {
+      throw new NotFoundException();
+    }
+
+    let followGroup;
+    try {
+      followGroup = await this.followGroupsService.createIfNotExists({ userId, groupId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return { ...followGroup };
+  }
+
+  @Delete('following/groups/:groupId')
+  async unfollowGroup(@Request() request: any, @Param('groupId') groupId: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let group;
+    try {
+      group = await this.groupsService.findFirst({
+        where: { id: groupId, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!group) {
+      throw new NotFoundException();
+    }
+
+    let followGroup;
+    try {
+      followGroup = await this.followGroupsService.removeIfExists({ userId, groupId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return { ...followGroup };
   }
 
   @Get('following/notes')

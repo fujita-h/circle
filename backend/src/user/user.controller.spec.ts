@@ -1,18 +1,23 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaService } from '../prisma.service';
-import { UserController } from './user.controller';
-import { UsersService } from '../users/users.service';
+import { Test, TestingModule } from '@nestjs/testing';
+
 import { CreateUserDto } from '../users/dto/create-user.dto';
-import { EsService } from '../es/es.service';
+import { UserController } from './user.controller';
+
+import { PrismaService } from '../prisma.service';
+import { RedisService } from '../redis.service';
+
 import { AzblobService } from '../azblob/azblob.service';
+import { EsService } from '../es/es.service';
+import { FollowGroupsService } from '../follow-groups/follow-groups.service';
+import { FollowUsersService } from '../follow-users/follow-users.service';
 import { GroupsService } from '../groups/groups.service';
+import { LikesService } from '../likes/likes.service';
 import { MembershipsService } from '../memberships/memberships.service';
 import { NotesService } from '../notes/notes.service';
-import { LikesService } from '../likes/likes.service';
-import { StocksService } from '../stocks/stocks.service';
 import { StockLabelsService } from '../stock-labels/stock-labels.service';
-import { RedisService } from '../redis.service';
+import { StocksService } from '../stocks/stocks.service';
+import { UsersService } from '../users/users.service';
 
 class CreateUserDtoForTest extends CreateUserDto {
   id: string;
@@ -46,6 +51,8 @@ describe('UserController', () => {
         StocksService,
         StockLabelsService,
         RedisService,
+        FollowUsersService,
+        FollowGroupsService,
       ],
       imports: [
         ConfigModule.forRoot({

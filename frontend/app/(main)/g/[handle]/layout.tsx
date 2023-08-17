@@ -7,6 +7,7 @@ import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { apiRequest } from '@/components/msal/requests';
 import { NavigationTabs, TabItem } from '@/components/tabs';
 import { Group, Membership, SomeRequired } from '@/types';
+import { FollowGroup } from '@/types/follow-group';
 import { classNames } from '@/utils';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { Disclosure } from '@headlessui/react';
@@ -136,7 +137,7 @@ function Layout({ group, children }: { group: SomeRequired<Group, '_count'>; chi
                         mutate(`${environment.BACKEND_ENDPOINT}/user/joined/groups/${group.id}`);
                       }}
                     />
-                    {/** Follow button here */}
+                    <FollowGroupButton group={group} />
                   </div>
                 </div>
               </div>
@@ -206,6 +207,67 @@ function JoinGroupButton({ group, membership, onSuccess }: { group: Group; membe
         onClick={handleJoin}
       >
         このグループに参加する
+      </button>
+    );
+  }
+}
+
+function FollowGroupButton({ group }: { group: Group }) {
+  const environment = useEnvironment();
+  const { instance, accounts } = useMsal();
+  const account = useAccount(accounts[0] || {});
+  const fetcher = swrMsalTokenFetcher(instance, account, environment);
+
+  const { data, isLoading, mutate } = useSWR<FollowGroup>(`${environment.BACKEND_ENDPOINT}/user/following/groups/${group.id}`, fetcher, {
+    revalidateOnFocus: false,
+  });
+
+  const handleClick = async (value: 'follow' | 'unfollow') => {
+    if (!account) return;
+    const auth = await instance.acquireTokenSilent({
+      account,
+      scopes: apiRequest(environment).scopes,
+    });
+    const method = value === 'follow' ? 'PUT' : 'DELETE';
+    const response = await fetch(`${environment.BACKEND_ENDPOINT}/user/following/groups/${group.id}`, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${auth.accessToken}`,
+      },
+    });
+
+    if (response.ok) {
+      mutate();
+    }
+  };
+
+  if (isLoading) {
+    return <></>;
+  }
+
+  if (data?.groupId) {
+    return (
+      <button
+        type="button"
+        className="ml-3 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-indigo-700 hover: cursor-pointer"
+        onClick={() => {
+          handleClick('unfollow');
+        }}
+      >
+        <div className="w-full text-center">フォロー中</div>
+      </button>
+    );
+  } else {
+    return (
+      <button
+        type="button"
+        className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-pointer"
+        onClick={() => {
+          handleClick('follow');
+        }}
+      >
+        <div className="w-full text-center">フォロー</div>
       </button>
     );
   }
