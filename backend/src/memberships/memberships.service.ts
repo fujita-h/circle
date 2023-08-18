@@ -82,8 +82,25 @@ export class MembershipsService {
     });
   }
 
-  removeIfExists({ userId, groupId }: { userId: string; groupId: string }) {
+  removeIfExists({
+    userId,
+    groupId,
+    force = false,
+  }: {
+    userId: string;
+    groupId: string;
+    force?: boolean;
+  }) {
     return this.prisma.$transaction(async (prisma) => {
+      if (!force) {
+        const memberships = await prisma.membership.findMany({
+          where: { groupId, role: 'ADMIN' },
+          select: { userId: true },
+        });
+        if (memberships.length === 1 && memberships[0].userId === userId) {
+          throw new MembershipsServiceException('Cannot remove last admin');
+        }
+      }
       let membership;
       membership = await prisma.membership.findUnique({
         where: { userId_groupId: { userId, groupId } },
@@ -95,5 +112,14 @@ export class MembershipsService {
       }
       return membership;
     });
+  }
+}
+
+export class MembershipsServiceException extends Error {
+  static {
+    this.prototype.name = 'MembershipsServiceException';
+  }
+  constructor(message: string) {
+    super(message);
   }
 }

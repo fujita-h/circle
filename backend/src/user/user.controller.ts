@@ -40,7 +40,10 @@ import { FollowGroupsService } from '../follow-groups/follow-groups.service';
 import { FollowUsersService } from '../follow-users/follow-users.service';
 import { GroupsService } from '../groups/groups.service';
 import { LikesService } from '../likes/likes.service';
-import { MembershipsService } from '../memberships/memberships.service';
+import {
+  MembershipsService,
+  MembershipsServiceException,
+} from '../memberships/memberships.service';
 import { NotesService } from '../notes/notes.service';
 import { RedisService } from '../redis.service';
 import { StockLabelsService } from '../stock-labels/stock-labels.service';
@@ -527,6 +530,9 @@ export class UserController {
     try {
       membership = await this.membershipsService.removeIfExists({ userId, groupId });
     } catch (e) {
+      if (e instanceof MembershipsServiceException) {
+        throw new ForbiddenException(e.message);
+      }
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
