@@ -497,7 +497,7 @@ export class UserController {
 
     let membership;
     try {
-      membership = this.membershipsService.createIfNotExists({ userId, groupId, role });
+      membership = await this.membershipsService.createIfNotExists({ userId, groupId, role });
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
