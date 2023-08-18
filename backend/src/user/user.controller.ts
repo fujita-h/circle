@@ -503,7 +503,7 @@ export class UserController {
       throw new InternalServerErrorException();
     }
 
-    return membership;
+    return { ...membership };
   }
 
   @Delete('joined/groups/:groupId')
@@ -531,7 +531,7 @@ export class UserController {
       throw new InternalServerErrorException();
     }
 
-    return membership || {};
+    return { ...membership };
   }
 
   @Get('liked/notes')
@@ -639,7 +639,7 @@ export class UserController {
       this.logger.error(e);
     }
 
-    return like;
+    return { ...like };
   }
 
   @Delete('liked/notes/:noteId')
@@ -681,7 +681,7 @@ export class UserController {
       this.logger.error(e);
     }
 
-    return like;
+    return { ...like };
   }
 
   @Get('stocked/notes')
@@ -816,7 +816,7 @@ export class UserController {
       this.logger.error(e);
     }
 
-    return stock;
+    return { ...stock };
   }
 
   @Put('stocked/notes/:noteId/labels/:labelId')
@@ -883,7 +883,7 @@ export class UserController {
       this.logger.error(e);
     }
 
-    return stock;
+    return { ...stock };
   }
 
   @Delete('stocked/notes/:noteId/labels/:labelId')
@@ -929,7 +929,7 @@ export class UserController {
       this.logger.error(e);
     }
 
-    return stock;
+    return { ...stock };
   }
 
   @Get('stocked/labels')
@@ -985,7 +985,7 @@ export class UserController {
       }
       throw new InternalServerErrorException();
     }
-    return label;
+    return { ...label };
   }
 
   @Put('stocked/labels/:labelId')
@@ -1020,7 +1020,7 @@ export class UserController {
       }
       throw new InternalServerErrorException();
     }
-    return label;
+    return { ...label };
   }
 
   @Delete('stocked/labels/:labelId')
@@ -1029,13 +1029,14 @@ export class UserController {
     if (!userId) {
       throw new UnauthorizedException();
     }
+    let label;
     try {
-      await this.stockLabelsService.delete({ where: { id: labelId, userId } });
+      label = await this.stockLabelsService.delete({ where: { id: labelId, userId } });
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
-    return {};
+    return { ...label };
   }
 
   @Get('photo')
