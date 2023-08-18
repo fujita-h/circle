@@ -13,6 +13,7 @@ import { useAccount, useMsal } from '@azure/msal-react';
 import { Disclosure } from '@headlessui/react';
 import { ChevronRightIcon, UserGroupIcon } from '@heroicons/react/24/solid';
 import { Inter } from 'next/font/google';
+import { usePathname } from 'next/navigation';
 import useSWR, { useSWRConfig } from 'swr';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -39,6 +40,7 @@ export default function HandleWrapper({ params, children }: { params: any; child
 }
 
 function Layout({ group, children }: { group: SomeRequired<Group, '_count'>; children: React.ReactNode }) {
+  const pathname = usePathname();
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
@@ -135,6 +137,9 @@ function Layout({ group, children }: { group: SomeRequired<Group, '_count'>; chi
                       onSuccess={() => {
                         mutate(`${environment.BACKEND_ENDPOINT}/groups/handle/${group.handle}`);
                         mutate(`${environment.BACKEND_ENDPOINT}/user/joined/groups/${group.id}`);
+                        mutate(
+                          (key) => typeof key === 'string' && key.startsWith(`${environment.BACKEND_ENDPOINT}/groups/${group.id}/members`),
+                        );
                       }}
                     />
                     <FollowGroupButton group={group} />
@@ -162,14 +167,15 @@ function JoinGroupButton({ group, membership, onSuccess }: { group: Group; membe
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
 
-  const handleJoin = async () => {
+  const handle = async (value: 'join' | 'leave') => {
     if (!account) return;
     const auth = await instance.acquireTokenSilent({
       account,
       scopes: apiRequest(environment).scopes,
     });
+    const method = value === 'join' ? 'PUT' : 'DELETE';
     const response = await fetch(`${environment.BACKEND_ENDPOINT}/user/joined/groups/${group.id}`, {
-      method: 'PUT',
+      method: method,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${auth.accessToken}`,
@@ -183,20 +189,32 @@ function JoinGroupButton({ group, membership, onSuccess }: { group: Group; membe
 
   if (membership?.role === 'PENDING_APPROVAL') {
     return (
-      <div className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-        申請を申請しました
-      </div>
+      <button
+        type="button"
+        className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-pointer"
+        onClick={() => {
+          handle('leave');
+        }}
+      >
+        参加申請中
+      </button>
     );
   } else if (membership?.role) {
     return (
-      <div className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+      <button
+        type="button"
+        className="ml-3 inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-green-700 hover: cursor-pointer"
+        onClick={() => {
+          handle('leave');
+        }}
+      >
         グループに参加済み
-      </div>
+      </button>
     );
   } else if (group.joinGroupCondition === 'DENIED') {
     return (
       <div className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-not-allowed">
-        このグループに参加できません
+        グループに参加できません
       </div>
     );
   } else {
@@ -204,9 +222,11 @@ function JoinGroupButton({ group, membership, onSuccess }: { group: Group; membe
       <button
         type="button"
         className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-pointer"
-        onClick={handleJoin}
+        onClick={() => {
+          handle('join');
+        }}
       >
-        このグループに参加する
+        グループに参加する
       </button>
     );
   }
