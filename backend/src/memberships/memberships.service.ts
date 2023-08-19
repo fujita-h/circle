@@ -59,6 +59,38 @@ export class MembershipsService {
     return this.prisma.membership.count({ where });
   }
 
+  create({
+    data,
+    include = { User: false, Group: false },
+  }: {
+    data: Prisma.MembershipCreateInput;
+    include?: Prisma.MembershipInclude;
+  }) {
+    return this.prisma.membership.create({ data, include });
+  }
+
+  update({
+    where,
+    data,
+    include = { User: false, Group: false },
+  }: {
+    where: Prisma.MembershipWhereUniqueInput;
+    data: Prisma.MembershipUpdateInput;
+    include?: Prisma.MembershipInclude;
+  }) {
+    return this.prisma.membership.update({ where, data, include });
+  }
+
+  delete({
+    where,
+    include = { User: false, Group: false },
+  }: {
+    where: Prisma.MembershipWhereUniqueInput;
+    include?: Prisma.MembershipInclude;
+  }) {
+    return this.prisma.membership.delete({ where, include });
+  }
+
   createIfNotExists({
     userId,
     groupId,

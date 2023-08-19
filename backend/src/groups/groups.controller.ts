@@ -11,6 +11,7 @@ import {
   Logger,
   NotAcceptableException,
   NotFoundException,
+  NotImplementedException,
   Param,
   ParseIntPipe,
   Patch,
@@ -36,6 +37,9 @@ import { NotesService } from '../notes/notes.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupsService } from './groups.service';
+import { UsersService } from '../users/users.service';
+import { UpdateGroupMemberDto } from './dto/update-group-member.dto';
+import { CreateGroupMemberDto } from './dto/create-group-member.dto';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('groups')
@@ -48,6 +52,7 @@ export class GroupsController {
     private readonly membershipsService: MembershipsService,
     private readonly notesService: NotesService,
     private readonly blobsService: AzblobService,
+    private readonly usersService: UsersService,
   ) {
     this.logger.log('Initializing Groups Controller...');
     this.blobsService.init(this.blobContainerName);
@@ -259,6 +264,276 @@ export class GroupsController {
 
     // return result
     return memberships;
+  }
+
+  @Get(':id/members/:userId')
+  async findOneMember(@Param('id') id: string, @Param('userId') userId: string) {
+    // check group
+    let group;
+    try {
+      group = await this.groupsService.findFirst({
+        where: { id, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!group) {
+      throw new NotFoundException();
+    }
+
+    // check user
+    let user;
+    try {
+      user = await this.usersService.findFirst({
+        where: { id: userId, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    // get membership
+    let membership;
+    try {
+      membership = await this.membershipsService.findOne({
+        where: { userId_groupId: { userId, groupId: group.id } },
+        include: { User: true },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+
+    // return result
+    return { ...membership };
+  }
+
+  @Post(':id/members')
+  async addMember(
+    @Request() request: any,
+    @Param('id') id: string,
+    @Body() data: CreateGroupMemberDto,
+  ) {
+    // currently user must request to join group.
+    // cannnot add member directly even if user is admin of group.
+    throw new NotImplementedException();
+
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let group;
+    try {
+      group = await this.groupsService.findFirst({
+        where: { id, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!group) {
+      throw new NotFoundException();
+    }
+
+    let accessMember;
+    try {
+      accessMember = await this.membershipsService.findFirst({
+        where: { userId, groupId: group.id, role: 'ADMIN' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!accessMember) {
+      throw new ForbiddenException();
+    }
+
+    let user;
+    try {
+      user = await this.usersService.findFirst({
+        where: { id: data.userId, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!user) {
+      throw new UnprocessableEntityException();
+    }
+
+    let membership;
+    try {
+      membership = await this.membershipsService.create({
+        data: {
+          User: { connect: { id: data.userId } },
+          Group: { connect: { id } },
+          role: data.role,
+        },
+      });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new ConflictException();
+        }
+      }
+      throw new InternalServerErrorException();
+    }
+    return { ...membership };
+  }
+
+  @Patch(':id/members/:userId')
+  async updateMembership(
+    @Request() request: any,
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Body() data: UpdateGroupMemberDto,
+  ) {
+    const accessUserId = request.user.id;
+    if (!accessUserId) {
+      throw new UnauthorizedException();
+    }
+
+    let group;
+    try {
+      group = await this.groupsService.findFirst({
+        where: { id, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!group) {
+      throw new NotFoundException();
+    }
+
+    let user;
+    try {
+      user = await this.usersService.findFirst({
+        where: { id: userId, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    let accessMember;
+    try {
+      accessMember = await this.membershipsService.findFirst({
+        where: { userId: accessUserId, groupId: group.id, role: 'ADMIN' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!accessMember) {
+      throw new ForbiddenException();
+    }
+
+    // cannot change role of last admin
+    if (data.role !== 'ADMIN') {
+      let adminMemberships;
+      try {
+        [adminMemberships] = await this.membershipsService.findMany({
+          where: { groupId: group.id, role: 'ADMIN' },
+        });
+      } catch (e) {
+        throw new InternalServerErrorException();
+      }
+      if (adminMemberships.length === 1 && adminMemberships[0].userId === userId) {
+        throw new ForbiddenException('Cannot change role of last admin');
+      }
+    }
+
+    let membership;
+    try {
+      membership = await this.membershipsService.update({
+        where: { userId_groupId: { userId, groupId: group.id } },
+        data: { role: data.role },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+
+    if (!membership) {
+      throw new NotFoundException();
+    }
+
+    return { ...membership };
+  }
+
+  @Delete(':id/members/:userId')
+  async removeMember(
+    @Request() request: any,
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+  ) {
+    const accessUserId = request.user.id;
+    if (!accessUserId) {
+      throw new UnauthorizedException();
+    }
+
+    let group;
+    try {
+      group = await this.groupsService.findFirst({
+        where: { id, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!group) {
+      throw new NotFoundException();
+    }
+
+    let user;
+    try {
+      user = await this.usersService.findFirst({
+        where: { id: userId, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    let accessMember;
+    try {
+      accessMember = await this.membershipsService.findFirst({
+        where: { userId: accessUserId, groupId: group.id, role: 'ADMIN' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!accessMember) {
+      throw new ForbiddenException();
+    }
+
+    // cannot delete last admin
+    let adminMemberships;
+    try {
+      [adminMemberships] = await this.membershipsService.findMany({
+        where: { groupId: group.id, role: 'ADMIN' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (adminMemberships.length === 1 && adminMemberships[0].userId === userId) {
+      throw new ForbiddenException('Cannot remove last admin');
+    }
+
+    let membership;
+    try {
+      membership = await this.membershipsService.delete({
+        where: { userId_groupId: { userId, groupId: group.id } },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+
+    if (!membership) {
+      throw new NotFoundException();
+    }
+
+    return { ...membership };
   }
 
   @Get(':id/notes')
