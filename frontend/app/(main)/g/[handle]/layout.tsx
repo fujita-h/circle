@@ -242,13 +242,13 @@ function FollowGroupButton({ group }: { group: Group }) {
     revalidateOnFocus: false,
   });
 
-  const handleClick = async (value: 'follow' | 'unfollow') => {
+  const handleClick = async (action: 'follow' | 'unfollow') => {
     if (!account) return;
     const auth = await instance.acquireTokenSilent({
       account,
       scopes: apiRequest(environment).scopes,
     });
-    const method = value === 'follow' ? 'PUT' : 'DELETE';
+    const method = action === 'follow' ? 'PUT' : 'DELETE';
     const response = await fetch(`${environment.BACKEND_ENDPOINT}/user/following/groups/${group.id}`, {
       method: method,
       headers: {
