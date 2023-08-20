@@ -93,4 +93,34 @@ export class FollowUsersService {
   }) {
     return this.prisma.followUser.delete({ where, include });
   }
+
+  createIfNotExists({ fromId, toId }: { fromId: string; toId: string }) {
+    return this.prisma.$transaction(async (prisma) => {
+      let followUser;
+      followUser = await prisma.followUser.findUnique({
+        where: { fromId_toId: { fromId, toId } },
+      });
+      if (!followUser) {
+        followUser = await prisma.followUser.create({
+          data: { fromId, toId },
+        });
+      }
+      return followUser;
+    });
+  }
+
+  removeIfExists({ fromId, toId }: { fromId: string; toId: string }) {
+    return this.prisma.$transaction(async (prisma) => {
+      let followUser;
+      followUser = await prisma.followUser.findUnique({
+        where: { fromId_toId: { fromId, toId } },
+      });
+      if (followUser) {
+        followUser = await prisma.followUser.delete({
+          where: { fromId_toId: { fromId, toId } },
+        });
+      }
+      return followUser;
+    });
+  }
 }

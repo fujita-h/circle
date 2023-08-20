@@ -254,6 +254,123 @@ export class UserController {
     return { ...followGroup };
   }
 
+  @Get('following/users')
+  async findFollowingUsers(
+    @Request() request: any,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
+  ) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let followUsers;
+    try {
+      const [data, total] = await this.followUsersService.findMany({
+        where: { fromId: userId, To: { handle: { not: null }, status: 'NORMAL' } },
+        orderBy: { createdAt: 'asc' },
+        include: { To: true },
+        skip: skip && skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
+      });
+      followUsers = { data, meta: { total } };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return followUsers;
+  }
+
+  @Get('following/users/:userId')
+  async findFollowingUser(@Request() request: any, @Param('userId') userId: string) {
+    const fromId = request.user.id;
+    if (!fromId) {
+      throw new UnauthorizedException();
+    }
+
+    let to;
+    try {
+      to = await this.usersService.findFirst({
+        where: { id: userId, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!to) {
+      throw new NotFoundException();
+    }
+
+    let followUser;
+    try {
+      followUser = await this.followUsersService.findFirst({
+        where: { fromId, toId: userId },
+        include: { To: true },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return { ...followUser };
+  }
+
+  @Put('following/users/:userId')
+  async followUser(@Request() request: any, @Param('userId') userId: string) {
+    const fromId = request.user.id;
+    if (!fromId) {
+      throw new UnauthorizedException();
+    }
+
+    let to;
+    try {
+      to = await this.usersService.findFirst({
+        where: { id: userId, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!to) {
+      throw new NotFoundException();
+    }
+
+    let followUser;
+    try {
+      followUser = await this.followUsersService.createIfNotExists({ fromId, toId: userId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return { ...followUser };
+  }
+
+  @Delete('following/users/:userId')
+  async unfollowUser(@Request() request: any, @Param('userId') userId: string) {
+    const fromId = request.user.id;
+    if (!fromId) {
+      throw new UnauthorizedException();
+    }
+
+    let to;
+    try {
+      to = await this.usersService.findFirst({
+        where: { id: userId, handle: { not: null }, status: 'NORMAL' },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!to) {
+      throw new NotFoundException();
+    }
+
+    let followUser;
+    try {
+      followUser = await this.followUsersService.removeIfExists({ fromId, toId: userId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return { ...followUser };
+  }
+
   @Get('following/notes')
   async findFollowingNotes(
     @Request() request: any,
