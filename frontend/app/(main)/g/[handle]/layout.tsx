@@ -191,7 +191,7 @@ function JoinGroupButton({ group, membership, onSuccess }: { group: Group; membe
     return (
       <button
         type="button"
-        className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-pointer"
+        className="min-w-[120px] ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-pointer"
         onClick={() => {
           handle('leave');
         }}
@@ -203,7 +203,7 @@ function JoinGroupButton({ group, membership, onSuccess }: { group: Group; membe
     return (
       <button
         type="button"
-        className="ml-3 inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-green-700 hover: cursor-pointer"
+        className="min-w-[120px] ml-3 inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-green-700 hover: cursor-pointer"
         onClick={() => {
           handle('leave');
         }}
@@ -213,7 +213,7 @@ function JoinGroupButton({ group, membership, onSuccess }: { group: Group; membe
     );
   } else if (group.joinGroupCondition === 'DENIED') {
     return (
-      <div className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-not-allowed">
+      <div className="min-w-[120px] ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-not-allowed">
         グループに参加できません
       </div>
     );
@@ -221,7 +221,7 @@ function JoinGroupButton({ group, membership, onSuccess }: { group: Group; membe
     return (
       <button
         type="button"
-        className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-pointer"
+        className="min-w-[120px] ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-pointer"
         onClick={() => {
           handle('join');
         }}
@@ -270,7 +270,7 @@ function FollowGroupButton({ group }: { group: Group }) {
     return (
       <button
         type="button"
-        className="ml-3 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-indigo-700 hover: cursor-pointer"
+        className="min-w-[120px] ml-3 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-indigo-700 hover: cursor-pointer"
         onClick={() => {
           handleClick('unfollow');
         }}
@@ -282,7 +282,7 @@ function FollowGroupButton({ group }: { group: Group }) {
     return (
       <button
         type="button"
-        className="ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-pointer"
+        className="min-w-[120px] ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover: cursor-pointer"
         onClick={() => {
           handleClick('follow');
         }}
