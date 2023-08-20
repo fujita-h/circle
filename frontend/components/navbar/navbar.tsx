@@ -15,9 +15,9 @@ import { UserEmail, UserName } from './user-data';
 const inter = Inter({ subsets: ['latin'] });
 const navigation: any[] = [];
 const userNavigation = [
-  { name: 'Profile', href: '/profile' },
-  { name: 'Drafts', href: '/drafts' },
-  { name: 'Settings', href: '/settings' },
+  { name: 'プロファイル', href: '/profile' },
+  { name: '下書き', href: '/drafts' },
+  { name: '設定', href: '/settings' },
 ];
 
 export function Navbar() {
