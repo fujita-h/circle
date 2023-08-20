@@ -1,11 +1,12 @@
 'use client';
 
 import { Editor } from '@/components/editor';
-import styles from '../../../styles.module.css';
-import { useAccount, useMsal } from '@azure/msal-react';
 import { useEnvironment } from '@/components/environment/providers';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
+import { Note } from '@/types';
+import { useAccount, useMsal } from '@azure/msal-react';
 import useSWR from 'swr';
+import styles from '../../../styles.module.css';
 
 export default function Page({ params }: { params: any }) {
   const id = params.id;
@@ -15,7 +16,7 @@ export default function Page({ params }: { params: any }) {
   const jsonCredFetcher = swrMsalTokenFetcher(instance, account, environment, 'json', 'include');
   const { data: token, isLoading: isTokenLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/user/token`, jsonCredFetcher);
   const jsonFetcher = swrMsalTokenFetcher(instance, account, environment, 'json');
-  const { data: draft, isLoading: isItemLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/drafts/${id}`, jsonFetcher, {
+  const { data: draft, isLoading: isItemLoading } = useSWR<Note>(`${environment.BACKEND_ENDPOINT}/drafts/${id}`, jsonFetcher, {
     revalidateOnFocus: false,
   });
 
@@ -30,7 +31,7 @@ export default function Page({ params }: { params: any }) {
   return (
     <>
       <div className={styles.editor}>
-        <Editor defaultSubmitButton="draft" noteId={draft.id} groupId={draft.group?.id} title={draft.title} body={draft.body} />
+        <Editor defaultSubmitButton="draft" noteId={draft.id} groupId={draft.groupId} title={draft.title} body={draft.body} />
       </div>
     </>
   );

@@ -1,57 +1,65 @@
 'use client';
 
-import { ChevronRightIcon, UserGroupIcon } from '@heroicons/react/20/solid';
 import { BackendImage } from '@/components/backend-image';
+import { Note, SomeRequired } from '@/types';
 import { classNames } from '@/utils';
+import { ChevronRightIcon, UserGroupIcon } from '@heroicons/react/20/solid';
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 
-type DraftData = {
-  id: string;
-  title: string;
-  group?: {
-    id: string;
-    name: string;
-  };
-};
-
-export function List({ active, drafts }: { active?: string; drafts: DraftData[] }) {
+export function CardList({ active, drafts }: { active?: string; drafts: SomeRequired<Note, 'User'>[] }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   return (
-    <ul role="list" className="divide-y divide-gray-200">
-      {drafts.map((draft) => (
-        <li
-          key={draft.id}
-          className={classNames(
-            active === draft.id ? 'bg-gray-50' : 'hover:bg-gray-50',
-            'relative flex justify-between gap-x-6 px-4 py-3 sm:px-6 lg:px-8',
-          )}
-        >
-          <div className="flex gap-x-4">
-            {draft.group ? (
-              <BackendImage
-                src={`/groups/${draft.group?.id}/photo`}
-                className="h-16 w-16 flex-none rounded-md bg-gray-50"
-                alt="group-icon"
-                fallback={<UserGroupIcon className="h-16 w-16 flex-none rounded-lg text-gray-300 bg-gray-50" />}
-              />
-            ) : (
-              <UserGroupIcon className="h-16 w-16 flex-none rounded-lg text-gray-300 bg-gray-50" />
+    <ul role="list" className="grid grid-cols-1 gap-4">
+      {drafts.map((draft) => {
+        const updatedAt = new Date(draft.createdAt).toLocaleString('ja-jp', { year: 'numeric', month: 'short', day: 'numeric' });
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('id', draft.id);
+        const href = `${pathname}?${params.toString()}`;
+
+        return (
+          <li
+            key={draft.id}
+            className={classNames(
+              active === draft.id ? 'ring-2 ring-indigo-600' : 'hover:bg-indigo-50 hover:ring-1 hover:ring-indigo-300',
+              'relative col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow',
             )}
-            <div className="min-w-0 flex-auto">
-              <p>{draft.group?.name || 'グループ連携なし'}</p>
-              <p className="text-sm font-semibold leading-6 text-gray-900">
-                <Link href={`/drafts/${draft.id}`}>
-                  <span className="absolute inset-x-0 -top-px bottom-0" />
-                  {draft.title}
-                </Link>
-              </p>
+          >
+            <div className="flex gap-1 p-2">
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex justify-between">
+                  <div className="flex items-center space-x-2">
+                    {draft.Group ? (
+                      <BackendImage
+                        src={`/groups/${draft.Group.id}/photo`}
+                        className="h-5 w-5 flex-none rounded-md bg-gray-50"
+                        alt="group-icon"
+                        fallback={<UserGroupIcon className="h-6 w-6 flex-none rounded-lg text-gray-300 bg-gray-50" />}
+                      />
+                    ) : (
+                      <></>
+                    )}
+                    <div className="text-sm truncate">{draft.Group?.name || 'グループなし'}</div>
+                  </div>
+                  <div className="text-sm">{updatedAt}</div>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold leading-6 text-gray-900">
+                    <Link href={href}>
+                      <span className="absolute inset-x-0 -top-px bottom-0" />
+                      {draft.title || 'タイトルなし'}
+                    </Link>
+                  </p>
+                </div>
+              </div>
+              <div className="flex-none flex items-center">
+                <ChevronRightIcon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-x-4">
-            <div className="hidden sm:flex sm:flex-col sm:items-end">{/* somthing to right */}</div>
-            <ChevronRightIcon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
-          </div>
-        </li>
-      ))}
+          </li>
+        );
+      })}
     </ul>
   );
 }

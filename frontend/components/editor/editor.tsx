@@ -1,19 +1,19 @@
 'use client';
 
-import React, { SyntheticEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useEnvironment } from '@/components/environment/providers';
 import { apiRequest } from '@/components/msal/requests';
-import { useAccount, useMsal } from '@azure/msal-react';
-import { useRouter } from 'next/navigation';
-import { PencilSquareIcon, ViewColumnsIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
-import { useSWRConfig } from 'swr';
-import { classNames } from '@/utils';
-import mdStyles from '@/components/react-markdown/styles.module.css';
 import { Parser } from '@/components/react-markdown/parser';
+import mdStyles from '@/components/react-markdown/styles.module.css';
+import { classNames } from '@/utils';
+import { useAccount, useMsal } from '@azure/msal-react';
+import { DocumentTextIcon, PencilSquareIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
+import { useRef, useState } from 'react';
+import { useSWRConfig } from 'swr';
+import { DnDTextarea } from './dnd-textarea';
+import { GroupSelector } from './group-selector';
 import styles from './styles.module.css';
 import { SubmitButton } from './submit-button';
-import { GroupSelector } from './group-selector';
-import { DnDTextarea } from './dnd-textarea';
 
 export function Editor({
   noteId = '',
@@ -77,7 +77,11 @@ export function Editor({
           });
           if (response.ok) {
             const json = await response.json();
-            router.replace(`/${target}/${json.id}`);
+            if (target === 'drafts') {
+              router.replace(`/drafts?id=${json.id}`);
+            } else {
+              router.replace(`/${target}/${json.id}`);
+            }
           }
         } else {
           // if form.id does not exist, create
@@ -93,7 +97,11 @@ export function Editor({
             const json = await response.json();
             mutate(`${environment.BACKEND_ENDPOINT}/${target}/${json.id}`);
             mutate(`${environment.BACKEND_ENDPOINT}/${target}/${json.id}/md`);
-            router.replace(`/${target}/${json.id}`);
+            if (target === 'drafts') {
+              router.replace(`/drafts?id=${json.id}`);
+            } else {
+              router.replace(`/${target}/${json.id}`);
+            }
           }
         }
       } catch (e) {
