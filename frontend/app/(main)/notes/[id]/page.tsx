@@ -68,7 +68,9 @@ export default function Page({ params }: { params: any }) {
     return <div>no data</div>;
   }
 
-  const createdAt = new Date(note.createdAt).toLocaleString('ja-jp', { year: 'numeric', month: 'short', day: 'numeric' });
+  const pulishedAt = note.publishedAt
+    ? new Date(note.publishedAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })
+    : '不明な日時';
 
   return (
     <div>
@@ -101,7 +103,7 @@ export default function Page({ params }: { params: any }) {
               <div className="order-1 flex-1">
                 <div className="space-y-1 sm:space-y-2">
                   <div id="note_title" className="mx-4 text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:tracking-tight">
-                    {note.title}
+                    {note.title || 'タイトルなし'}
                   </div>
                 </div>
               </div>
@@ -124,7 +126,7 @@ export default function Page({ params }: { params: any }) {
                   <div className="rounded-md bg-white ring-1 ring-gray-200 p-4 flex flex-col divide-y divide-gray-300 ">
                     <div className="pb-2">
                       <div className="mx-2">
-                        <div className="text-gray-800">{createdAt} に公開</div>
+                        <div className="text-gray-800">{pulishedAt} に公開</div>
                       </div>
                     </div>
                     {note.Group ? (

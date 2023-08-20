@@ -11,8 +11,9 @@ export function List({ notes }: { notes: SomeRequired<Note, 'User'>[] }) {
   return (
     <ul role="list" className="divide-y divide-gray-100">
       {notes.map((note) => {
-        const createdAt = new Date(note.createdAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' });
-        const updatedAt = new Date(note.updatedAt);
+        const pulishedAt = note.publishedAt
+          ? new Date(note.publishedAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })
+          : '不明な日時';
         return (
           <li key={note.id} className="relative flex justify-between gap-x-6 px-4 py-3 hover:bg-gray-50 sm:px-6 lg:px-8">
             <div className="flex gap-x-2">
@@ -30,11 +31,11 @@ export function List({ notes }: { notes: SomeRequired<Note, 'User'>[] }) {
                   </Link>
                   {note.User.name ? <span>({note.User.name})</span> : <></>}
                 </div>
-                <div className="text-sm">{createdAt}</div>
+                <div className="text-sm">{pulishedAt}</div>
                 <div className="text-xl font-semibold leading-6 text-gray-900">
                   <Link className="hover:underline" href={`/notes/${note.id}`}>
                     <span className="absolute inset-x-0 -top-px bottom-0" />
-                    {note.title}
+                    {note.title || 'タイトルなし'}
                   </Link>
                 </div>
               </div>
@@ -54,8 +55,9 @@ export function CardList({ notes, isGroupList = false }: { notes: SomeRequired<N
   return (
     <ul role="list" className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
       {notes.map((note) => {
-        const createdAt = new Date(note.createdAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' });
-        const updatedAt = new Date(note.updatedAt);
+        const pulishedAt = note.publishedAt
+          ? new Date(note.publishedAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })
+          : '不明な日時';
         return (
           <li key={note.id} className="relative col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow">
             <div className="p-3 flex gap-x-2">
@@ -88,7 +90,7 @@ export function CardList({ notes, isGroupList = false }: { notes: SomeRequired<N
                 <div className="text-xl font-semibold leading-6 text-gray-900 mb-1">
                   <Link className="hover:underline" href={`/notes/${note.id}`}>
                     <span className="absolute inset-x-0 -top-px bottom-0" />
-                    {note.title}
+                    {note.title || 'タイトルなし'}
                   </Link>
                 </div>
                 <div className="text-sm flex gap-x-2">
@@ -110,7 +112,7 @@ export function CardList({ notes, isGroupList = false }: { notes: SomeRequired<N
                   </div>
                 </div>
                 <div className="text-sm text-gray-600">
-                  <span>{createdAt}</span>{' '}
+                  <span>{pulishedAt}</span>{' '}
                   <span>
                     <HeartIcon className="inline-block -mt-0.5 w-4 text-gray-500" /> {note._count.Liked || 0}
                   </span>
