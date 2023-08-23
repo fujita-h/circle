@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma.service';
-import { Prisma } from '@prisma/client';
 import { init } from '@paralleldrive/cuid2';
+import { Prisma } from '@prisma/client';
 import { AzblobService } from '../azblob/azblob.service';
 import { EsService } from '../es/es.service';
+import { PrismaService } from '../prisma.service';
 
 const cuid = init({ length: 24 });
 
@@ -41,7 +41,7 @@ export class NotesService {
       const blobCuid = cuid();
       const note = await prisma.note.create({
         data: { id: cuid(), ...data, blobPointer: blobCuid },
-        include: { ...include, User: true },
+        include: { User: true, Group: true },
       });
 
       // Upload blob
@@ -151,7 +151,7 @@ export class NotesService {
         where,
         // delete draftBlobPointer if it exists
         data: { ...data, blobPointer: blobCuid, draftBlobPointer: null },
-        include: { User: true },
+        include: { User: true, Group: true },
       });
 
       if (!note) {

@@ -1,10 +1,14 @@
 'use client';
 
-import { ChevronRightIcon, UserIcon, UserGroupIcon } from '@heroicons/react/20/solid';
-import { HeartIcon } from '@heroicons/react/24/outline';
 import { BackendImage } from '@/components/backend-image';
+import { useEnvironment } from '@/components/environment/providers';
+import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
+import { Note, SomeRequired } from '@/types';
+import { useAccount, useMsal } from '@azure/msal-react';
+import { ChevronRightIcon, UserIcon } from '@heroicons/react/20/solid';
+import { HeartIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { SomeRequired, Note } from '@/types';
+import useSWR from 'swr';
 import { StockButton } from './buttons';
 
 export function List({ notes }: { notes: SomeRequired<Note, 'User'>[] }) {
@@ -51,7 +55,7 @@ export function List({ notes }: { notes: SomeRequired<Note, 'User'>[] }) {
   );
 }
 
-export function CardList({ notes, isGroupList = false }: { notes: SomeRequired<Note, 'User' | '_count'>[]; isGroupList?: boolean }) {
+export function CardList({ notes, isGroupList = false }: { notes: SomeRequired<Note, 'User'>[]; isGroupList?: boolean }) {
   return (
     <ul role="list" className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
       {notes.map((note) => {
@@ -113,9 +117,13 @@ export function CardList({ notes, isGroupList = false }: { notes: SomeRequired<N
                 </div>
                 <div className="text-sm text-gray-600">
                   <span>{pulishedAt}</span>{' '}
-                  <span>
-                    <HeartIcon className="inline-block -mt-0.5 w-4 text-gray-500" /> {note._count.Liked || 0}
-                  </span>
+                  {note._count ? (
+                    <span>
+                      <HeartIcon className="inline-block -mt-0.5 w-4 text-gray-500" /> {note._count.Liked || 0}
+                    </span>
+                  ) : (
+                    <LikedCount id={note.id} />
+                  )}
                 </div>
               </div>
               <div className="flex items-end">
@@ -126,5 +134,29 @@ export function CardList({ notes, isGroupList = false }: { notes: SomeRequired<N
         );
       })}
     </ul>
+  );
+}
+
+function LikedCount({ id }: { id: string }) {
+  const environment = useEnvironment();
+  const { instance, accounts } = useMsal();
+  const account = useAccount(accounts[0] || {});
+  const jsonFetcher = swrMsalTokenFetcher(instance, account, environment, 'json');
+  const { data: liked, isLoading } = useSWR<{ liked: any; count: number }>(
+    `${environment.BACKEND_ENDPOINT}/user/liked/notes/${id}`,
+    jsonFetcher,
+    {
+      revalidateOnFocus: false,
+    },
+  );
+
+  if (isLoading || !liked) {
+    return <></>;
+  }
+
+  return (
+    <span>
+      <HeartIcon className="inline-block -mt-0.5 w-4 text-gray-500" /> {liked.count || 0}
+    </span>
   );
 }

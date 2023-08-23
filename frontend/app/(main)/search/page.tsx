@@ -1,14 +1,12 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useEnvironment } from '@/components/environment/providers';
-import { useAccount, useMsal } from '@azure/msal-react';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
+import { CardList } from '@/components/notes';
+import { useAccount, useMsal } from '@azure/msal-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { FormEvent, useEffect, useState } from 'react';
 import useSWR from 'swr';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { List } from '@/components/notes/list';
 
 export default function Page() {
   const environment = useEnvironment();
@@ -55,7 +53,7 @@ export default function Page() {
       </form>
       <div className="mt-4">
         <h2>Results:</h2>
-        <List notes={data.map((x) => x._source)} />
+        <CardList notes={data.map((x) => x._source)} />
       </div>
     </div>
   );
