@@ -2,11 +2,24 @@
 
 import Link from 'next/link';
 
-export function Pagination({ pathname, page, total, take }: { pathname: string; page: number; total: number; take: number }) {
+export function Pagination({
+  pathname,
+  page,
+  total,
+  take,
+  query = '',
+}: {
+  pathname: string;
+  page: number;
+  total: number;
+  take: number;
+  query?: string;
+}) {
   const startItem = total === 0 ? 0 : (page - 1) * take + 1;
   const endItem = Math.min(page * take, total);
   const prevPage = page - 1 > 1 ? page - 1 : 1;
   const nextPage = page + 1 < Math.ceil(total / take) ? page + 1 : Math.ceil(total / take);
+  const basepath = query ? `${pathname}?${query}&page=` : `${pathname}?page=`;
   return (
     <>
       <nav className="flex items-center justify-between" aria-label="Pagination">
@@ -23,7 +36,7 @@ export function Pagination({ pathname, page, total, take }: { pathname: string; 
             </span>
           ) : (
             <Link
-              href={`${pathname}?page=${prevPage}`}
+              href={`${basepath}${prevPage}`}
               className="relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline-offset-0"
             >
               Previous
@@ -35,7 +48,7 @@ export function Pagination({ pathname, page, total, take }: { pathname: string; 
             </span>
           ) : (
             <Link
-              href={`${pathname}?page=${nextPage}`}
+              href={`${basepath}${nextPage}`}
               className="relative ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline-offset-0"
             >
               Next

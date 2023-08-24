@@ -27,7 +27,7 @@ import { CreateNoteDto } from './dto/create-note.dto';
 import { GroupsService } from '../groups/groups.service';
 import { RestError } from '@azure/storage-blob';
 import { EsService } from '../es/es.service';
-import { SearchRequest } from '@elastic/elasticsearch/lib/api/types';
+import { SearchRequest, SearchTotalHits } from '@elastic/elasticsearch/lib/api/types';
 import { CommentsService } from '../comments/comments.service';
 import { CreateCommentDto } from '../comments/dto/create-comment.dto';
 import { RedisService } from '../redis.service';
@@ -271,7 +271,10 @@ export class NotesController {
       size: take > 0 ? take : undefined,
     };
     const result = await this.esService.search(this.esIndex, body);
-    return result?.hits?.hits || [];
+    return {
+      data: result?.hits?.hits || [],
+      meta: { total: (result?.hits?.total as SearchTotalHits).value || 0 },
+    };
   }
 
   @Get(':id')
