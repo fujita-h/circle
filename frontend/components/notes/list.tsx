@@ -10,6 +10,7 @@ import { HeartIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { StockButton } from './buttons';
+import { classNames } from '@/utils';
 
 export function List({ notes }: { notes: SomeRequired<Note, 'User'>[] }) {
   return (
@@ -55,9 +56,17 @@ export function List({ notes }: { notes: SomeRequired<Note, 'User'>[] }) {
   );
 }
 
-export function CardList({ notes, isGroupList = false }: { notes: SomeRequired<Note, 'User'>[]; isGroupList?: boolean }) {
+export function CardList({
+  notes,
+  isGroupList = false,
+  forceSingleCols = false,
+}: {
+  notes: SomeRequired<Note, 'User'>[];
+  isGroupList?: boolean;
+  forceSingleCols?: boolean;
+}) {
   return (
-    <ul role="list" className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
+    <ul role="list" className={classNames('grid', forceSingleCols ? 'grid-cols-1 gap-4' : 'grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8')}>
       {notes.map((note) => {
         const pulishedAt = note.publishedAt
           ? new Date(note.publishedAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })

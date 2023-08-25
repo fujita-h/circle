@@ -10,4 +10,9 @@ export interface StockLabel {
   createdAt: string;
   updatedAt: string;
   Stocks?: Stock[];
+
+  // include count
+  _count?: {
+    Stocks?: number;
+  };
 }

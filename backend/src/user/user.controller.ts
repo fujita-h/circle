@@ -822,7 +822,7 @@ export class UserController {
       const [data, total] = await this.stocksService.findMany({
         where: { userId },
         orderBy: { createdAt: 'asc' },
-        include: { Label: true },
+        include: { Label: true, Note: { include: { User: true, Group: true } } },
         skip: skip && skip > 0 ? skip : undefined,
         take: take && take > 0 ? take : undefined,
       });
@@ -1069,6 +1069,7 @@ export class UserController {
     try {
       const [data, total] = await this.stockLabelsService.findMany({
         where: { userId },
+        include: { _count: { select: { Stocks: true } } },
         orderBy: [{ default: 'desc' }, { name: 'asc' }],
         skip: skip && skip > 0 ? skip : undefined,
         take: take && take > 0 ? take : undefined,
@@ -1109,6 +1110,66 @@ export class UserController {
       throw new InternalServerErrorException();
     }
     return { ...label };
+  }
+
+  @Get('stocked/labels/:labelId')
+  async findStockedLabel(@Request() request: any, @Param('labelId') labelId: string) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let label;
+    try {
+      label = await this.stockLabelsService.findFirst({ where: { id: labelId, userId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!label) {
+      throw new NotFoundException();
+    }
+    return { ...label };
+  }
+
+  @Get('stocked/labels/:labelId/notes')
+  async findStockedLabelNotes(
+    @Request() request: any,
+    @Param('labelId') labelId: string,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
+  ) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let label;
+    try {
+      label = await this.stockLabelsService.findFirst({ where: { id: labelId, userId } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!label) {
+      throw new NotFoundException();
+    }
+
+    let notes;
+    try {
+      const [data, total] = await this.stocksService.findMany({
+        where: { labelId },
+        orderBy: { createdAt: 'asc' },
+        include: { Note: { include: { User: true, Group: true } } },
+        skip: skip && skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
+      });
+      notes = { data, meta: { total } };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return notes;
   }
 
   @Put('stocked/labels/:labelId')
