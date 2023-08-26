@@ -24,20 +24,20 @@ export class JwtRolesGuard implements CanActivate {
       return false;
     }
 
-    // Get Metadata from the controller
+    // Controller に設定されたロールを取得する。
     const roles = this.reflector.get<string[]>('roles', context.getHandler());
 
-    // if roles is not exists, return true
+    // ロールが設定されていない場合は、true を返す。
     if (!roles) {
       return true;
     }
 
-    // if roles array is empty, return false
+    // ロールが設定されているが、値が空の場合は、false を返す。
     if (roles.length === 0) {
       return false;
     }
 
-    // roles の値を置換する。
+    // ロールにパラメータが含まれている場合は、パラメータを置換する。
     const params = request.params || {};
     const rolesReplaces = roles.map((role) => {
       Object.keys(params).forEach((key: any) => {
@@ -47,7 +47,7 @@ export class JwtRolesGuard implements CanActivate {
     });
 
     //  トークンに含まれるロールを取得する。
-    const userTokenRoles = request.user.roles || [];
+    const userTokenRoles = request.user.token.roles || request.user.roles || [];
 
     // ロールの比較を行い、結果を返す。
     const result = this.matchRolesAny(rolesReplaces, userTokenRoles);
