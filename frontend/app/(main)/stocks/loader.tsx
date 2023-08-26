@@ -24,7 +24,7 @@ export function LabelsLoader({ activeLabelId, onChanged }: { activeLabelId?: str
     },
   );
   const { data: stocks } = useSWR<{ data: Stock[]; meta: { total: number } }>(
-    `${environment.BACKEND_ENDPOINT}/user/stocked/notes?skip=0&take=0`,
+    `${environment.BACKEND_ENDPOINT}/user/stocked/notes?skip=0&take=1`,
     fetcher,
     {
       revalidateOnFocus: false,
