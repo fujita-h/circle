@@ -1,6 +1,6 @@
 import { User } from './user';
 import { Group } from './group';
-import { Tag } from './tag';
+import { Topic } from './topic';
 import { Comment } from './comment';
 import { Stock } from './stock';
 import { Like } from './like';
@@ -20,14 +20,14 @@ export interface Note {
   type: NoteType;
   status: NoteStatus;
   writeCommentPermission: PermissionWriteComment;
-  Tags?: Tag[];
+  Topics?: Topic[];
   Comments?: Comment[];
   Stocked?: Stock[];
   Liked?: Like[];
 
   // include count
   _count?: {
-    Tags?: number;
+    Topics?: number;
     Comments?: number;
     Stocked?: number;
     Liked?: number;

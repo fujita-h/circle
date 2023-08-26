@@ -4,13 +4,13 @@ import { PrismaService } from '../prisma.service';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
-export class TagsService {
-  private logger = new Logger(TagsService.name);
+export class TopicsService {
+  private logger = new Logger(TopicsService.name);
 
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
   ) {
-    this.logger.log('Initializing Tags Service...');
+    this.logger.log('Initializing Topics Service...');
   }
 }

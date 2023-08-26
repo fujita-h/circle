@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../prisma.service';
-import { TagsService } from './tags.service';
+import { TopicsService } from './topics.service';
 import { ConfigModule } from '@nestjs/config';
 
-describe('TagsService', () => {
-  let service: TagsService;
+describe('TopicsService', () => {
+  let service: TopicsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [TagsService, PrismaService],
+      providers: [TopicsService, PrismaService],
       imports: [
         ConfigModule.forRoot({
           envFilePath: ['.env.test'],
@@ -16,7 +16,7 @@ describe('TagsService', () => {
       ],
     }).compile();
 
-    service = module.get<TagsService>(TagsService);
+    service = module.get<TopicsService>(TopicsService);
   });
 
   it('should be defined', () => {

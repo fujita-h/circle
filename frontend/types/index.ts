@@ -8,7 +8,7 @@ export type { Note, NoteStatus, NoteType, PermissionWriteComment } from './note'
 export type { Notification, NotificationStatus, NotificationType } from './notification';
 export type { Stock } from './stock';
 export type { StockLabel } from './stock-label';
-export type { TagMap } from './tag-map';
-export type { Tag } from './tag';
+export type { TopicMap } from './topic-map';
+export type { Topic } from './topic';
 export type { User, UserStatus, UserType } from './user';
 export type { FollowGroup as Watch } from './follow-group';

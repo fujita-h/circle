@@ -1,6 +1,6 @@
 import { Note } from './note';
 
-export interface Tag {
+export interface Topic {
   id: string;
   createdAt: string;
   updatedAt: string;

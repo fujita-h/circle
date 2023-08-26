@@ -1,11 +1,11 @@
 import { Note } from './note';
-import { Tag } from './tag';
+import { Topic } from './topic';
 
-export interface TagMap {
+export interface TopicMap {
   Note?: Note;
   noteId: string;
-  Tag?: Tag;
-  tagId: string;
+  Topic?: Topic;
+  topicId: string;
   createdAt: string;
   updatedAt: string;
 }

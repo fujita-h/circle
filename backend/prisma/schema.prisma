@@ -87,7 +87,7 @@ model Note {
   status                 NoteStatus             @default(NORMAL)
   writeCommentPermission PermissionWriteComment @default(ALL) @map("write_comment_permission")
 
-  Tags     TagMap[]
+  Topics   TopicMap[]
   Comments Comment[]
   Stocked  Stock[]
   Liked    Like[]
@@ -97,7 +97,7 @@ model Note {
   @@map("note")
 }
 
-model Tag {
+model Topic {
   id          String   @id @default(cuid())
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -105,21 +105,21 @@ model Tag {
   displayName String?  @map("display_name") @db.VarChar(50)
   haveIcon    Boolean  @default(false) @map("have_icon")
 
-  Notes TagMap[]
+  Notes TopicMap[]
 
-  @@map("tag")
+  @@map("topic")
 }
 
-model TagMap {
+model TopicMap {
   Note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
   noteId    String   @map("note_id")
-  Tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
-  tagId     String   @map("tag_id")
+  Topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId   String   @map("topic_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@id([noteId, tagId])
-  @@map("tag_map")
+  @@id([noteId, topicId])
+  @@map("topic_map")
 }
 
 model Comment {

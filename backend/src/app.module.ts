@@ -30,7 +30,7 @@ import { NotesService } from './notes/notes.service';
 import { NotificationsService } from './notifications/notifications.service';
 import { StockLabelsService } from './stock-labels/stock-labels.service';
 import { StocksService } from './stocks/stocks.service';
-import { TagsService } from './tags/tags.service';
+import { TopicsService } from './topics/topics.service';
 import { UsersService } from './users/users.service';
 
 @Module({
@@ -69,7 +69,7 @@ import { UsersService } from './users/users.service';
     RedisService,
     StockLabelsService,
     StocksService,
-    TagsService,
+    TopicsService,
     UsersService,
   ],
 })
