@@ -32,6 +32,8 @@ import { StockLabelsService } from './stock-labels/stock-labels.service';
 import { StocksService } from './stocks/stocks.service';
 import { TopicsService } from './topics/topics.service';
 import { UsersService } from './users/users.service';
+import { TopicsController } from './topics/topics.controller';
+import { TopicMapsService } from './topic-maps/topic-maps.service';
 
 @Module({
   imports: [
@@ -51,6 +53,7 @@ import { UsersService } from './users/users.service';
     NotesController,
     UserController,
     UsersController,
+    TopicsController,
   ],
   providers: [
     TasksService,
@@ -71,6 +74,7 @@ import { UsersService } from './users/users.service';
     StocksService,
     TopicsService,
     UsersService,
+    TopicMapsService,
   ],
 })
 export class AppModule {}
