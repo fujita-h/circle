@@ -98,12 +98,11 @@ model Note {
 }
 
 model Topic {
-  id          String   @id @default(cuid())
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  name        String   @unique
-  displayName String?  @map("display_name") @db.VarChar(50)
-  haveIcon    Boolean  @default(false) @map("have_icon")
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  handle    String   @unique
+  name      String   @db.VarChar(50)
 
   Notes TopicMap[]
 
