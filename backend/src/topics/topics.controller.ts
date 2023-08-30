@@ -9,6 +9,7 @@ import {
   Logger,
   NotAcceptableException,
   NotFoundException,
+  Param,
   ParseIntPipe,
   PayloadTooLargeException,
   Post,
@@ -83,11 +84,11 @@ export class TopicsController {
     return topics;
   }
 
-  @Get(':id')
-  async findOne(@Query('id') id: string) {
+  @Get(':handle')
+  async findOne(@Param('handle') handle: string) {
     let topic;
     try {
-      topic = await this.topicsService.findOne({ where: { id } });
+      topic = await this.topicsService.findOne({ where: { handle } });
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
@@ -99,10 +100,10 @@ export class TopicsController {
   }
 
   @AuthorizedRolesAny('Topic.Write')
-  @Put(':id')
-  async updateTopic(@Query('id') id: string, @Body() data: UpdateTopicDto) {
+  @Put(':handle')
+  async updateTopic(@Param('handle') handle: string, @Body() data: UpdateTopicDto) {
     try {
-      return await this.topicsService.update({ where: { id }, data });
+      return await this.topicsService.update({ where: { handle }, data });
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
@@ -116,16 +117,16 @@ export class TopicsController {
     }
   }
 
-  @Get(':id/notes')
+  @Get(':handle/notes')
   async findNotes(
-    @Query('id') id: string,
+    @Param('handle') handle: string,
     @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
     @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
   ) {
     let topic;
     try {
       topic = await this.topicsService.findOne({
-        where: { id },
+        where: { handle },
         include: { Notes: false, _count: false },
       });
     } catch (e) {
@@ -138,7 +139,7 @@ export class TopicsController {
     let notes;
     try {
       const [data, total] = await this.topicMapsService.findMany({
-        where: { topicId: id },
+        where: { topicId: topic.id },
         orderBy: { Note: { publishedAt: 'desc' } },
         include: {
           Note: { include: { User: true, Group: true, _count: { select: { Liked: true } } } },
@@ -154,11 +155,11 @@ export class TopicsController {
     return notes;
   }
 
-  @Get(':id/photo')
-  async getPhoto(@Query('id') id: string, @Response() response: any) {
+  @Get(':handle/photo')
+  async getPhoto(@Param('handle') handle: string, @Response() response: any) {
     let topic;
     try {
-      topic = await this.topicsService.findOne({ where: { id } });
+      topic = await this.topicsService.findOne({ where: { handle } });
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
@@ -169,7 +170,7 @@ export class TopicsController {
     try {
       const downloadBlockBlobResponse = await this.blobsService.downloadBlob(
         this.blobContainerName,
-        `${id}/photo`,
+        `${topic.id}/photo`,
       );
       response.setHeader('Content-Type', downloadBlockBlobResponse.contentType);
       downloadBlockBlobResponse.readableStreamBody?.pipe(response);
@@ -199,12 +200,12 @@ export class TopicsController {
   }
 
   @AuthorizedRolesAny('Topic.Write')
-  @Post(':id/photo')
+  @Post(':handle/photo')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadPhoto(@Query('id') id: string, @UploadedFile() file: Express.Multer.File) {
+  async uploadPhoto(@Param('handle') handle: string, @UploadedFile() file: Express.Multer.File) {
     let topic;
     try {
-      topic = await this.topicsService.findOne({ where: { id } });
+      topic = await this.topicsService.findOne({ where: { handle } });
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
@@ -227,7 +228,7 @@ export class TopicsController {
     try {
       return await this.blobsService.uploadBlob(
         this.blobContainerName,
-        `${id}/photo`,
+        `${topic.id}/photo`,
         file.mimetype,
         file.buffer,
       );
