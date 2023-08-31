@@ -137,6 +137,16 @@ export class UserController {
     return user;
   }
 
+  @Get('roles')
+  async findRoles(@Request() request: any) {
+    const userId = request.user?.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    const roles = request.user?.token?.roles || request.user?.roles || [];
+    return { data: roles };
+  }
+
   @Get('following/groups')
   async findFollowingGroups(
     @Request() request: any,
