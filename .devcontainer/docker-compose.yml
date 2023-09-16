@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: workspace/Dockerfile
       args:
-        VARIANT: 18-buster
+        VARIANT: 18-bullseye
     volumes:
       - ..:/workspace:cached
       - ./elasticsearch/certs:/export/elasticsearch/certs
