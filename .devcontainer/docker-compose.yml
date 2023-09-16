@@ -25,10 +25,9 @@ services:
       - 6379:6379
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite:latest
+    command: azurite-blob --blobHost 0.0.0.0 --skipApiVersionCheck 
     ports:
       - 10000:10000
-      - 10001:10001
-      - 10002:10002
   setup_es:
     image: elasticsearch:8.8.0
     volumes:
