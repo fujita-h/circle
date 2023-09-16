@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from '@elastic/elasticsearch';
-import { SearchRequest } from '@elastic/elasticsearch/lib/api/types';
+import { DeleteByQueryRequest, SearchRequest } from '@elastic/elasticsearch/lib/api/types';
 
 @Injectable()
 export class EsService {
@@ -62,7 +62,7 @@ export class EsService {
     return this.client.delete({ index, id }, { ignore: [404] });
   }
 
-  deleteByQuery(index: string, body: any) {
-    return this.client.deleteByQuery({ index, body });
+  deleteByQuery(request: DeleteByQueryRequest) {
+    return this.client.deleteByQuery(request);
   }
 }
