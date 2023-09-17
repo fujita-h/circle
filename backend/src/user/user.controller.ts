@@ -472,7 +472,16 @@ export class UserController {
 
     let trendingNotes;
     try {
-      trendingNotes = await this.redisService.zrange(index, 0, -1, 'REV');
+      trendingNotes = await this.redisService.zrange(
+        index,
+        '+inf',
+        0,
+        'BYSCORE',
+        'REV',
+        'LIMIT',
+        0,
+        Math.min((take || 20) * 100, 20000),
+      );
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
