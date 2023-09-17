@@ -19,6 +19,9 @@ services:
       - MYSQL_DATABASE=database
       - MYSQL_USER=user
       - MYSQL_PASSWORD=user
+    volumes:
+      - ./mysql/conf.d:/etc/mysql/conf.d
+      - ./mysql/log:/var/log/mysql
   redis:
     image: redis:latest
     ports:

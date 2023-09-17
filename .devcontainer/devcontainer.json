@@ -37,9 +37,7 @@
     3001,
     "mysql:3306",
     "es01:9200",
-    "azurite:10000",
-    "azurite:10001",
-    "azurite:10002"
+    "azurite:10000"
   ],
   // "postCreateCommand": "pnpm install",
   "remoteUser": "node"
