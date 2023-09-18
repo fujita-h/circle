@@ -219,7 +219,7 @@ export class UserController {
         where: { id: groupId, handle: { not: null }, status: 'NORMAL' },
       });
     } catch (e) {
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException('Group not found');
     }
     if (!group) {
       throw new NotFoundException();
@@ -230,7 +230,7 @@ export class UserController {
       followGroup = await this.followGroupsService.createIfNotExists({ userId, groupId });
     } catch (e) {
       this.logger.error(e);
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException('Failed to follow group');
     }
     return { ...followGroup };
   }
@@ -336,7 +336,7 @@ export class UserController {
         where: { id: userId, handle: { not: null }, status: 'NORMAL' },
       });
     } catch (e) {
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException('User not found');
     }
     if (!to) {
       throw new NotFoundException();
@@ -347,7 +347,7 @@ export class UserController {
       followUser = await this.followUsersService.createIfNotExists({ fromId, toId: userId });
     } catch (e) {
       this.logger.error(e);
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException('Failed to follow user');
     }
     return { ...followUser };
   }

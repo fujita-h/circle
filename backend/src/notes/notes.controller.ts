@@ -67,7 +67,7 @@ export class NotesController {
         group = await this.groupsService.findOne({ where: { id: groupId } });
       } catch (e) {
         this.logger.error(e);
-        throw new InternalServerErrorException();
+        throw new InternalServerErrorException("Error while checking group's existence");
       }
 
       // if group is not exists, throw error
@@ -96,7 +96,7 @@ export class NotesController {
         });
       } catch (e) {
         this.logger.error(e);
-        throw new InternalServerErrorException();
+        throw new InternalServerErrorException("Error while checking group's permission");
       }
 
       // if group is not exists, throw error
@@ -119,7 +119,7 @@ export class NotesController {
         body: data.body,
       });
     } catch (e) {
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException('Error while creating note');
     }
     return note;
   }
