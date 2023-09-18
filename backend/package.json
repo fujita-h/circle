@@ -43,7 +43,8 @@
     "jwks-rsa": "^3.0.1",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.1.17",
@@ -56,6 +57,7 @@
     "@types/node": "^18.15.11",
     "@types/passport-jwt": "^3.0.9",
     "@types/supertest": "^2.0.12",
+    "@types/yargs": "^17.0.24",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
     "eslint": "^8.49.0",
