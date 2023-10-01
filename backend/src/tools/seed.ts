@@ -616,6 +616,8 @@ async function updateTrending() {
         const tasksService = appContext.get(TasksService);
         await tasksService.handleNotesTrendingWeekly();
         await tasksService.handleNotesTrendingMonthly();
+        await tasksService.handleGroupsTrendingWeekly();
+        await tasksService.handleGroupsTrendingMonthly();
         resolve('done');
       })
       .catch((e) => {

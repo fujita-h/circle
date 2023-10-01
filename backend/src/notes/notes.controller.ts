@@ -341,6 +341,21 @@ export class NotesController {
       this.logger.error(e);
     }
 
+    // update note of group view count
+    if (note.groupId !== null) {
+      try {
+        const date = new Date().toISOString().split('T')[0];
+        const key = `groups/view/notes/${date}`;
+        await this.redisService
+          .multi()
+          .zincrby(key, 1, note.groupId)
+          .expire(key, 60 * 60 * 24 * 30)
+          .exec();
+      } catch (e) {
+        this.logger.error(e);
+      }
+    }
+
     return { ...note, body };
   }
 

@@ -88,4 +88,72 @@ export class TasksService {
     );
     this.logger.log('Updated notes/trending/monthly');
   }
+
+  @Cron('5 5,35 * * * *')
+  handleGroupsTrendingWeekly() {
+    this.logger.log('Updating groups/trending/weekly...');
+    const keysArr = [];
+    const weightsArr = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date();
+      date.setUTCDate(date.getUTCDate() - i);
+      const formattedDate = date.toISOString().split('T')[0];
+
+      keysArr.push([`groups/follow/${formattedDate}`, `groups/view/notes/${formattedDate}`]);
+
+      weightsArr.push([
+        Math.round(120 + 20 * 1.21 ** (7 - (i + 1))),
+        Math.round(70 + 30 * 1.21 ** (7 - (i + 1))),
+      ]);
+    }
+
+    // check for weight table
+    //console.table(weightsArr);
+
+    const keys = keysArr.flat();
+    const weights = weightsArr.flat();
+
+    this.redisService.zunionstore(
+      'groups/trending/weekly',
+      keys.length,
+      ...keys,
+      'WEIGHTS',
+      ...weights,
+    );
+    this.logger.log('Updated groups/trending/weekly');
+  }
+
+  @Cron('10 5 */2 * *')
+  handleGroupsTrendingMonthly() {
+    this.logger.log('Updating groups/trending/monthly...');
+    const keysArr = [];
+    const weightsArr = [];
+    for (let i = 0; i < 28; i++) {
+      const date = new Date();
+      date.setUTCDate(date.getUTCDate() - i);
+      const formattedDate = date.toISOString().split('T')[0];
+
+      keysArr.push([`groups/follow/${formattedDate}`, `groups/view/notes/${formattedDate}`]);
+
+      weightsArr.push([
+        Math.round(120 + 20 * 1.07 ** (30 - (i + 1))),
+        Math.round(80 + 20 * 1.05 ** (30 - (i + 1))),
+      ]);
+    }
+
+    // check for weight table
+    //console.table(weightsArr);
+
+    const keys = keysArr.flat();
+    const weights = weightsArr.flat();
+
+    this.redisService.zunionstore(
+      'groups/trending/monthly',
+      keys.length,
+      ...keys,
+      'WEIGHTS',
+      ...weights,
+    );
+    this.logger.log('Updated groups/trending/monthly');
+  }
 }

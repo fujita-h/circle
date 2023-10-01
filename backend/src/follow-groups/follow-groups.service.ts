@@ -97,6 +97,7 @@ export class FollowGroupsService {
   createIfNotExists({ userId, groupId }: { userId: string; groupId: string }) {
     return this.prisma.$transaction(async (prisma) => {
       let followGroup;
+      let created = false;
       followGroup = await prisma.followGroup.findUnique({
         where: { userId_groupId: { userId, groupId } },
       });
@@ -104,14 +105,16 @@ export class FollowGroupsService {
         followGroup = await prisma.followGroup.create({
           data: { userId, groupId },
         });
+        created = true;
       }
-      return followGroup;
+      return { data: followGroup, created };
     });
   }
 
   removeIfExists({ userId, groupId }: { userId: string; groupId: string }) {
     return this.prisma.$transaction(async (prisma) => {
       let followGroup;
+      let deleted = false;
       followGroup = await prisma.followGroup.findUnique({
         where: { userId_groupId: { userId, groupId } },
       });
@@ -119,8 +122,9 @@ export class FollowGroupsService {
         followGroup = await prisma.followGroup.delete({
           where: { userId_groupId: { userId, groupId } },
         });
+        deleted = true;
       }
-      return followGroup;
+      return { data: followGroup, deleted };
     });
   }
 }

@@ -232,6 +232,21 @@ export class UserController {
       this.logger.error(e);
       throw new InternalServerErrorException('Failed to follow group');
     }
+
+    try {
+      if (followGroup.created) {
+        const date = new Date().toISOString().split('T')[0];
+        const key = `groups/follow/${date}`;
+        await this.redisService
+          .multi()
+          .zincrby(key, 1, groupId)
+          .expire(key, 60 * 60 * 24 * 30)
+          .exec();
+      }
+    } catch (e) {
+      this.logger.error(e);
+    }
+
     return { ...followGroup };
   }
 
@@ -261,6 +276,21 @@ export class UserController {
       this.logger.error(e);
       throw new InternalServerErrorException();
     }
+
+    try {
+      if (followGroup.deleted) {
+        const date = new Date().toISOString().split('T')[0];
+        const key = `groups/follow/${date}`;
+        await this.redisService
+          .multi()
+          .zincrby(key, -1, groupId)
+          .expire(key, 60 * 60 * 24 * 30)
+          .exec();
+      }
+    } catch (e) {
+      this.logger.error(e);
+    }
+
     return { ...followGroup };
   }
 
@@ -539,6 +569,73 @@ export class UserController {
       throw new InternalServerErrorException();
     }
     return notes;
+  }
+
+  @Get('trending/groups/weekly')
+  async findWeeklyTrendingGroups(
+    @Request() request: any,
+    @Query('take', new DefaultValuePipe(20), ParseIntPipe) take?: number,
+  ) {
+    return this._findTrendingGroups('groups/trending/weekly', request, take);
+  }
+
+  @Get('trending/groups/monthly')
+  async findMonthlyTrendingGroups(
+    @Request() request: any,
+    @Query('take', new DefaultValuePipe(20), ParseIntPipe) take?: number,
+  ) {
+    return this._findTrendingGroups('groups/trending/monthly', request, take);
+  }
+
+  async _findTrendingGroups(index: string, @Request() request: any, take?: number) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let trendingGroups;
+    try {
+      trendingGroups = await this.redisService.zrange(
+        index,
+        '+inf',
+        0,
+        'BYSCORE',
+        'REV',
+        'LIMIT',
+        0,
+        Math.min((take || 20) * 100, 20000),
+      );
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+
+    let groups;
+    try {
+      const [data, total] = await this.groupsService.findMany({
+        where: {
+          AND: [
+            {
+              id: { in: trendingGroups },
+              handle: { not: null },
+              status: 'NORMAL',
+            },
+          ],
+        },
+      });
+      groups = {
+        data: trendingGroups
+          .map((id) => data.find((group: any) => group.id === id))
+          .filter(Boolean)
+          .slice(0, take),
+        meta: { total },
+      };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+
+    return groups;
   }
 
   @Get('groups/postable')
