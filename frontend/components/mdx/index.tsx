@@ -1,1 +1,0 @@
-export { RenderMDX } from './render';
