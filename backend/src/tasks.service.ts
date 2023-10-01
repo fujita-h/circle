@@ -13,6 +13,7 @@ export class TasksService {
 
   @Cron('5 */30 * * * *')
   handleNotesTrendingWeekly() {
+    this.logger.log('Updating notes/trending/weekly...');
     const keysArr = [];
     const weightsArr = [];
     for (let i = 0; i < 7; i++) {
@@ -46,10 +47,12 @@ export class TasksService {
       'WEIGHTS',
       ...weights,
     );
+    this.logger.log('Updated notes/trending/weekly');
   }
 
   @Cron('10 0 */2 * *')
   handleNotesTrendingMonthly() {
+    this.logger.log('Updating notes/trending/monthly...');
     const keysArr = [];
     const weightsArr = [];
     for (let i = 0; i < 28; i++) {
@@ -83,5 +86,6 @@ export class TasksService {
       'WEIGHTS',
       ...weights,
     );
+    this.logger.log('Updated notes/trending/monthly');
   }
 }
