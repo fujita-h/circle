@@ -12,7 +12,7 @@ export class TasksService {
   }
 
   @Cron('5 */30 * * * *')
-  handleWeeklyTrending() {
+  handleNotesTrendingWeekly() {
     const keysArr = [];
     const weightsArr = [];
     for (let i = 0; i < 7; i++) {
@@ -49,7 +49,7 @@ export class TasksService {
   }
 
   @Cron('10 0 */2 * *')
-  handleMonthlyTrending() {
+  handleNotesTrendingMonthly() {
     const keysArr = [];
     const weightsArr = [];
     for (let i = 0; i < 28; i++) {
