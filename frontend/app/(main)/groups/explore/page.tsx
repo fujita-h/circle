@@ -41,16 +41,9 @@ export default function Page() {
               <div>
                 <ButtonTabs tabs={exploreTabItems} />
               </div>
-              <div className="mt-6 ml-1 flex justify-between">
-                <div>
-                  <p className={classNames(inter.className, 'text-3xl font-bold')}>Featured Groups</p>
-                  <p className="text-base text-gray-500">注目されているグループ</p>
-                </div>
-                <div>
-                  <Link href="/groups/">
-                    <div className="p-2 text-gray-900 text-base shadow rounded-md bg-white hover:bg-gray-50">すべてのグループを見る</div>
-                  </Link>
-                </div>
+              <div className="mt-6 ml-1">
+                <p className={classNames(inter.className, 'text-3xl font-bold')}>Featured Groups</p>
+                <p className="text-base text-gray-500">注目されているグループ</p>
               </div>
               <div className="mt-6">
                 <ResponsiveTabs tabs={tabItems} dynamic={false} />
@@ -58,6 +51,13 @@ export default function Page() {
               <div className="mt-6">
                 {tab === 'weekly' ? <Loader cat="weekly" take={20} /> : <> </>}
                 {tab === 'monthly' ? <Loader cat="monthly" take={20} /> : <> </>}
+              </div>
+              <div className="mt-6 flex justify-center">
+                <div>
+                  <Link href="/groups" className="text-lg text-indigo-700 hover:text-indigo-500 hover:underline underline-offset-2">
+                    すべてのグループを見る
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
