@@ -14,7 +14,7 @@ export function ResponsiveTabs({ tabs, dynamic = true }: { tabs: TabItem[]; dyna
 
   if (dynamic) {
     tabs.forEach((tab) => {
-      tab.current = tab.href === pathname;
+      Array.isArray(tab.href) ? (tab.current = tab.href.includes(pathname)) : (tab.current = tab.href === pathname);
     });
   }
 
@@ -35,7 +35,9 @@ export function ResponsiveTabs({ tabs, dynamic = true }: { tabs: TabItem[]; dyna
             defaultValue={tabs.find((tab) => tab.current)?.name}
             onChange={(e) => {
               const href = tabs.find((tab) => tab.name === e.target.value)?.href;
-              if (href) {
+              if (Array.isArray(href)) {
+                router.push(href[0]);
+              } else if (href) {
                 router.push(href);
               }
             }}
@@ -47,22 +49,25 @@ export function ResponsiveTabs({ tabs, dynamic = true }: { tabs: TabItem[]; dyna
         </div>
         <div className="hidden sm:block">
           <nav className="-mb-px flex space-x-8">
-            {tabs.map((tab) => (
-              <Link
-                key={tab.name}
-                href={tab.href}
-                className={classNames(
-                  tab.current
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                  'whitespace-nowrap border-b-2 px-2 pb-2 text-sm font-semibold',
-                  inter.className,
-                )}
-                aria-current={tab.current ? 'page' : undefined}
-              >
-                {tab.name}
-              </Link>
-            ))}
+            {tabs.map((tab) => {
+              const href = Array.isArray(tab.href) ? tab.href[0] : tab.href;
+              return (
+                <Link
+                  key={tab.name}
+                  href={href}
+                  className={classNames(
+                    tab.current
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                    'whitespace-nowrap border-b-2 px-2 pb-2 text-sm font-semibold',
+                    inter.className,
+                  )}
+                  aria-current={tab.current ? 'page' : undefined}
+                >
+                  {tab.name}
+                </Link>
+              );
+            })}
           </nav>
         </div>
       </div>
