@@ -1,12 +1,13 @@
 'use client';
 
+import { exploreTabItems } from '@/app/(main)/explore-tab-items';
+import { navTabItems } from '@/app/(main)/nav-tab-items';
+import { ButtonTabs, NavigationTabs, ResponsiveTabs, TabItem } from '@/components/tabs';
 import { classNames } from '@/utils';
 import { Inter } from 'next/font/google';
-import { ButtonTabs, NavigationTabs, ResponsiveTabs, TabItem } from '@/components/tabs';
-import { navTabItems } from '@/app/(main)/nav-tab-items';
-import { exploreTabItems } from '@/app/(main)/explore-tab-items';
-import { Loader } from './loader';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { Loader } from './loader';
 
 const inter = Inter({ subsets: ['latin'] });
 const tabItems: TabItem[] = [
@@ -50,6 +51,13 @@ export default function Page() {
               <div className="mt-6">
                 {tab === 'weekly' ? <Loader cat="weekly" take={20} /> : <> </>}
                 {tab === 'monthly' ? <Loader cat="monthly" take={20} /> : <> </>}
+              </div>
+              <div className="mt-6 flex justify-center">
+                <div>
+                  <Link href="/notes" className="text-lg text-indigo-700 hover:text-indigo-500 hover:underline underline-offset-2">
+                    すべての記事を見る
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
