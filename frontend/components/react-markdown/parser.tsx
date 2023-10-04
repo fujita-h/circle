@@ -2,7 +2,7 @@
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import gfm from 'remark-gfm';
+import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import { Schema } from 'hast-util-sanitize';
@@ -35,7 +35,7 @@ export function Parser({
   return (
     <ReactMarkdown
       className={className}
-      remarkPlugins={[gfm]}
+      remarkPlugins={[remarkGfm]}
       rehypePlugins={[rehypeRaw, [rehypeSanitize, mySchema]]}
       unwrapDisallowed={false}
       components={addHeaderAnchor ? { h1: H1, h2: H2 } : undefined}
