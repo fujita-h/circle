@@ -103,7 +103,7 @@ export function CardList({
                 <div className="text-xl font-semibold leading-6 text-gray-900 mb-1">
                   <Link className="hover:underline" href={`/notes/${note.id}`}>
                     <span className="absolute inset-x-0 -top-px bottom-0" />
-                    {note.title || 'タイトルなし'}
+                    <span className="break-words">{note.title || 'タイトルなし'}</span>
                   </Link>
                 </div>
                 <div className="text-sm flex gap-x-2">
