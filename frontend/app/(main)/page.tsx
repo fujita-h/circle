@@ -22,8 +22,8 @@ export default function Page() {
 
       <div className="bg-slate-100 print:bg-white border-t border-gray-200">
         <div className="max-w-screen-2xl mx-auto">
-          <div className="p-4 md:p-8 space-y-12">
-            <div className="px-4">
+          <div className="space-y-8 divide-y">
+            <div className="px-8 py-4 md:px-12 md:py-12 bg-slate-100">
               <div className="ml-1">
                 <p className={classNames(inter.className, 'text-3xl font-bold')}>Notes</p>
                 <p className="text-base text-gray-500">注目されている記事</p>
@@ -31,13 +31,13 @@ export default function Page() {
               <div className="mt-6">
                 <NotesLoader cat="weekly" take={12} />
               </div>
-              <div className="mt-6 flex justify-center">
+              <div className="mt-8 flex justify-center">
                 <Link href="/notes/explore" className="text-lg text-indigo-700 hover:text-indigo-500 hover:underline underline-offset-2">
                   記事をもっと見る
                 </Link>
               </div>
             </div>
-            <div className="px-4">
+            <div className="px-8 py-4 md:px-12 md:py-12 bg-stone-100">
               <div className="ml-1">
                 <p className={classNames(inter.className, 'text-3xl font-bold')}>Groups</p>
                 <p className="text-base text-gray-500">注目されているグループ</p>
@@ -45,7 +45,7 @@ export default function Page() {
               <div className="mt-6">
                 <GroupsLoader cat="weekly" take={12} />
               </div>
-              <div className="mt-6 flex justify-center">
+              <div className="mt-8 flex justify-center">
                 <Link href="/groups/explore" className="text-lg text-indigo-700 hover:text-indigo-500 hover:underline underline-offset-2">
                   グループをもっと見る
                 </Link>

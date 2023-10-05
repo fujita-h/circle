@@ -52,7 +52,7 @@ export default function Page() {
                 {tab === 'weekly' ? <Loader cat="weekly" take={20} /> : <> </>}
                 {tab === 'monthly' ? <Loader cat="monthly" take={20} /> : <> </>}
               </div>
-              <div className="mt-6 flex justify-center">
+              <div className="mt-8 flex justify-center">
                 <div>
                   <Link href="/notes" className="text-lg text-indigo-700 hover:text-indigo-500 hover:underline underline-offset-2">
                     すべての記事を見る
