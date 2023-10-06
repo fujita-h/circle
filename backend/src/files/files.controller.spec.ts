@@ -12,7 +12,7 @@ describe('FilesController', () => {
       providers: [AzblobService],
       imports: [
         ConfigModule.forRoot({
-          envFilePath: ['.env.test'],
+          envFilePath: [`.env.${process.env.NODE_ENV}.local`, '.env.local'],
         }),
       ],
     }).compile();

@@ -18,7 +18,7 @@ describe('TopicsController', () => {
       providers: [AzblobService, PrismaService, TopicsService, TopicMapsService],
       imports: [
         ConfigModule.forRoot({
-          envFilePath: ['.env.test'],
+          envFilePath: [`.env.${process.env.NODE_ENV}.local`, '.env.local'],
         }),
       ],
     }).compile();

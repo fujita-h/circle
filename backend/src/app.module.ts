@@ -38,7 +38,7 @@ import { TopicMapsService } from './topic-maps/topic-maps.service';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: [`.env.${process.env.NODE_ENV}`, '.env.test', '.env'],
+      envFilePath: [`.env.${process.env.NODE_ENV}.local`, '.env.local'],
       isGlobal: true,
     }),
     CacheModule.register(),
