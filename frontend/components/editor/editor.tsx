@@ -112,14 +112,16 @@ export function Editor({
 
   return (
     <div className="h-full px-1 py-2 bg-slate-100">
-      <div className={styles.h44}>
-        <input
-          type="text"
-          className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-indigo-400 sm:text-sm sm:leading-6"
-          placeholder="Title"
-          value={form.title}
-          onChange={(e) => setForm({ ...form, title: e.target.value })}
-        />
+      <div className={classNames(styles.h44, 'flex gap-2')}>
+        <div className="flex-1">
+          <input
+            type="text"
+            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-indigo-400 sm:text-sm sm:leading-6"
+            placeholder="Title"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+          />
+        </div>
       </div>
       <div className={classNames(styles.h44, 'flex gap-2')}>
         <div className="flex-1">
