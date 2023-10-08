@@ -105,13 +105,13 @@ export default function Page({ params }: { params: any }) {
                   <div id="note_title" className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:tracking-tight">
                     {note.title || 'タイトルなし'}
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex gap-2 flex-wrap">
                     {note.Topics.map((tm: TopicMap) => (
                       <div
                         key={tm.topicId}
                         className="flex items-center gap-2 px-3 py-1.5 bg-white ring-1 shadow-sm ring-gray-300 rounded-md"
                       >
-                        <div>
+                        <div className="flex-shrink-0">
                           <BackendImage
                             src={`/topics/${tm.Topic?.handle}/photo`}
                             className="w-6 h-6 rounded-full"
@@ -119,7 +119,7 @@ export default function Page({ params }: { params: any }) {
                             fallback={<></>}
                           />
                         </div>
-                        <div className="text-base text-gray-900">{tm.Topic?.name}</div>
+                        <div className="flex-none text-base text-gray-900">{tm.Topic?.name}</div>
                       </div>
                     ))}
                   </div>
