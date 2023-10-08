@@ -22,7 +22,7 @@ export function TopicInput({
   const [items, setItems] = useState(values);
 
   return (
-    <div className="border-0 rounded-md px-1 py-1 ring-1 ring-gray-300 focus:ring-1 focus:ring-inset focus:ring-indigo-400 shadow-sm bg-white w-full text-sm flex gap-1">
+    <div className="border-0 rounded-md px-2 py-1.5 ring-1 ring-inset ring-gray-300 focus:ring-1 focus:ring-inset focus:ring-indigo-400 shadow-sm bg-white w-full text-sm flex gap-1.5">
       <DndContext
         collisionDetection={closestCenter}
         onDragEnd={(event) => {
@@ -38,7 +38,7 @@ export function TopicInput({
         }}
       >
         <SortableContext items={items}>
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             {items.map((item) => (
               <SortableTopicItem
                 key={item.id}
@@ -54,14 +54,16 @@ export function TopicInput({
         </SortableContext>
       </DndContext>
 
-      <TopicsComboBox
-        candidates={candidates.filter((candidate) => !items.some((item) => item.id === candidate.id))}
-        onChange={(topic) => {
-          const newItems = [...new Set([...items, topic])];
-          setItems(newItems);
-          onChange(newItems);
-        }}
-      />
+      <div className={items.length >= 5 ? 'hidden' : ''}>
+        <TopicsComboBox
+          candidates={candidates.filter((candidate) => !items.some((item) => item.id === candidate.id))}
+          onChange={(topic) => {
+            const newItems = [...new Set([...items, topic])];
+            setItems(newItems);
+            onChange(newItems);
+          }}
+        />
+      </div>
     </div>
   );
 }
@@ -77,7 +79,7 @@ function SortableTopicItem({ item, onDelete }: { item: Topic; onDelete: (value: 
         transition,
       }}
     >
-      <div className="flex items-center gap-2 px-2 py-1 border border-gray-300 rounded-sm bg-white">
+      <div className="flex items-center gap-2 px-2 py-1 border-0 ring-1 ring-inset ring-gray-300 rounded-md bg-white">
         <div className="flex items-center relative gap-2">
           <span
             className="absolute inset-x-0 -top-px bottom-0"
@@ -121,7 +123,7 @@ function TopicsComboBox({ candidates, onChange }: { candidates: Topic[]; onChang
     <Combobox as="div" value={selectedTopic} onChange={handleChange}>
       <div className="relative">
         <Combobox.Input
-          className="w-full rounded-md border-0 bg-white py-1 pl-3 pr-12 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          className="w-full rounded-md border-0 bg-white pt-2 pb-1 pl-3 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-1 focus:ring-inset focus:ring-indigo-600 text-sm"
           onKeyDown={(event) => {
             if (filteredcandidates.length === 0 && event.key === 'Enter') {
               event.preventDefault();
@@ -129,7 +131,7 @@ function TopicsComboBox({ candidates, onChange }: { candidates: Topic[]; onChang
           }}
           onChange={(event) => setQuery(event.target.value)}
           displayValue={(person: any) => person?.name}
-          placeholder="Add Topic..."
+          placeholder="トピック..."
         />
         <Combobox.Button className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
           <ChevronDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />

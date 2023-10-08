@@ -136,7 +136,7 @@ export function Editor({
           />
         </div>
       </div>
-      <div className={classNames(styles.h44, 'flex gap-2')}>
+      <div className={classNames(styles.h50, 'flex gap-2')}>
         <div className="flex-1">
           <TopicSelector
             topics={form.Topics}

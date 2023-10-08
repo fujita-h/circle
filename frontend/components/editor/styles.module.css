@@ -1,8 +1,11 @@
 .h44 {
   height: 44px;
 }
+.h50 {
+  height: 50px;
+}
 .body {
-  height: calc(100% - 140px);
+  height: calc(100% - 185px);
 }
 .thinScrollbar::-webkit-scrollbar {
   width: 6px;
