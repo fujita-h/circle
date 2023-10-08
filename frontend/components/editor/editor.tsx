@@ -4,27 +4,31 @@ import { useEnvironment } from '@/components/environment/providers';
 import { apiRequest } from '@/components/msal/requests';
 import { Parser } from '@/components/react-markdown/parser';
 import mdStyles from '@/components/react-markdown/styles.module.css';
+import { Topic } from '@/types';
 import { classNames } from '@/utils';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { DocumentTextIcon, PencilSquareIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useSWRConfig } from 'swr';
 import { DnDTextarea } from './dnd-textarea';
 import { GroupSelector } from './group-selector';
 import styles from './styles.module.css';
 import { SubmitButton } from './submit-button';
+import { TopicSelector } from './topic-selector';
 
 export function Editor({
   noteId = '',
   groupId = '',
   title = '',
+  Topics = [],
   body = '',
   defaultSubmitButton = 'publish',
 }: {
   noteId?: string;
   groupId?: string;
   title?: string;
+  Topics?: Topic[];
   body?: string;
   defaultSubmitButton?: 'publish' | 'draft';
 }) {
@@ -36,14 +40,12 @@ export function Editor({
   const [editorMode, setEditorMode] = useState<'edit' | 'preview' | 'both'>('both');
   const { mutate } = useSWRConfig();
 
-  const mdxRef = useRef<HTMLDivElement>(null!);
-  const [mdxScrollTop, setMdxScrollTop] = useState(0);
-
   type FormState = {
     id: string;
     group: {
       id: string;
     };
+    Topics: Topic[];
     title: string;
     body: string;
   };
@@ -53,6 +55,7 @@ export function Editor({
     group: {
       id: groupId,
     },
+    Topics: Topics,
     title: title,
     body: body,
   });
@@ -73,7 +76,12 @@ export function Editor({
               'Content-Type': 'application/json',
               Authorization: `Bearer ${auth.accessToken}`,
             },
-            body: JSON.stringify({ ...form }),
+            body: JSON.stringify({
+              group: { id: form.group.id },
+              topic: { ids: form.Topics.map((x) => x.id) },
+              title: form.title,
+              body: form.body,
+            }),
           });
           if (response.ok) {
             const json = await response.json();
@@ -91,7 +99,12 @@ export function Editor({
               'Content-Type': 'application/json',
               Authorization: `Bearer ${auth.accessToken}`,
             },
-            body: JSON.stringify({ ...form }),
+            body: JSON.stringify({
+              group: { id: form.group.id },
+              topic: { ids: form.Topics.map((x) => x.id) },
+              title: form.title,
+              body: form.body,
+            }),
           });
           if (response.ok) {
             const json = await response.json();
@@ -120,6 +133,17 @@ export function Editor({
             placeholder="Title"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
+          />
+        </div>
+      </div>
+      <div className={classNames(styles.h44, 'flex gap-2')}>
+        <div className="flex-1">
+          <TopicSelector
+            topics={form.Topics}
+            onChange={(topics) => {
+              setForm({ ...form, Topics: topics });
+              console.log(topics);
+            }}
           />
         </div>
       </div>

@@ -240,6 +240,7 @@ async function createNotes(users: string[], groups: string[], count: number) {
             notesController.create(req, {
               title: 'seed-' + cuid,
               group: { id: group || '' },
+              topic: { ids: [] },
               body: 'seed-' + cuid,
               status: 'NORMAL',
               writeCommentPermission: 'ALL',

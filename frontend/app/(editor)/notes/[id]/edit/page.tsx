@@ -1,10 +1,11 @@
 'use client';
 
+import styles from '@/app/(editor)/styles.module.css';
 import { Editor } from '@/components/editor';
-import styles from '../../../styles.module.css';
-import { useAccount, useMsal } from '@azure/msal-react';
 import { useEnvironment } from '@/components/environment/providers';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
+import { Note } from '@/types';
+import { useAccount, useMsal } from '@azure/msal-react';
 import useSWR from 'swr';
 
 export default function Page({ params }: { params: any }) {
@@ -15,7 +16,7 @@ export default function Page({ params }: { params: any }) {
   const jsonCredFetcher = swrMsalTokenFetcher(instance, account, environment, 'json', 'include');
   const { data: token, isLoading: isTokenLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/user/token`, jsonCredFetcher);
   const jsonFetcher = swrMsalTokenFetcher(instance, account, environment, 'json');
-  const { data: note, isLoading: isNoteLoading } = useSWR(`${environment.BACKEND_ENDPOINT}/notes/${id}`, jsonFetcher, {
+  const { data: note, isLoading: isNoteLoading } = useSWR<Note>(`${environment.BACKEND_ENDPOINT}/notes/${id}`, jsonFetcher, {
     revalidateOnFocus: false,
   });
 
@@ -30,7 +31,14 @@ export default function Page({ params }: { params: any }) {
   return (
     <>
       <div className={styles.editor}>
-        <Editor defaultSubmitButton="publish" noteId={note.id} groupId={note.group?.id} title={note.title} body={note.body} />
+        <Editor
+          defaultSubmitButton="publish"
+          noteId={note.id}
+          groupId={note.groupId}
+          Topics={note.Topics?.filter((x) => x?.Topic !== undefined).map((x) => x!.Topic!) || []}
+          title={note.title}
+          body={note.body}
+        />
       </div>
     </>
   );

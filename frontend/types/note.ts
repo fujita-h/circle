@@ -1,9 +1,9 @@
-import { User } from './user';
-import { Group } from './group';
-import { Topic } from './topic';
 import { Comment } from './comment';
-import { Stock } from './stock';
+import { Group } from './group';
 import { Like } from './like';
+import { Stock } from './stock';
+import { TopicMap } from './topic-map';
+import { User } from './user';
 
 export interface Note {
   id: string;
@@ -20,7 +20,7 @@ export interface Note {
   type: NoteType;
   status: NoteStatus;
   writeCommentPermission: PermissionWriteComment;
-  Topics?: Topic[];
+  Topics?: TopicMap[];
   Comments?: Comment[];
   Stocked?: Stock[];
   Liked?: Like[];

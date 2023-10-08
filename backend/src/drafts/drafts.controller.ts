@@ -100,6 +100,9 @@ export class DraftsController {
         data: {
           User: { connect: { id: userId } },
           Group: groupId ? { connect: { id: groupId } } : undefined,
+          Topics: {
+            create: data.topic.ids.map((topicId) => ({ topicId: topicId })),
+          },
           title: data.title,
           status: 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
@@ -153,7 +156,7 @@ export class DraftsController {
         draftBlobPointer: { not: null },
         userId: userId,
       },
-      include: { User: true, Group: true },
+      include: { User: true, Group: true, Topics: { include: { Topic: true } } },
     });
   }
 
@@ -257,6 +260,10 @@ export class DraftsController {
           title: data.title,
           User: { connect: { id: userId } },
           Group: groupId ? { connect: { id: groupId } } : undefined,
+          Topics: {
+            deleteMany: { noteId: id },
+            create: data.topic.ids.map((topicId) => ({ topicId: topicId })),
+          },
           status: 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
         },

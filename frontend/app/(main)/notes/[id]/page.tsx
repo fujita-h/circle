@@ -1,32 +1,32 @@
 'use client';
 
-import useSWR from 'swr';
+import { BackendImage } from '@/components/backend-image';
+import { Comments } from '@/components/comments';
 import { useEnvironment } from '@/components/environment/providers';
-import { useAccount, useMsal } from '@azure/msal-react';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
-import Link from 'next/link';
-import { classNames } from '@/utils';
-import mdStyles from '@/components/react-markdown/styles.module.css';
+import { LikeButton, StockButton } from '@/components/notes';
 import { Parser } from '@/components/react-markdown/parser';
 import { ReactiveToC } from '@/components/react-markdown/reactive-toc';
-import { Comments } from '@/components/comments';
-import { BackendImage } from '@/components/backend-image';
-import { Fragment, useEffect } from 'react';
+import mdStyles from '@/components/react-markdown/styles.module.css';
+import { Note, SomeRequired, TopicMap } from '@/types';
+import { classNames } from '@/utils';
+import { useAccount, useMsal } from '@azure/msal-react';
 import { Menu, Transition } from '@headlessui/react';
-import { LikeButton, StockButton } from '@/components/notes';
-import { SomeRequired, Note } from '@/types';
 import {
-  EllipsisHorizontalIcon,
   ArchiveBoxIcon,
   ArrowRightCircleIcon,
   DocumentDuplicateIcon,
+  EllipsisHorizontalIcon,
   HeartIcon,
   PencilSquareIcon,
   TrashIcon,
-  UserPlusIcon,
-  UserIcon,
   UserGroupIcon,
+  UserIcon,
+  UserPlusIcon,
 } from '@heroicons/react/24/solid';
+import Link from 'next/link';
+import { Fragment, useEffect } from 'react';
+import useSWR from 'swr';
 
 export default function Page({ params }: { params: any }) {
   const id = params.id;
@@ -41,7 +41,7 @@ export default function Page({ params }: { params: any }) {
     data: note,
     error: noteFetchError,
     isLoading: isNoteLoading,
-  } = useSWR<SomeRequired<Note, 'User' | 'Group' | '_count'>>(`${environment.BACKEND_ENDPOINT}/notes/${id}`, jsonFetcher, {
+  } = useSWR<SomeRequired<Note, 'User' | 'Group' | 'Topics' | '_count'>>(`${environment.BACKEND_ENDPOINT}/notes/${id}`, jsonFetcher, {
     revalidateOnFocus: false,
   });
 
@@ -98,12 +98,30 @@ export default function Page({ params }: { params: any }) {
       <div className="bg-slate-100 print:bg-white border-t border-gray-200">
         <div className="max-w-screen-2xl mx-auto">
           <div className="p-4 md:p-8">
-            <div className="flex space-x-1 mb-4">
+            <div className="flex space-x-1 mb-6">
               <div className="order-0 hidden md:block w-12 print:hidden"></div>
               <div className="order-1 flex-1">
-                <div className="space-y-1 sm:space-y-2">
-                  <div id="note_title" className="mx-4 text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:tracking-tight">
+                <div className="space-y-1 sm:space-y-2 mx-4">
+                  <div id="note_title" className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:tracking-tight">
                     {note.title || 'タイトルなし'}
+                  </div>
+                  <div className="flex gap-3">
+                    {note.Topics.map((tm: TopicMap) => (
+                      <div
+                        key={tm.topicId}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-white ring-1 shadow-sm ring-gray-300 rounded-md"
+                      >
+                        <div>
+                          <BackendImage
+                            src={`/topics/${tm.Topic?.handle}/photo`}
+                            className="w-6 h-6 rounded-full"
+                            alt="topic icon"
+                            fallback={<></>}
+                          />
+                        </div>
+                        <div className="text-base text-gray-900">{tm.Topic?.name}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

@@ -4,6 +4,9 @@ export class CreateNoteDto {
   group: {
     id: string;
   };
+  topic: {
+    ids: string[];
+  };
   title: string;
   body: string;
   status: NoteStatus;

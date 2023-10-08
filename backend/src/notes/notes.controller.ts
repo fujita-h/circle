@@ -111,6 +111,9 @@ export class NotesController {
         data: {
           User: { connect: { id: userId } },
           Group: group ? { connect: { id: groupId } } : undefined,
+          Topics: {
+            create: data.topic.ids.map((topicId) => ({ topicId: topicId })),
+          },
           title: data.title,
           status: 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
@@ -304,7 +307,12 @@ export class NotesController {
       note = await this.notesService._exFindNoteUnderPermission({
         userId: userId,
         noteId: id,
-        include: { User: true, Group: true, _count: { select: { Liked: true, Stocked: true } } },
+        include: {
+          User: true,
+          Group: true,
+          Topics: { include: { Topic: true } },
+          _count: { select: { Liked: true, Stocked: true } },
+        },
       });
     } catch (e) {
       this.logger.error(e);
@@ -561,6 +569,10 @@ export class NotesController {
           title: data.title,
           User: { connect: { id: userId } },
           Group: group ? { connect: { id: groupId } } : { disconnect: true },
+          Topics: {
+            deleteMany: { noteId: id },
+            create: data.topic.ids.map((topicId) => ({ topicId: topicId })),
+          },
           status: 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,
           publishedAt: new Date(),

@@ -11,6 +11,8 @@
   "dependencies": {
     "@azure/msal-browser": "^3.2.0",
     "@azure/msal-react": "^2.0.4",
+    "@dnd-kit/core": "^6.0.8",
+    "@dnd-kit/sortable": "^7.0.2",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "@mdx-js/mdx": "^2.3.0",
@@ -21,6 +23,7 @@
     "@types/react-dom": "18.2.10",
     "@types/react-scroll": "^1.8.8",
     "autoprefixer": "10.4.16",
+    "clsx": "^2.0.0",
     "eslint": "8.50.0",
     "eslint-config-next": "13.5.4",
     "eslint-config-prettier": "^9.0.0",
