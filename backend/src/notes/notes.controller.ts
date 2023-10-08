@@ -112,7 +112,10 @@ export class NotesController {
           User: { connect: { id: userId } },
           Group: group ? { connect: { id: groupId } } : undefined,
           Topics: {
-            create: data.topic.ids.map((topicId) => ({ topicId: topicId })),
+            create: data.topic.ids.map((topicId) => ({
+              topicId: topicId,
+              order: data.topic.ids.indexOf(topicId),
+            })),
           },
           title: data.title,
           status: 'NORMAL',
@@ -310,7 +313,7 @@ export class NotesController {
         include: {
           User: true,
           Group: true,
-          Topics: { include: { Topic: true } },
+          Topics: { include: { Topic: true }, orderBy: { order: 'asc' } },
           _count: { select: { Liked: true, Stocked: true } },
         },
       });
@@ -571,7 +574,10 @@ export class NotesController {
           Group: group ? { connect: { id: groupId } } : { disconnect: true },
           Topics: {
             deleteMany: { noteId: id },
-            create: data.topic.ids.map((topicId) => ({ topicId: topicId })),
+            create: data.topic.ids.map((topicId) => ({
+              topicId: topicId,
+              order: data.topic.ids.indexOf(topicId),
+            })),
           },
           status: 'NORMAL',
           writeCommentPermission: data.writeCommentPermission,

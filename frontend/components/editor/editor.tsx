@@ -142,7 +142,6 @@ export function Editor({
             topics={form.Topics}
             onChange={(topics) => {
               setForm({ ...form, Topics: topics });
-              console.log(topics);
             }}
           />
         </div>

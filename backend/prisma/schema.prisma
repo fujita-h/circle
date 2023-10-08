@@ -114,10 +114,12 @@ model TopicMap {
   noteId    String   @map("note_id")
   Topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
   topicId   String   @map("topic_id")
+  order     Int      @default(0)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@id([noteId, topicId])
+  @@index([noteId, order])
   @@map("topic_map")
 }
 
