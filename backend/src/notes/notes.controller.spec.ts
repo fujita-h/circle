@@ -44,6 +44,7 @@ describe('NotesController', () => {
     body: testPrefix + 'i1-body',
     status: 'NORMAL',
     group: { id: testGroup1.id },
+    topic: { ids: [] },
     writeCommentPermission: 'ALL',
   };
 
@@ -162,7 +163,7 @@ describe('NotesController', () => {
   it('Group1に対してUser1でNotesを取得', async () => {
     const req = { user: { id: testUser1.id } };
     const result = groupsController.findNotes(req, testGroup1.id);
-    const { data, meta } = await result;
+    const { data } = await result;
     await expect(data).toHaveLength(1);
   });
 
