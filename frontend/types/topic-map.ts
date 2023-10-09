@@ -6,6 +6,7 @@ export interface TopicMap {
   noteId: string;
   Topic?: Topic;
   topicId: string;
+  order: number;
   createdAt: string;
   updatedAt: string;
 }
