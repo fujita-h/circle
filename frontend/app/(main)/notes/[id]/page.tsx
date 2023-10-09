@@ -113,7 +113,7 @@ export default function Page({ params }: { params: any }) {
                       >
                         <div className="flex-shrink-0">
                           <BackendImage
-                            src={`/topics/${tm.Topic?.handle}/photo`}
+                            src={`/topics/${tm.Topic?.id}/photo`}
                             className="w-6 h-6 rounded-full"
                             alt="topic icon"
                             fallback={<></>}
