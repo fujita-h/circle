@@ -30,6 +30,7 @@ model User {
   FollowingUsers  FollowUser[]   @relation("from")
   FollowedUsers   FollowUser[]   @relation("to")
   FollowingGroups FollowGroup[]
+  FollowingTopics FollowTopic[]
   Notifications   Notification[]
 
   @@index([type])
@@ -104,7 +105,8 @@ model Topic {
   handle    String   @unique
   name      String   @db.VarChar(50)
 
-  Notes TopicMap[]
+  Notes    TopicMap[]
+  Followed FollowTopic[]
 
   @@map("topic")
 }
@@ -204,6 +206,18 @@ model FollowGroup {
 
   @@id([userId, groupId])
   @@map("follow_group")
+}
+
+model FollowTopic {
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  Topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId   String   @map("topic_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([userId, topicId])
+  @@map("follow_topic")
 }
 
 model Notification {
