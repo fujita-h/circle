@@ -41,13 +41,15 @@ function Layout({ topic, children }: { topic: Topic; children: React.ReactNode }
   const account = useAccount(accounts[0] || {});
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
 
-  const { data: topicNotesCount } = useSWR<number>(`${environment.BACKEND_ENDPOINT}/topics/${topic.id}/notes/count`, fetcher, {
-    revalidateOnFocus: false,
-  });
+  const { data: statistics } = useSWR<{ _count: { notes: number; users: number } }>(
+    `${environment.BACKEND_ENDPOINT}/topics/${topic.id}/statistics`,
+    fetcher,
+    { revalidateOnFocus: false },
+  );
 
   const tabs: TabItem[] = [
-    { name: 'Notes', href: `/topics/${topic.handle}/notes`, current: false, count: topicNotesCount || undefined },
-    //{ name: 'Users', href: `/topics/${topic.handle}/users`, current: false, count: -1 },
+    { name: 'Notes', href: `/topics/${topic.handle}/notes`, current: false, count: statistics?._count.notes || undefined },
+    { name: 'Users', href: `/topics/${topic.handle}/users`, current: false, count: statistics?._count.users || undefined },
   ];
 
   return (
