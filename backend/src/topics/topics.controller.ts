@@ -170,10 +170,19 @@ export class TopicsController {
     return notes;
   }
 
-  @Get(':id/notes/count')
-  async countNotes(@Param('id') id: string) {
+  @Get(':id/statistics')
+  async getStatistics(@Param('id') id: string) {
     try {
-      return this.topicMapsService.count({ where: { topicId: id } });
+      const topicMaps = await this.topicMapsService.findAll({
+        select: { noteId: true, Note: { select: { userId: true } } },
+        where: { topicId: id },
+      });
+      return {
+        _count: {
+          notes: topicMaps.length,
+          users: new Set(topicMaps.map((x: any) => x.Note.userId)).size,
+        },
+      };
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
