@@ -46,6 +46,7 @@ import { CreateGroupMemberDto } from './dto/create-group-member.dto';
 export class GroupsController {
   private logger = new Logger(GroupsController.name);
   private blobContainerName = 'group';
+  private ignoreHandles = ['explore'];
 
   constructor(
     private readonly groupsService: GroupsService,
@@ -60,6 +61,9 @@ export class GroupsController {
 
   checkHandle(handle: string) {
     if (!handle || !handle.match(/^[a-zA-Z][0-9a-zA-Z\-]{2,}$/i)) {
+      throw new Error('Invalid handle');
+    }
+    if (this.ignoreHandles.includes(handle.toLowerCase())) {
       throw new Error('Invalid handle');
     }
   }
