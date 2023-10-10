@@ -10,6 +10,7 @@ import { RedisService } from '../redis.service';
 import { AzblobService } from '../azblob/azblob.service';
 import { EsService } from '../es/es.service';
 import { FollowGroupsService } from '../follow-groups/follow-groups.service';
+import { FollowTopicsService } from '../follow-topics/follow-topics.service';
 import { FollowUsersService } from '../follow-users/follow-users.service';
 import { GroupsService } from '../groups/groups.service';
 import { LikesService } from '../likes/likes.service';
@@ -17,6 +18,7 @@ import { MembershipsService } from '../memberships/memberships.service';
 import { NotesService } from '../notes/notes.service';
 import { StockLabelsService } from '../stock-labels/stock-labels.service';
 import { StocksService } from '../stocks/stocks.service';
+import { TopicsService } from '../topics/topics.service';
 import { UsersService } from '../users/users.service';
 
 class CreateUserDtoForTest extends CreateUserDto {
@@ -53,6 +55,8 @@ describe('UserController', () => {
         RedisService,
         FollowUsersService,
         FollowGroupsService,
+        FollowTopicsService,
+        TopicsService,
       ],
       imports: [
         ConfigModule.forRoot({

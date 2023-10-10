@@ -37,6 +37,7 @@ import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 
 import { AzblobService } from '../azblob/azblob.service';
 import { FollowGroupsService } from '../follow-groups/follow-groups.service';
+import { FollowTopicsService } from '../follow-topics/follow-topics.service';
 import { FollowUsersService } from '../follow-users/follow-users.service';
 import { GroupsService } from '../groups/groups.service';
 import { LikesService } from '../likes/likes.service';
@@ -48,6 +49,7 @@ import { NotesService } from '../notes/notes.service';
 import { RedisService } from '../redis.service';
 import { StockLabelsService } from '../stock-labels/stock-labels.service';
 import { StocksService } from '../stocks/stocks.service';
+import { TopicsService } from '../topics/topics.service';
 import { UsersService } from '../users/users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -59,8 +61,9 @@ export class UserController {
   constructor(
     private readonly configService: ConfigService,
     private readonly blobsService: AzblobService,
-    private readonly followUsersService: FollowUsersService,
     private readonly followGroupsService: FollowGroupsService,
+    private readonly followTopicsService: FollowTopicsService,
+    private readonly followUsersService: FollowUsersService,
     private readonly groupsService: GroupsService,
     private readonly likesService: LikesService,
     private readonly membershipsService: MembershipsService,
@@ -68,6 +71,7 @@ export class UserController {
     private readonly redisService: RedisService,
     private readonly stockLabelsService: StockLabelsService,
     private readonly stocksService: StocksService,
+    private readonly topicsService: TopicsService,
     private readonly usersService: UsersService,
   ) {
     if (!this.configService.get<string>('IRON_SECRET')) {
@@ -292,6 +296,123 @@ export class UserController {
     }
 
     return { ...followGroup };
+  }
+
+  @Get('following/topics')
+  async findFollowingTopics(
+    @Request() request: any,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
+  ) {
+    const userId: string | undefined = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    let followTopics;
+    try {
+      const [data, total] = await this.followTopicsService.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'asc' },
+        include: { Topic: true },
+        skip: skip && skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
+      });
+      followTopics = { data, meta: { total } };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return followTopics;
+  }
+
+  @Get('following/topics/:topicId')
+  async findFollowingTopic(@Request() request: any, @Param('topicId') topicId: string) {
+    const userId: string | undefined = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let topic;
+    try {
+      topic = await this.topicsService.findOne({
+        where: { id: topicId },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!topic) {
+      throw new NotFoundException();
+    }
+
+    let followTopic;
+    try {
+      followTopic = await this.followTopicsService.findFirst({
+        where: { userId, topicId: topic.id },
+        include: { Topic: true },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return { ...followTopic };
+  }
+
+  @Put('following/topics/:topicId')
+  async followTopic(@Request() request: any, @Param('topicId') topicId: string) {
+    const userId: string | undefined = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let topic;
+    try {
+      topic = await this.topicsService.findOne({
+        where: { id: topicId },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!topic) {
+      throw new NotFoundException();
+    }
+
+    let followTopic;
+    try {
+      followTopic = await this.followTopicsService.createIfNotExists({ userId, topicId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException('Failed to follow topic');
+    }
+    return { ...followTopic };
+  }
+
+  @Delete('following/topics/:topicId')
+  async unfollowTopic(@Request() request: any, @Param('topicId') topicId: string) {
+    const userId: string | undefined = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let topic;
+    try {
+      topic = await this.topicsService.findOne({
+        where: { id: topicId },
+      });
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+    if (!topic) {
+      throw new NotFoundException();
+    }
+
+    let followTopic;
+    try {
+      followTopic = await this.followTopicsService.deleteIfExists({ userId, topicId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return { ...followTopic };
   }
 
   @Get('following/users')
