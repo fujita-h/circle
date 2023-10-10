@@ -1,8 +1,9 @@
 'use client';
 
 import { BackendImage } from '@/components/backend-image';
+import { Comment, SomeRequired } from '@/types';
+import Link from 'next/link';
 import { MarkdownLoader } from './md-loader';
-import { SomeRequired, Comment } from '@/types';
 
 export function CommentList({ comments }: { comments: SomeRequired<Comment, 'User'>[] }) {
   return (
@@ -27,7 +28,7 @@ function Comment({ comment }: { comment: SomeRequired<Comment, 'User'> }) {
   return (
     <div>
       <div className="flex justify-between">
-        <a href={`/u/${comment.User.handle}`}>
+        <Link href={`/users/${comment.User.handle}`}>
           <div className="flex items-center space-x-2">
             <BackendImage src={`/users/${comment.User.id}/photo`} className="h-8 w-8 rounded-full" alt="" />
             <div className="text-sm">
@@ -37,7 +38,7 @@ function Comment({ comment }: { comment: SomeRequired<Comment, 'User'> }) {
               </span>
             </div>
           </div>
-        </a>
+        </Link>
         <div className="text-sm text-gray-500">{createdAt}</div>
       </div>
       <div className="mt-4">

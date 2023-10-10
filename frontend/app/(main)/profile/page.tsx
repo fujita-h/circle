@@ -21,7 +21,7 @@ export default function Page() {
 
   useEffect(() => {
     if (data && data.handle) {
-      router.replace(`/u/${data.handle}`);
+      router.replace(`/users/${data.handle}`);
     }
   }, [data, router]);
 

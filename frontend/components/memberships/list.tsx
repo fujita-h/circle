@@ -39,7 +39,7 @@ export function CardList({ members, showAdminMenu = false }: { members: SomeRequ
           ) : (
             <></>
           )}
-          <Link href={`/u/${member.User.handle}`} className="group relative">
+          <Link href={`/users/${member.User.handle}`} className="group relative">
             <div className="flex flex-1 flex-col p-6">
               <BackendImage
                 src={`/users/${member.User.id}/photo`}

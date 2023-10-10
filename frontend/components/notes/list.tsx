@@ -31,7 +31,7 @@ export function List({ notes }: { notes: SomeRequired<Note, 'User'>[] }) {
 
               <div className="min-w-0 flex-auto">
                 <div className="text-sm flex gap-x-2">
-                  <Link className="z-10 hover:underline" href={`/u/${note.User.handle}`}>
+                  <Link className="z-10 hover:underline" href={`/users/${note.User.handle}`}>
                     <span>@{note.User.handle}</span>
                   </Link>
                   {note.User.name ? <span>({note.User.name})</span> : <></>}
@@ -108,7 +108,7 @@ export function CardList({
                 </div>
                 <div className="text-sm flex gap-x-2">
                   <div className="z-10">
-                    <Link className=" hover:underline" href={`/u/${note.User.handle}`}>
+                    <Link className=" hover:underline" href={`/users/${note.User.handle}`}>
                       <span>@{note.User.handle}</span>
                       {note.User.name ? <span> ({note.User.name})</span> : <></>}
                     </Link>

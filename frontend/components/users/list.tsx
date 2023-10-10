@@ -14,7 +14,7 @@ export function CardList({ users }: { users: User[] }) {
     <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {users.map((user) => (
         <li key={user.id} className="col-span-1 flex flex-col divide-y divide-gray-200 rounded-lg bg-white text-center shadow">
-          <Link href={`/u/${user.handle}`} className="group">
+          <Link href={`/users/${user.handle}`} className="group">
             <div className="flex flex-1 flex-col p-6">
               <BackendImage
                 src={`/users/${user.id}/photo`}

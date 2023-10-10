@@ -31,8 +31,8 @@ export default function Layout({ params, children }: { params: any; children: Re
   }
 
   const tabs: TabItem[] = [
-    { name: 'Notes', href: `/u/${handle}/notes`, current: false, count: user._count.Notes },
-    { name: 'Joined', href: `/u/${handle}/joined`, current: false, count: user._count.Joined },
+    { name: 'Notes', href: `/users/${handle}/notes`, current: false, count: user._count.Notes },
+    { name: 'Joined', href: `/users/${handle}/joined`, current: false, count: user._count.Joined },
   ];
 
   return (
