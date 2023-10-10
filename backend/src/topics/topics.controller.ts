@@ -170,6 +170,16 @@ export class TopicsController {
     return notes;
   }
 
+  @Get(':id/notes/count')
+  async countNotes(@Param('id') id: string) {
+    try {
+      return this.topicMapsService.count({ where: { topicId: id } });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+  }
+
   @Get(':id/photo')
   async getPhoto(@Param('id') id: string, @Response() response: any) {
     let topic;

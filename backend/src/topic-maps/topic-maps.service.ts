@@ -54,6 +54,10 @@ export class TopicMapsService {
     ]);
   }
 
+  async count({ where }: { where?: Prisma.TopicMapWhereInput }) {
+    return this.prisma.topicMap.count({ where });
+  }
+
   async findOne({
     where,
     include = { Note: false, Topic: false },
