@@ -78,7 +78,7 @@ export default function Page({ params }: { params: any }) {
         <div className="py-4 bg-white border-t border-gray-200">
           <div className="max-w-screen-2xl mx-auto">
             <div className="px-4 lg:px-8">
-              <Link href={`/g/${note.Group.handle}`}>
+              <Link href={`/groups/${note.Group.handle}`}>
                 <div className="flex items-center">
                   <BackendImage
                     src={`/groups/${note.Group.id}/photo`}

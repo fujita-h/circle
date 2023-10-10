@@ -111,7 +111,7 @@ export function UpdateGroupForm({ groupId }: { groupId: string }) {
           if (newData.handle === data.handle) {
             mutate(`${environment.BACKEND_ENDPOINT}/groups/handle/${data.handle}`);
           } else {
-            router.replace(`/g/${newData.handle}/settings`);
+            router.replace(`/groups/${newData.handle}/settings`);
           }
         } else {
           setFailedMessage('更新に失敗しました');

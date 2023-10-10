@@ -60,12 +60,12 @@ function Layout({ group, children }: { group: SomeRequired<Group, '_count'>; chi
   }
 
   const tabs: TabItem[] = [
-    { name: 'Notes', href: `/g/${group.handle}/notes`, current: false, count: group._count.Notes },
-    { name: 'Members', href: `/g/${group.handle}/members`, current: false, count: group._count.Members },
+    { name: 'Notes', href: `/groups/${group.handle}/notes`, current: false, count: group._count.Notes },
+    { name: 'Members', href: `/groups/${group.handle}/members`, current: false, count: group._count.Members },
   ];
 
   if (data?.membership?.role === 'ADMIN') {
-    tabs.push({ name: 'Settings', href: `/g/${group.handle}/settings`, current: false });
+    tabs.push({ name: 'Settings', href: `/groups/${group.handle}/settings`, current: false });
   }
 
   return (

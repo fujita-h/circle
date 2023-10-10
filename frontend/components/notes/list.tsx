@@ -115,7 +115,7 @@ export function CardList({
                     {note.Group && !isGroupList ? (
                       <span>
                         <span> in </span>
-                        <Link className=" hover:underline" href={`/g/${note.Group.handle}`}>
+                        <Link className=" hover:underline" href={`/groups/${note.Group.handle}`}>
                           {note.Group.name || note.Group.handle}
                         </Link>
                       </span>
