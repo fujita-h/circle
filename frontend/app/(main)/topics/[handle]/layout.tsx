@@ -36,8 +36,17 @@ export default function HandleWrapper({ params, children }: { params: any; child
 }
 
 function Layout({ topic, children }: { topic: Topic; children: React.ReactNode }) {
+  const environment = useEnvironment();
+  const { instance, accounts } = useMsal();
+  const account = useAccount(accounts[0] || {});
+  const fetcher = swrMsalTokenFetcher(instance, account, environment);
+
+  const { data: topicNotesCount } = useSWR<number>(`${environment.BACKEND_ENDPOINT}/topics/${topic.id}/notes/count`, fetcher, {
+    revalidateOnFocus: false,
+  });
+
   const tabs: TabItem[] = [
-    { name: 'Notes', href: `/topics/${topic.handle}/notes`, current: false, count: -1 },
+    { name: 'Notes', href: `/topics/${topic.handle}/notes`, current: false, count: topicNotesCount || undefined },
     //{ name: 'Users', href: `/topics/${topic.handle}/users`, current: false, count: -1 },
   ];
 
