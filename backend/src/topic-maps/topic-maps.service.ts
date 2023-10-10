@@ -28,11 +28,13 @@ export class TopicMapsService {
   }
 
   async findAll({
-    include = { Note: false, Topic: false },
+    select,
+    where,
   }: {
-    include?: Prisma.TopicMapInclude;
-  } = {}) {
-    return this.prisma.topicMap.findMany({ include });
+    select?: Prisma.TopicMapSelect;
+    where?: Prisma.TopicMapWhereInput;
+  }) {
+    return this.prisma.topicMap.findMany({ select, where });
   }
 
   async findMany({
