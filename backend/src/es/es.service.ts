@@ -13,18 +13,38 @@ export class EsService {
     this.logger.log('Initializing Es Service...');
 
     // Initialize Elasticsearch Client
+    const ES_ENDPOINT = this.configService.get<string>('ES_ENDPOINT') || 'https://127.0.0.1:9200';
+    const ES_USERNAME = this.configService.get<string>('ES_USERNAME') || '';
+    const ES_PASSWORD = this.configService.get<string>('ES_PASSWORD') || '';
+    const ES_CA_STRING = this.configService.get<string>('ES_CA_STRING') || '';
+    const ES_CA_FILE = this.configService.get<string>('ES_CA_FILE') || '';
+    const ES_TLS_REJECT_UNAUTHORIZED =
+      this.configService.get<boolean>('ES_TLS_REJECT_UNAUTHORIZED') || true;
+
+    let auth = undefined;
+    if (ES_USERNAME && ES_PASSWORD) {
+      auth = {
+        username: ES_USERNAME,
+        password: ES_PASSWORD,
+      };
+    }
+
+    let ca = undefined;
+    if (ES_CA_STRING) {
+      ca = ES_CA_STRING;
+    } else if (ES_CA_FILE) {
+      try {
+        ca = fs.readFileSync(ES_CA_FILE, 'utf8');
+      } catch (err) {
+        ca = undefined;
+        this.logger.error(err);
+      }
+    }
+
     this.client = new Client({
-      node: this.configService.get<string>('ES_ENDPOINT') || 'https://127.0.0.1:9200',
-      auth: {
-        username: this.configService.get<string>('ES_USERNAME') || 'elastic',
-        password: this.configService.get<string>('ES_PASSWORD') || 'elastic',
-      },
-      tls: {
-        ca: this.configService.get<string>('ES_CA_FILE')
-          ? fs.readFileSync(this.configService.get<string>('ES_CA_FILE') || '')
-          : undefined,
-        rejectUnauthorized: true,
-      },
+      node: ES_ENDPOINT,
+      auth: auth,
+      tls: { ca: ca, rejectUnauthorized: ES_TLS_REJECT_UNAUTHORIZED },
     });
   }
 
