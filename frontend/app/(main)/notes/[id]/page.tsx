@@ -107,20 +107,19 @@ export default function Page({ params }: { params: any }) {
                   </div>
                   <div className="flex gap-2 flex-wrap">
                     {note.Topics.map((tm: TopicMap) => (
-                      <div
-                        key={tm.topicId}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-white ring-1 shadow-sm ring-gray-300 rounded-md"
-                      >
-                        <div className="flex-shrink-0">
-                          <BackendImage
-                            src={`/topics/${tm.Topic?.id}/photo`}
-                            className="w-6 h-6 rounded-full"
-                            alt="topic icon"
-                            fallback={<></>}
-                          />
+                      <Link key={tm.topicId} href={`/topics/${tm.Topic?.handle}`}>
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white ring-1 shadow-sm ring-gray-300 rounded-md hover:bg-gray-50 hover:ring-indigo-300">
+                          <div className="flex-shrink-0">
+                            <BackendImage
+                              src={`/topics/${tm.Topic?.id}/photo`}
+                              className="w-6 h-6 rounded-full"
+                              alt="topic icon"
+                              fallback={<></>}
+                            />
+                          </div>
+                          <div className="flex-none text-base text-gray-900">{tm.Topic?.name}</div>
                         </div>
-                        <div className="flex-none text-base text-gray-900">{tm.Topic?.name}</div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
