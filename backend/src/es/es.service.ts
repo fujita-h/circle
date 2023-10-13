@@ -19,7 +19,8 @@ export class EsService {
     const ES_CA_STRING = this.configService.get<string>('ES_CA_STRING') || '';
     const ES_CA_FILE = this.configService.get<string>('ES_CA_FILE') || '';
     const ES_TLS_REJECT_UNAUTHORIZED =
-      this.configService.get<boolean>('ES_TLS_REJECT_UNAUTHORIZED') || true;
+      this.configService.get<string>('ES_TLS_REJECT_UNAUTHORIZED')?.toLowerCase() === 'true' ||
+      false;
 
     let auth = undefined;
     if (ES_USERNAME && ES_PASSWORD) {
