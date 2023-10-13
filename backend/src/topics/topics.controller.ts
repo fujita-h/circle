@@ -15,6 +15,7 @@ import {
   Post,
   Put,
   Query,
+  Request,
   Response,
   UploadedFile,
   UseGuards,
@@ -28,6 +29,7 @@ import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 import { AuthorizedRolesAny } from '../guards/jwt.roles.decorator';
 import { JwtRolesGuard } from '../guards/jwt.roles.guard';
 import { TopicMapsService } from '../topic-maps/topic-maps.service';
+import { UsersService } from '../users/users.service';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { UpdateTopicDto } from './dto/update-topic.dto';
 import { TopicsService } from './topics.service';
@@ -41,6 +43,7 @@ export class TopicsController {
   constructor(
     private readonly topicsService: TopicsService,
     private readonly topicMapsService: TopicMapsService,
+    private readonly usersService: UsersService,
     private readonly blobsService: AzblobService,
   ) {
     this.logger.log('Initializing Topics Controller...');
@@ -170,12 +173,100 @@ export class TopicsController {
     return notes;
   }
 
+  @Get(':id/users')
+  async getTopicUsers(
+    @Request() request: any,
+    @Param('id') id: string,
+    @Query('skip', new DefaultValuePipe(-1), ParseIntPipe) skip?: number,
+    @Query('take', new DefaultValuePipe(-1), ParseIntPipe) take?: number,
+  ) {
+    const userId = request.user.id;
+    let users;
+    try {
+      const [data, total] = await this.usersService.findMany({
+        select: { id: true, name: true, handle: true },
+        where: {
+          handle: { not: null },
+          Notes: {
+            some: {
+              AND: [
+                { Topics: { some: { topicId: id } } },
+                { status: 'NORMAL' },
+                {
+                  OR: [
+                    { userId: userId }, // user is owner
+                    { groupId: null }, // group is not assigned
+                    {
+                      Group: {
+                        handle: { not: null },
+                        status: 'NORMAL',
+                        readNotePermission: 'ADMIN',
+                        Members: { some: { userId: userId, role: 'ADMIN' } },
+                      },
+                    }, // readNotePermission is ADMIN and user is admin of group
+                    {
+                      Group: {
+                        handle: { not: null },
+                        status: 'NORMAL',
+                        readNotePermission: 'MEMBER',
+                        Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                      },
+                    }, // readNotePermission is MEMBER and user is member of group
+                    {
+                      Group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+                    }, // readNotePermission is ALL
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        skip: skip && skip > 0 ? skip : undefined,
+        take: take && take > 0 ? take : undefined,
+      });
+      users = { data, meta: { total } };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    return users;
+  }
+
   @Get(':id/statistics')
-  async getStatistics(@Param('id') id: string) {
+  async getStatistics(@Request() request: any, @Param('id') id: string) {
+    const userId = request.user.id;
     try {
       const topicMaps = await this.topicMapsService.findAll({
         select: { noteId: true, Note: { select: { userId: true } } },
-        where: { topicId: id },
+        where: {
+          topicId: id,
+          Note: {
+            status: 'NORMAL',
+            OR: [
+              { userId: userId }, // user is owner
+              { groupId: null }, // group is not assigned
+              {
+                Group: {
+                  handle: { not: null },
+                  status: 'NORMAL',
+                  readNotePermission: 'ADMIN',
+                  Members: { some: { userId: userId, role: 'ADMIN' } },
+                },
+              }, // readNotePermission is ADMIN and user is admin of group
+              {
+                Group: {
+                  handle: { not: null },
+                  status: 'NORMAL',
+                  readNotePermission: 'MEMBER',
+                  Members: { some: { userId: userId, role: { in: ['ADMIN', 'MEMBER'] } } },
+                },
+              }, // readNotePermission is MEMBER and user is member of group
+              {
+                Group: { handle: { not: null }, status: 'NORMAL', readNotePermission: 'ALL' },
+              }, // readNotePermission is ALL
+            ],
+          },
+        },
       });
       return {
         _count: {
