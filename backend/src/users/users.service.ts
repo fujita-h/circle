@@ -46,6 +46,26 @@ export class UsersService {
     return this.prisma.user.findMany({ include });
   }
 
+  findMany({
+    select,
+    where,
+    orderBy,
+    take,
+    skip,
+  }: {
+    select?: Prisma.UserSelect;
+    where?: Prisma.UserWhereInput;
+    orderBy?: Prisma.Enumerable<Prisma.UserOrderByWithRelationInput>;
+    include?: Prisma.UserInclude;
+    take?: number;
+    skip?: number;
+  }) {
+    return this.prisma.$transaction([
+      this.prisma.user.findMany({ select, where, orderBy, take, skip }),
+      this.prisma.user.count({ where }),
+    ]);
+  }
+
   findManyInclude({
     where,
     orderBy,
