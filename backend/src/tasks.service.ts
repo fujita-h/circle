@@ -9,6 +9,10 @@ export class TasksService {
 
   constructor(private readonly redisService: RedisService) {
     this.logger.log('Initializing Tasks Service...');
+    this.handleNotesTrendingWeekly();
+    this.handleNotesTrendingMonthly();
+    this.handleGroupsTrendingWeekly();
+    this.handleGroupsTrendingMonthly();
   }
 
   @Cron('5 */30 * * * *')
