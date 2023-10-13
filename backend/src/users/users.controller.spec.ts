@@ -50,7 +50,7 @@ describe('UsersController', () => {
 
     // delete test users
     await usersService
-      .findMany({
+      .findManyInclude({
         where: {
           OR: [
             { id: { startsWith: testPrefix } },

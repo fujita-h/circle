@@ -46,7 +46,7 @@ export class UsersService {
     return this.prisma.user.findMany({ include });
   }
 
-  findMany({
+  findManyInclude({
     where,
     orderBy,
     include = { _count: false },

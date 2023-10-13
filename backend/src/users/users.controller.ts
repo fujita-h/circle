@@ -85,7 +85,7 @@ export class UsersController {
   ) {
     let users;
     try {
-      const [data, total] = await this.usersService.findMany({
+      const [data, total] = await this.usersService.findManyInclude({
         where: { handle: { not: null }, status: 'NORMAL' },
         orderBy: { handle: 'asc' },
         take: take && take > 0 ? take : undefined,

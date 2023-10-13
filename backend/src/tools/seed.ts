@@ -87,7 +87,7 @@ async function getUsers(): Promise<string[]> {
     })
       .then(async (appContext) => {
         const usersService = appContext.get(UsersService);
-        const [users] = await usersService.findMany({
+        const [users] = await usersService.findManyInclude({
           where: { oid: { startsWith: 'seed-' } },
         });
         resolve(users.map((user) => user.id));
@@ -105,7 +105,7 @@ async function deleteUsers(): Promise<string[]> {
     })
       .then(async (appContext) => {
         const usersService = appContext.get(UsersService);
-        const [users] = await usersService.findMany({
+        const [users] = await usersService.findManyInclude({
           where: { oid: { startsWith: 'seed-' } },
         });
         const results = await concurrentPromise(

@@ -37,7 +37,7 @@ const testingModule = {
 };
 const deleteTestUsers = async (usersService: UsersService) => {
   await usersService
-    .findMany({ where: { handle: { startsWith: testPrefix } } })
+    .findManyInclude({ where: { handle: { startsWith: testPrefix } } })
     .then(async (results) => {
       for (const result of results[0]) {
         await usersService.remove({ where: { id: result.id } });
