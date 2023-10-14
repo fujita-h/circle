@@ -7,6 +7,7 @@ import { Like } from './like';
 import { FollowUser } from './follow-user';
 import { FollowGroup } from './follow-group';
 import { Notification } from './notification';
+import { UserSetting } from './user-setting';
 
 export interface User {
   id: string;
@@ -28,6 +29,7 @@ export interface User {
   FollowedUsers?: FollowUser[];
   FollowingGroups?: FollowGroup[];
   Notifications?: Notification[];
+  UserSetting?: UserSetting;
 
   // include count
   _count?: {
