@@ -35,6 +35,7 @@ import { TopicsService } from './topics/topics.service';
 import { UsersService } from './users/users.service';
 import { TopicsController } from './topics/topics.controller';
 import { TopicMapsService } from './topic-maps/topic-maps.service';
+import { UserSettingsService } from './user-settings/user-settings.service';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { TopicMapsService } from './topic-maps/topic-maps.service';
     TopicsService,
     UsersService,
     TopicMapsService,
+    UserSettingsService,
   ],
 })
 export class AppModule {}

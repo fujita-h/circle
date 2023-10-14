@@ -32,10 +32,23 @@ model User {
   FollowingGroups FollowGroup[]
   FollowingTopics FollowTopic[]
   Notifications   Notification[]
+  UserSetting     UserSetting?
 
   @@index([type])
   @@index([status])
   @@map("user")
+}
+
+model UserSetting {
+  id             String         @id @default(cuid())
+  User           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String         @unique @map("user_id")
+  listNotesStyle StyleListNotes @default(CARD) @map("list_notes_style")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("user_setting")
 }
 
 model Group {
@@ -310,4 +323,9 @@ enum NotificationStatus {
   UNREAD
   READ
   DELETED
+}
+
+enum StyleListNotes {
+  CARD
+  LIST
 }
