@@ -62,7 +62,7 @@ export function LabelsLoader({ activeLabelId, onChanged }: { activeLabelId?: str
           </button>
         </li>
         {labels.data.map((label) => {
-          const count = stocks?.data.filter((stock) => stock.labelId === label.id).length || 0;
+          const count = label._count?.Stocks || 0;
           return (
             <li key={label.id} className="relative">
               <button
