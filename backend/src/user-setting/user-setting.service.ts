@@ -7,14 +7,14 @@ import { init } from '@paralleldrive/cuid2';
 const cuid = init({ length: 24 });
 
 @Injectable()
-export class UserSettingsService {
-  private logger = new Logger(UserSettingsService.name);
+export class UserSettingService {
+  private logger = new Logger(UserSettingService.name);
 
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
   ) {
-    this.logger.log('Initializing User Settings Service...');
+    this.logger.log('Initializing User Setting Service...');
   }
 
   create({

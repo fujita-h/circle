@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from '../prisma.service';
-import { UserSettingsService } from './user-settings.service';
+import { UserSettingService } from './user-setting.service';
 
-describe('UserSettingsService', () => {
-  let service: UserSettingsService;
+describe('UserSettingService', () => {
+  let service: UserSettingService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UserSettingsService, PrismaService],
+      providers: [UserSettingService, PrismaService],
       imports: [
         ConfigModule.forRoot({
           envFilePath: [`.env.${process.env.NODE_ENV}.local`, '.env.local'],
@@ -16,7 +16,7 @@ describe('UserSettingsService', () => {
       ],
     }).compile();
 
-    service = module.get<UserSettingsService>(UserSettingsService);
+    service = module.get<UserSettingService>(UserSettingService);
   });
 
   it('should be defined', () => {
