@@ -51,7 +51,10 @@ import { StockLabelsService } from '../stock-labels/stock-labels.service';
 import { StocksService } from '../stocks/stocks.service';
 import { TopicsService } from '../topics/topics.service';
 import { UsersService } from '../users/users.service';
+import { UserSettingService } from '../user-setting/user-setting.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserSettingDto } from './dto/create-user-setting.dto';
+import { UpdateUserSettingDto } from './dto/update-user-setting.dto';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('user')
@@ -73,6 +76,7 @@ export class UserController {
     private readonly stocksService: StocksService,
     private readonly topicsService: TopicsService,
     private readonly usersService: UsersService,
+    private readonly userSettingService: UserSettingService,
   ) {
     if (!this.configService.get<string>('IRON_SECRET')) {
       this.logger.error('IRON_SECRET is not defined');
@@ -149,6 +153,53 @@ export class UserController {
     }
     const roles = request.user?.token?.roles || request.user?.roles || [];
     return { data: roles };
+  }
+
+  @Get('setting')
+  async findSetting(@Request() request: any, @Body() data?: CreateUserSettingDto) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let setting;
+    try {
+      setting = await this.userSettingService.findOne({ where: { userId } });
+      // create setting if not exists
+      if (!setting) {
+        setting = await this.userSettingService.create({
+          data: { User: { connect: { id: userId } }, ...data },
+        });
+      }
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+
+    return setting;
+  }
+
+  @Patch('setting')
+  async updateSetting(@Request() request: any, @Body() data: UpdateUserSettingDto) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let setting;
+    try {
+      setting = await this.userSettingService.update({
+        where: { userId },
+        data: { ...data },
+      });
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+    if (!setting) {
+      throw new NotFoundException();
+    }
+    return setting;
   }
 
   @Get('following/groups')

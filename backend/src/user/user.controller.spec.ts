@@ -20,6 +20,7 @@ import { StockLabelsService } from '../stock-labels/stock-labels.service';
 import { StocksService } from '../stocks/stocks.service';
 import { TopicsService } from '../topics/topics.service';
 import { UsersService } from '../users/users.service';
+import { UserSettingService } from '../user-setting/user-setting.service';
 
 class CreateUserDtoForTest extends CreateUserDto {
   id: string;
@@ -57,6 +58,7 @@ describe('UserController', () => {
         FollowGroupsService,
         FollowTopicsService,
         TopicsService,
+        UserSettingService,
       ],
       imports: [
         ConfigModule.forRoot({
