@@ -4,7 +4,7 @@ export interface UserSetting {
   id: string;
   User: User;
   userId: string;
-  listNoteStyle: StyleListNotes;
+  listNotesStyle: StyleListNotes;
   createdAt: string;
   updatedAt: string;
 }
