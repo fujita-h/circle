@@ -2,7 +2,7 @@ import { ResponsiveTabs, TabItem } from '@/components/tabs';
 
 const tabItems: TabItem[] = [
   { name: 'アカウント', href: '/settings/account', current: false },
-  { name: '表示', href: '/settings/view', current: false },
+  { name: '一般', href: '/settings/general', current: false },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
