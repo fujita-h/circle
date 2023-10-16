@@ -125,11 +125,14 @@ export function Navbar() {
                     </Menu.Items>
                   </Transition>
                 </Menu>
-                <Link href="/drafts/new">
-                  <div className="ml-2 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 hover:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                <div className="ml-2">
+                  <Link
+                    href="/drafts/new"
+                    className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 hover:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
                     投稿する
-                  </div>
-                </Link>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
