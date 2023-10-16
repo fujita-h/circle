@@ -4,7 +4,7 @@ import { useEnvironment } from '@/components/environment/providers';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { CardList } from '@/components/notes/list';
 import { LinkPagination } from '@/components/paginations';
-import { Group } from '@/types';
+import { Group, UserSetting } from '@/types';
 import { useAccount, useMsal } from '@azure/msal-react';
 import useSWR from 'swr';
 
@@ -18,14 +18,17 @@ export function Loader({ group, pathname, page, take }: { group: Group; pathname
 
   // fetch data
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
-  const { data: notes, isLoading } = useSWR<{ data: any[]; meta: { total: number } }>(
+  const { data: setting, isLoading: isSettingLoading } = useSWR<UserSetting>(`${environment.BACKEND_ENDPOINT}/user/setting`, fetcher, {
+    revalidateOnFocus: false,
+  });
+  const { data: notes, isLoading: isNotesLoading } = useSWR<{ data: any[]; meta: { total: number } }>(
     `${environment.BACKEND_ENDPOINT}/groups/${group.id}/notes?take=${take}&skip=${skip}`,
     fetcher,
     { revalidateOnFocus: false },
   );
 
   // render loading
-  if (isLoading) {
+  if (isSettingLoading || isNotesLoading) {
     return <div>loading...</div>;
   }
 
@@ -36,7 +39,7 @@ export function Loader({ group, pathname, page, take }: { group: Group; pathname
 
   return (
     <>
-      <CardList notes={notes.data} isGroupList={true} />
+      <CardList notes={notes.data} isGroupList={true} forceSingleCols={setting?.listNotesStyle === 'LIST'} />
       <div className="py-5">
         <LinkPagination pathname={pathname} page={page} total={notes.meta.total} take={take} />
       </div>

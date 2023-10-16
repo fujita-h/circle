@@ -7,6 +7,7 @@ import { LinkPagination } from '@/components/paginations';
 import { classNames } from '@/utils';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { Inter } from 'next/font/google';
+import { UserSetting } from '@/types';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import useSWR from 'swr';
@@ -63,6 +64,9 @@ function ResultPage({ searchQuery }: { searchQuery: string }) {
   const skip = (page - 1) * take;
   const [query, setQuery] = useState('');
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
+  const { data: setting, isLoading: isSettingLoading } = useSWR<UserSetting>(`${environment.BACKEND_ENDPOINT}/user/setting`, fetcher, {
+    revalidateOnFocus: false,
+  });
   const { data: results, isLoading } = useSWR<{ data: any[]; meta: { total: number } }>(
     `${environment.BACKEND_ENDPOINT}/notes/search?q=${searchQuery}&take=${take}&skip=${skip}`,
     fetcher,
@@ -77,7 +81,7 @@ function ResultPage({ searchQuery }: { searchQuery: string }) {
     }
     router.push(`/search?q=${query}`);
   };
-  if (isLoading) {
+  if (isSettingLoading || isLoading) {
     return <div>loading...</div>;
   }
 
@@ -99,7 +103,7 @@ function ResultPage({ searchQuery }: { searchQuery: string }) {
         />
       </form>
       <div className="mt-6">
-        <CardList notes={results.data.map((x) => x._source)} />
+        <CardList notes={results.data.map((x) => x._source)} forceSingleCols={setting?.listNotesStyle === 'LIST'} />
         <div className="py-5">
           <LinkPagination pathname={pathname} page={page} total={results.meta.total} take={take} query={`q=${searchQuery}`} />
         </div>
