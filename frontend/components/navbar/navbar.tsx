@@ -13,6 +13,7 @@ import { Fragment } from 'react';
 import { UserEmail, UserName } from './user-data';
 
 const inter = Inter({ subsets: ['latin'] });
+
 const navigation: any[] = [];
 const userNavigation = [
   { name: 'プロフィール', href: '/profile' },
@@ -23,6 +24,7 @@ const userNavigation = [
 
 export function Navbar() {
   const environment = useEnvironment();
+
   return (
     <Disclosure as="nav" className="bg-white">
       {({ open }) => (
@@ -89,7 +91,7 @@ export function Navbar() {
                 {/* Profile dropdown */}
                 <Menu as="div" className="ml-1 relative flex-shrink-0">
                   <div>
-                    <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none hover:ring-gray-300 hover:ring-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                       <span className="sr-only">Open user menu</span>
                       <BackendImage
                         src="/user/photo"
