@@ -23,8 +23,8 @@ export default function Page() {
       <div className="divide-y divide-white/5">
         <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
           <div>
-            <h2 className="text-base font-semibold leading-7 text-gray-900">Personal Information</h2>
-            <p className="mt-1 text-sm leading-6 text-gray-400">Use a permanent address where you can receive mail.</p>
+            <h2 className="text-base font-semibold leading-7 text-gray-900">アカウント情報</h2>
+            <p className="mt-1 text-sm leading-6 text-gray-400">アカウントに関する設定</p>
           </div>
           <Suspense fallback={<div>Loading...</div>}>
             <UpdateProfileForm />
@@ -51,19 +51,16 @@ export default function Page() {
         <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
           <div>
             <h2 className="text-base font-semibold leading-7 text-gray-900">アカウントの削除</h2>
-            <p className="mt-1 text-sm leading-6 text-gray-400">
-              No longer want to use our service? You can delete your account here. This action is not reversible. All information related to
-              this account will be deleted permanently.
-            </p>
+            <p className="mt-1 text-sm leading-6 text-gray-400">現在アカウントを削除することはできません。</p>
           </div>
 
           <form className="flex items-start md:col-span-2">
             <button
               disabled
               type="submit"
-              className="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400"
+              className="rounded-md bg-red-300 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:cursor-not-allowed"
             >
-              Yes, delete my account
+              アカウントの削除
             </button>
           </form>
         </div>
