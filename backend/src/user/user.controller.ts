@@ -810,6 +810,67 @@ export class UserController {
     return groups;
   }
 
+  @Get('trending/topics/weekly')
+  async findWeeklyTrendingTopics(
+    @Request() request: any,
+    @Query('take', new DefaultValuePipe(20), ParseIntPipe) take?: number,
+  ) {
+    return this._findTrendingTopics('topics/trending/weekly', request, take);
+  }
+
+  @Get('trending/topics/monthly')
+  async findMonthlyTrendingTopics(
+    @Request() request: any,
+    @Query('take', new DefaultValuePipe(20), ParseIntPipe) take?: number,
+  ) {
+    return this._findTrendingTopics('topics/trending/monthly', request, take);
+  }
+
+  async _findTrendingTopics(index: string, @Request() request: any, take?: number) {
+    const userId = request.user.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+
+    let trendingTopics;
+    try {
+      trendingTopics = await this.redisService.zrange(
+        index,
+        '+inf',
+        0,
+        'BYSCORE',
+        'REV',
+        'LIMIT',
+        0,
+        Math.min((take || 20) * 100, 20000),
+      );
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+
+    let topics;
+    try {
+      const [data, total] = await this.topicsService.findMany({
+        where: {
+          id: { in: trendingTopics },
+        },
+      });
+      topics = {
+        data: trendingTopics
+          .map((id) => data.find((topic: any) => topic.id === id))
+          .filter(Boolean)
+          .slice(0, take),
+        meta: { total },
+      };
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerErrorException();
+    }
+
+    return topics;
+  }
+
   @Get('groups/postable')
   async findPostable(@Request() request: any) {
     const userId = request.user.id;

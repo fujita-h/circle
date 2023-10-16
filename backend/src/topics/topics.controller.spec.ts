@@ -10,6 +10,7 @@ import { AzblobService } from '../azblob/azblob.service';
 import { EsService } from '../es/es.service';
 import { TopicMapsService } from '../topic-maps/topic-maps.service';
 import { UsersService } from '../users/users.service';
+import { RedisService } from '../redis.service';
 
 describe('TopicsController', () => {
   let controller: TopicsController;
@@ -24,6 +25,7 @@ describe('TopicsController', () => {
         TopicMapsService,
         UsersService,
         EsService,
+        RedisService,
       ],
       imports: [
         ConfigModule.forRoot({

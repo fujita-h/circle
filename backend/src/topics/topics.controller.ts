@@ -33,6 +33,7 @@ import { UsersService } from '../users/users.service';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { UpdateTopicDto } from './dto/update-topic.dto';
 import { TopicsService } from './topics.service';
+import { RedisService } from '../redis.service';
 
 @UseGuards(JwtAuthGuard, JwtRolesGuard)
 @Controller('topics')
@@ -45,6 +46,7 @@ export class TopicsController {
     private readonly topicMapsService: TopicMapsService,
     private readonly usersService: UsersService,
     private readonly blobsService: AzblobService,
+    private readonly redisService: RedisService,
   ) {
     this.logger.log('Initializing Topics Controller...');
     this.blobsService.init(this.blobContainerName);
@@ -62,6 +64,21 @@ export class TopicsController {
     if (!topic) {
       throw new NotFoundException();
     }
+
+    if (topic) {
+      const date = new Date().toISOString().split('T')[0];
+      const key = `topics/view/${date}`;
+      try {
+        await this.redisService
+          .multi()
+          .zincrby(key, 1, topic.id)
+          .expire(key, 60 * 60 * 24 * 30)
+          .exec();
+      } catch (e) {
+        this.logger.error(e);
+      }
+    }
+
     return topic;
   }
 
@@ -114,6 +131,21 @@ export class TopicsController {
     if (!topic) {
       throw new NotFoundException();
     }
+
+    if (topic) {
+      const date = new Date().toISOString().split('T')[0];
+      const key = `topics/view/${date}`;
+      try {
+        await this.redisService
+          .multi()
+          .zincrby(key, 1, topic.id)
+          .expire(key, 60 * 60 * 24 * 30)
+          .exec();
+      } catch (e) {
+        this.logger.error(e);
+      }
+    }
+
     return topic;
   }
 

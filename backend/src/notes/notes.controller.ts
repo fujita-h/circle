@@ -367,6 +367,22 @@ export class NotesController {
       }
     }
 
+    if (note.Topics) {
+      const date = new Date().toISOString().split('T')[0];
+      const key = `topics/view/notes/${date}`;
+      note.Topics.map(async (topicMap) => {
+        try {
+          await this.redisService
+            .multi()
+            .zincrby(key, 1, topicMap.topicId)
+            .expire(key, 60 * 60 * 24 * 30)
+            .exec();
+        } catch (e) {
+          this.logger.error(e);
+        }
+      });
+    }
+
     return { ...note, body };
   }
 
