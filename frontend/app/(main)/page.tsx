@@ -29,7 +29,7 @@ export default function Page() {
                 <p className="text-base text-gray-500">注目されている記事</p>
               </div>
               <div className="mt-6">
-                <NotesLoader cat="weekly" take={12} />
+                <NotesLoader category="weekly" take={12} />
               </div>
               <div className="mt-8 flex justify-center">
                 <Link href="/notes/explore" className="text-lg text-indigo-700 hover:text-indigo-500 hover:underline underline-offset-2">
@@ -43,7 +43,7 @@ export default function Page() {
                 <p className="text-base text-gray-500">注目されているグループ</p>
               </div>
               <div className="mt-6">
-                <GroupsLoader cat="weekly" take={12} />
+                <GroupsLoader category="weekly" take={12} />
               </div>
               <div className="mt-8 flex justify-center">
                 <Link href="/groups/explore" className="text-lg text-indigo-700 hover:text-indigo-500 hover:underline underline-offset-2">

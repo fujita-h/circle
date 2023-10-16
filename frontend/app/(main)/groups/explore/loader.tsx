@@ -6,7 +6,7 @@ import { CardList } from '@/components/groups/list';
 import { useAccount, useMsal } from '@azure/msal-react';
 import useSWR from 'swr';
 
-export function Loader({ cat, take }: { cat: 'weekly' | 'monthly'; take: number }) {
+export function Loader({ category, take }: { category: 'weekly' | 'monthly'; take: number }) {
   const environment = useEnvironment();
   const { instance, accounts } = useMsal();
   const account = useAccount(accounts[0] || {});
@@ -14,7 +14,7 @@ export function Loader({ cat, take }: { cat: 'weekly' | 'monthly'; take: number 
   // fetch data
   const fetcher = swrMsalTokenFetcher(instance, account, environment);
   const { data: groups, isLoading } = useSWR<{ data: any[]; meta: { total: number } }>(
-    `${environment.BACKEND_ENDPOINT}/user/trending/groups/${cat}?take=${take}`,
+    `${environment.BACKEND_ENDPOINT}/user/trending/groups/${category}?take=${take}`,
     fetcher,
     { revalidateOnFocus: false },
   );

@@ -49,8 +49,8 @@ export default function Page() {
                 <ResponsiveTabs tabs={tabItems} dynamic={false} />
               </div>
               <div className="mt-6">
-                {tab === 'weekly' ? <Loader cat="weekly" take={20} /> : <> </>}
-                {tab === 'monthly' ? <Loader cat="monthly" take={20} /> : <> </>}
+                {tab === 'weekly' ? <Loader category="weekly" take={20} /> : <> </>}
+                {tab === 'monthly' ? <Loader category="monthly" take={20} /> : <> </>}
               </div>
               <div className="mt-8 flex justify-center">
                 <div>
