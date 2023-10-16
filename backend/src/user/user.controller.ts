@@ -1147,7 +1147,9 @@ export class UserController {
         where: { noteId, userId },
         include: { Label: true },
       });
+      // Prisma did not support count with distinct, so count manually.
       const data2 = await this.stocksService.findManyDistinct({
+        select: { userId: true },
         where: { noteId },
         distinct: ['userId'],
       });
