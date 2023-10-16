@@ -1107,14 +1107,21 @@ export class UserController {
     }
     let stocks;
     try {
-      const [data, total] = await this.stocksService.findMany({
+      const data = await this.stocksService.findManyDistinct({
         where: { userId },
         orderBy: { createdAt: 'asc' },
-        include: { Label: true, Note: { include: { User: true, Group: true } } },
+        select: { Label: true, Note: { include: { User: true, Group: true } } },
+        distinct: ['noteId'],
         skip: skip && skip > 0 ? skip : undefined,
         take: take && take > 0 ? take : undefined,
       });
-      stocks = { data, meta: { total } };
+      // Prisma did not support count with distinct, so count manually.
+      const data2 = await this.stocksService.findManyDistinct({
+        select: { userId: true },
+        where: { userId },
+        distinct: ['noteId'],
+      });
+      stocks = { data, meta: { total: data2.length } };
     } catch (e) {
       this.logger.error(e);
       throw new InternalServerErrorException();
