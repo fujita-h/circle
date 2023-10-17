@@ -1,15 +1,15 @@
 'use client';
 
-import { Fragment, useState } from 'react';
-import { Transition, Dialog, Popover } from '@headlessui/react';
-import { classNames } from '@/utils';
-import useSWR from 'swr';
 import { useEnvironment } from '@/components/environment/providers';
-import { useAccount, useMsal } from '@azure/msal-react';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { apiRequest } from '@/components/msal/requests';
-import { ArchiveBoxIcon, FolderPlusIcon } from '@heroicons/react/24/solid';
 import { Stock } from '@/types';
+import { useAccount, useMsal } from '@azure/msal-react';
+import { Popover, Transition } from '@headlessui/react';
+import { ArchiveBoxIcon, FolderPlusIcon } from '@heroicons/react/24/solid';
+import clsx from 'clsx';
+import { Fragment, useState } from 'react';
+import useSWR from 'swr';
 
 export function StockButton({
   noteId,
@@ -111,7 +111,7 @@ export function StockButton({
         <div className="flex flex-col w-10">
           <Popover.Button
             as="div"
-            className={classNames(
+            className={clsx(
               'h-10 rounded-full bg-white flex items-center justify-center hover:cursor-pointer',
               showRing ? 'ring-1 ring-gray-300' : 'ring-0',
               stockedData.stocked.length > 0 ? 'text-blue-600 hover:text-blue-500' : 'text-gray-300 hover:text-gray-400',
@@ -122,7 +122,7 @@ export function StockButton({
               }
             }}
           >
-            <ArchiveBoxIcon className={classNames('w-6 h-6')} />
+            <ArchiveBoxIcon className={clsx('w-6 h-6')} />
           </Popover.Button>
           {showCounter ? <div className="text-center font-bold text-gray-500">{stockedData.count}</div> : <></>}
         </div>
@@ -137,7 +137,7 @@ export function StockButton({
           leaveTo="transform opacity-0 scale-95"
         >
           <Popover.Panel
-            className={classNames(
+            className={clsx(
               popoverDirection === 'right' ? '-top-3 left-12' : '',
               popoverDirection === 'left' ? '-top-3 right-12' : '',
               'absolute shadow-xl bg-white ring-1 ring-gray-300 rounded-md',

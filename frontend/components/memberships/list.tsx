@@ -4,7 +4,6 @@ import { BackendImage } from '@/components/backend-image';
 import { useEnvironment } from '@/components/environment/providers';
 import { apiRequest } from '@/components/msal/requests';
 import { Membership, SomeRequired } from '@/types';
-import { classNames } from '@/utils';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { Dialog, Listbox, Popover, Transition } from '@headlessui/react';
 import {
@@ -17,6 +16,7 @@ import {
   TrashIcon,
   UserIcon,
 } from '@heroicons/react/24/solid';
+import clsx from 'clsx';
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
 import { Fragment, useRef, useState } from 'react';
@@ -48,7 +48,7 @@ export function CardList({ members, showAdminMenu = false }: { members: SomeRequ
                 fallback={<UserIcon className="mx-auto h-32 w-32 flex-shrink-0 rounded-full bg-gray-100 text-gray-400" />}
               />
               <div className="mt-6">
-                <div className={classNames('text-sm text-gray-600 group-hover:underline', inter.className)}>@{member.User.handle}</div>
+                <div className={clsx('text-sm text-gray-600 group-hover:underline', inter.className)}>@{member.User.handle}</div>
                 <div className="text-base font-medium text-gray-900 group-hover:underline">{member.User.name}</div>
                 <dl className="mt-1 flex flex-grow flex-col justify-between">
                   <dt className="sr-only">Title</dt>
@@ -255,7 +255,7 @@ function UpdateRoleModal({
                                         <Listbox.Option
                                           key={role.name}
                                           className={({ active }) =>
-                                            classNames(
+                                            clsx(
                                               active ? 'bg-indigo-600 text-white' : 'text-gray-900',
                                               'relative cursor-default select-none py-2 pl-3 pr-9',
                                             )
@@ -265,17 +265,17 @@ function UpdateRoleModal({
                                           {({ selected, active }) => (
                                             <>
                                               <div className="flex">
-                                                <span className={classNames(selected ? 'font-semibold' : 'font-normal', 'truncate')}>
+                                                <span className={clsx(selected ? 'font-semibold' : 'font-normal', 'truncate')}>
                                                   {role.name}
                                                 </span>
-                                                <span className={classNames(active ? 'text-indigo-200' : 'text-gray-500', 'ml-2 truncate')}>
+                                                <span className={clsx(active ? 'text-indigo-200' : 'text-gray-500', 'ml-2 truncate')}>
                                                   {role.text}
                                                 </span>
                                               </div>
 
                                               {selected ? (
                                                 <span
-                                                  className={classNames(
+                                                  className={clsx(
                                                     active ? 'text-white' : 'text-indigo-600',
                                                     'absolute inset-y-0 right-0 flex items-center pr-4',
                                                   )}

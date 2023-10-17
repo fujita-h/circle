@@ -2,10 +2,10 @@
 
 import { BackendImage } from '@/components/backend-image';
 import { useEnvironment } from '@/components/environment/providers';
-import { classNames } from '@/utils';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MagnifyingGlassIcon, UserIcon } from '@heroicons/react/20/solid';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import clsx from 'clsx';
 import { Inter } from 'next/font/google';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -39,9 +39,7 @@ export function Navbar() {
                         <Image src="/assets/images/circle_logo.png" alt="logo" width={32} height={32} />
                       </div>
                       <div className="pt-3">
-                        <span className={classNames('text-xl text-gray-700 font-semibold', inter.className)}>
-                          {environment.WEBSITE_NAME}
-                        </span>
+                        <span className={clsx('text-xl text-gray-700 font-semibold', inter.className)}>{environment.WEBSITE_NAME}</span>
                       </div>
                     </div>
                   </Link>
@@ -51,7 +49,7 @@ export function Navbar() {
                     <Link
                       key={item.name}
                       href={item.href}
-                      className={classNames(
+                      className={clsx(
                         'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium',
                         item.current ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700',
                       )}
@@ -117,7 +115,7 @@ export function Navbar() {
                           {({ active }) => (
                             <Link
                               href={item.href}
-                              className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm font-semibold text-gray-600')}
+                              className={clsx(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm font-semibold text-gray-600')}
                             >
                               {item.name}
                             </Link>
@@ -145,7 +143,7 @@ export function Navbar() {
                 <Link key={item.name} href={item.href}>
                   <Disclosure.Button
                     as="span"
-                    className={classNames(
+                    className={clsx(
                       'block border-l-4 py-2 pl-3 pr-4 text-base font-medium',
                       item.current
                         ? 'bg-indigo-50 border-indigo-500 text-indigo-700'

@@ -1,12 +1,12 @@
 'use client';
 
-import { classNames } from '@/utils';
-import useSWR from 'swr';
 import { useEnvironment } from '@/components/environment/providers';
-import { useAccount, useMsal } from '@azure/msal-react';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { apiRequest } from '@/components/msal/requests';
+import { useAccount, useMsal } from '@azure/msal-react';
 import { HeartIcon } from '@heroicons/react/24/solid';
+import clsx from 'clsx';
+import useSWR from 'swr';
 
 export function LikeButton({ noteId }: { noteId: string }) {
   const environment = useEnvironment();
@@ -46,7 +46,7 @@ export function LikeButton({ noteId }: { noteId: string }) {
   return (
     <div className="flex flex-col w-10">
       <div className="h-10 rounded-full ring-1 ring-gray-300 flex items-center justify-center hover:cursor-pointer" onClick={handleLike}>
-        <HeartIcon className={classNames('w-6 h-6', data.liked ? 'text-red-400' : 'text-gray-300')} />
+        <HeartIcon className={clsx('w-6 h-6', data.liked ? 'text-red-400' : 'text-gray-300')} />
       </div>
       <div className="text-center font-bold text-gray-500">{data.count}</div>
     </div>

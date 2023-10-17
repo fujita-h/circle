@@ -2,13 +2,13 @@
 
 import { useEnvironment } from '@/components/environment/providers';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
-import { Note, SomeRequired, Stock, StockLabel } from '@/types';
-import { classNames } from '@/utils';
-import { useAccount, useMsal } from '@azure/msal-react';
-import useSWR from 'swr';
 import { CardList } from '@/components/notes/list';
 import { LinkPagination } from '@/components/paginations';
+import { Stock, StockLabel } from '@/types';
+import { useAccount, useMsal } from '@azure/msal-react';
+import clsx from 'clsx';
 import { useSearchParams } from 'next/navigation';
+import useSWR from 'swr';
 
 export function LabelsLoader({ activeLabelId, onChanged }: { activeLabelId?: string; onChanged?: (label?: StockLabel) => void }) {
   const environment = useEnvironment();
@@ -45,14 +45,14 @@ export function LabelsLoader({ activeLabelId, onChanged }: { activeLabelId?: str
         <li className="relative">
           <button
             onClick={() => onChanged?.()}
-            className={classNames(
+            className={clsx(
               activeLabelId === undefined ? 'bg-indigo-200 text-gray-900' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900',
               'group w-full flex items-center px-2 py-1 rounded-md',
             )}
           >
             <span className="truncate">All</span>
             <span
-              className={classNames(
+              className={clsx(
                 activeLabelId === undefined ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
                 'ml-auto inline-block px-3 rounded-full',
               )}
@@ -67,14 +67,14 @@ export function LabelsLoader({ activeLabelId, onChanged }: { activeLabelId?: str
             <li key={label.id} className="relative">
               <button
                 onClick={() => onChanged?.(label)}
-                className={classNames(
+                className={clsx(
                   activeLabelId === label.id ? 'bg-indigo-200 text-gray-900' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900',
                   'group w-full flex items-center px-2 py-1 rounded-md',
                 )}
               >
                 <span className="truncate pr-1">{label.name}</span>
                 <span
-                  className={classNames(
+                  className={clsx(
                     activeLabelId === label.id ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
                     'ml-auto inline-block px-3 rounded-full',
                   )}

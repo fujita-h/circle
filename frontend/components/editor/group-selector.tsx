@@ -1,14 +1,14 @@
 'use client';
 
-import useSWR from 'swr';
-import { Fragment, useEffect, useState } from 'react';
 import { useEnvironment } from '@/components/environment/providers';
-import { useAccount, useMsal } from '@azure/msal-react';
-import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
-import { Listbox, Transition } from '@headlessui/react';
-import { classNames } from '@/utils';
 import { ReadNotePermissionBadge } from '@/components/groups/badges';
+import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
+import { useAccount, useMsal } from '@azure/msal-react';
+import { Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
+import clsx from 'clsx';
+import { Fragment, useEffect, useState } from 'react';
+import useSWR from 'swr';
 
 export function GroupSelector({ groupId, onChange }: { groupId?: string; onChange?: Function }) {
   const environment = useEnvironment();
@@ -60,19 +60,16 @@ export function GroupSelector({ groupId, onChange }: { groupId?: string; onChang
                 <Listbox.Option
                   key={'draft'}
                   className={({ active }) =>
-                    classNames(active ? 'bg-indigo-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9')
+                    clsx(active ? 'bg-indigo-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9')
                   }
                   value={{}}
                 >
                   {({ selected, active }) => (
                     <>
-                      <span className={classNames(selected ? 'font-semibold' : 'font-normal', 'block truncate')}> {'未設定'} </span>
+                      <span className={clsx(selected ? 'font-semibold' : 'font-normal', 'block truncate')}> {'未設定'} </span>
                       {selected ? (
                         <span
-                          className={classNames(
-                            active ? 'text-white' : 'text-indigo-600',
-                            'absolute inset-y-0 right-0 flex items-center pr-4',
-                          )}
+                          className={clsx(active ? 'text-white' : 'text-indigo-600', 'absolute inset-y-0 right-0 flex items-center pr-4')}
                         >
                           <CheckIcon className="h-5 w-5" aria-hidden="true" />
                         </span>
@@ -84,25 +81,19 @@ export function GroupSelector({ groupId, onChange }: { groupId?: string; onChang
                   <Listbox.Option
                     key={group.id}
                     className={({ active }) =>
-                      classNames(
-                        active ? 'bg-indigo-600 text-white' : 'text-gray-900',
-                        'relative cursor-default select-none py-2 pl-3 pr-9',
-                      )
+                      clsx(active ? 'bg-indigo-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9')
                     }
                     value={group}
                   >
                     {({ selected, active }) => (
                       <>
-                        <span className={classNames(selected ? 'font-semibold' : 'font-normal', 'block truncate space-x-2')}>
+                        <span className={clsx(selected ? 'font-semibold' : 'font-normal', 'block truncate space-x-2')}>
                           <span>{group.name || group.id}</span>
                           <ReadNotePermissionBadge permission={group.readNotePermission} />
                         </span>
                         {selected ? (
                           <span
-                            className={classNames(
-                              active ? 'text-white' : 'text-indigo-600',
-                              'absolute inset-y-0 right-0 flex items-center pr-4',
-                            )}
+                            className={clsx(active ? 'text-white' : 'text-indigo-600', 'absolute inset-y-0 right-0 flex items-center pr-4')}
                           >
                             <CheckIcon className="h-5 w-5" aria-hidden="true" />
                           </span>

@@ -2,8 +2,8 @@
 
 import { BackendImage } from '@/components/backend-image';
 import { Note, SomeRequired } from '@/types';
-import { classNames } from '@/utils';
 import { ChevronRightIcon, UserGroupIcon } from '@heroicons/react/20/solid';
+import clsx from 'clsx';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 
@@ -21,7 +21,7 @@ export function CardList({ active, drafts }: { active?: string; drafts: SomeRequ
         return (
           <li
             key={draft.id}
-            className={classNames(
+            className={clsx(
               active === draft.id ? 'ring-2 ring-indigo-600' : 'hover:bg-indigo-50 hover:ring-1 hover:ring-indigo-300',
               'relative col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow',
             )}

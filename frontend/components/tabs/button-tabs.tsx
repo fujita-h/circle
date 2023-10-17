@@ -1,10 +1,10 @@
 'use client';
 
-import { classNames } from '@/utils';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { TabItem } from './types';
+import clsx from 'clsx';
 import { Inter } from 'next/font/google';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { TabItem } from './types';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,7 +21,7 @@ export function ButtonTabs({ tabs }: { tabs: TabItem[] }) {
           <Link
             key={tab.name}
             href={href}
-            className={classNames(
+            className={clsx(
               tab.current ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700',
               tabIdx === 0 ? 'rounded-l-lg' : '',
               tabIdx === tabs.length - 1 ? 'rounded-r-lg' : '',
@@ -32,7 +32,7 @@ export function ButtonTabs({ tabs }: { tabs: TabItem[] }) {
             <span>{tab.name}</span>
             <span
               aria-hidden="true"
-              className={classNames(tab.current ? 'bg-indigo-500' : 'bg-transparent', 'absolute inset-x-0 bottom-0 h-0.5', inter.className)}
+              className={clsx(tab.current ? 'bg-indigo-500' : 'bg-transparent', 'absolute inset-x-0 bottom-0 h-0.5', inter.className)}
             />
           </Link>
         );

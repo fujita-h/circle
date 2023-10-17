@@ -1,9 +1,9 @@
 'use client';
 
-import { Fragment, useEffect, useState } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpIcon } from '@heroicons/react/20/solid';
-import { classNames } from '@/utils';
+import clsx from 'clsx';
+import { Fragment, useEffect, useState } from 'react';
 import { PublishOption } from './types';
 
 const publishingOptions: PublishOption[] = [
@@ -53,7 +53,7 @@ export function SubmitButton({
                   <Listbox.Option
                     key={option.title}
                     className={({ active }) =>
-                      classNames(active ? 'bg-indigo-600 text-white' : 'text-gray-900', 'cursor-default select-none p-4 text-sm')
+                      clsx(active ? 'bg-indigo-600 text-white' : 'text-gray-900', 'cursor-default select-none p-4 text-sm')
                     }
                     value={option}
                   >
@@ -67,7 +67,7 @@ export function SubmitButton({
                             </span>
                           ) : null}
                         </div>
-                        <p className={classNames(active ? 'text-indigo-200' : 'text-gray-500', 'mt-2')}>{option.description}</p>
+                        <p className={clsx(active ? 'text-indigo-200' : 'text-gray-500', 'mt-2')}>{option.description}</p>
                       </div>
                     )}
                   </Listbox.Option>

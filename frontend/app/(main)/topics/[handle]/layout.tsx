@@ -4,13 +4,13 @@ import { BackendImage } from '@/components/backend-image';
 import { useEnvironment } from '@/components/environment/providers';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { apiRequest } from '@/components/msal/requests';
+import { NavigationTabs, TabItem } from '@/components/tabs';
 import { Topic, TopicMap } from '@/types';
-import { classNames } from '@/utils';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { UserIcon } from '@heroicons/react/24/solid';
+import clsx from 'clsx';
 import { Inter } from 'next/font/google';
 import useSWR from 'swr';
-import { NavigationTabs, TabItem } from '@/components/tabs';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -69,7 +69,7 @@ function Layout({ topic, children }: { topic: Topic; children: React.ReactNode }
                 <div className="flex-1">
                   <div>
                     <span
-                      className={classNames(
+                      className={clsx(
                         inter.className,
                         'mb-1 text-2xl font-semibold leading-7 text-gray-900 break-all sm:text-3xl sm:tracking-tight',
                       )}

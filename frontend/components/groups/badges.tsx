@@ -1,4 +1,4 @@
-import { classNames } from '@/utils';
+import clsx from 'clsx';
 
 export function ReadNotePermissionBadge({ permission }: { permission: string }) {
   switch (permission) {
@@ -38,7 +38,7 @@ export function JoinGroupConditionBadge({ condition }: { condition: string }) {
 function Badge({ label, color }: { label: string; color: string }) {
   return (
     <span
-      className={classNames(
+      className={clsx(
         `text-${color}-800 bg-${color}-50 ring-${color}-600/20`,
         'rounded-md whitespace-nowrap px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset',
       )}
@@ -51,7 +51,7 @@ function Badge({ label, color }: { label: string; color: string }) {
 function _DummyBadge() {
   return (
     <span
-      className={classNames(
+      className={clsx(
         'text-red-800 bg-red-50 ring-red-600/20',
         'text-yellow-800 bg-yellow-50 ring-yellow-600/20',
         'text-green-800 bg-green-50 ring-green-600/20',

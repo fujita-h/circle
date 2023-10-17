@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { useEnvironment } from '@/components/environment/providers';
-import { useAccount, useMsal } from '@azure/msal-react';
 import { apiRequest } from '@/components/msal/requests';
+import { useAccount, useMsal } from '@azure/msal-react';
+import clsx from 'clsx';
+import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { classNames } from '@/utils';
 import styles from './styles.module.css';
 
 export function DnDTextarea({ body, setBody }: { body: string; setBody: (body: string) => void }) {
@@ -84,7 +84,7 @@ export function DnDTextarea({ body, setBody }: { body: string; setBody: (body: s
         </div>
       ) : (
         <textarea
-          className={classNames(
+          className={clsx(
             styles.thinScrollbar,
             'resize-none block w-full h-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-indigo-400 sm:text-sm sm:leading-6',
           )}

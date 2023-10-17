@@ -1,18 +1,17 @@
 'use client';
 
-import Link from 'next/link';
-import { Inter } from 'next/font/google';
-import { classNames, capitalize } from '@/utils';
-import { UserIcon } from '@heroicons/react/24/solid';
-import { useAccount, useMsal } from '@azure/msal-react';
-import { useEnvironment } from '@/components/environment/providers';
-import { NavigationTabs, TabItem } from '@/components/tabs';
-import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { BackendImage } from '@/components/backend-image';
-import useSWR from 'swr';
-import { Group, Membership, User, SomeRequired } from '@/types';
+import { useEnvironment } from '@/components/environment/providers';
+import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { apiRequest } from '@/components/msal/requests';
+import { NavigationTabs, TabItem } from '@/components/tabs';
+import { SomeRequired, User } from '@/types';
 import { FollowUser } from '@/types/follow-user';
+import { useAccount, useMsal } from '@azure/msal-react';
+import { UserIcon } from '@heroicons/react/24/solid';
+import clsx from 'clsx';
+import { Inter } from 'next/font/google';
+import useSWR from 'swr';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -52,7 +51,7 @@ export default function Layout({ params, children }: { params: any; children: Re
                 <div className="flex-1">
                   <div>
                     <span
-                      className={classNames(
+                      className={clsx(
                         inter.className,
                         'mb-1 text-2xl font-semibold leading-7 text-gray-900 break-all sm:text-3xl sm:tracking-tight',
                       )}

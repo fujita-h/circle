@@ -3,7 +3,7 @@
 import { exploreTabItems } from '@/app/(main)/explore-tab-items';
 import { navTabItems } from '@/app/(main)/nav-tab-items';
 import { ButtonTabs, NavigationTabs, ResponsiveTabs, TabItem } from '@/components/tabs';
-import { classNames } from '@/utils';
+import clsx from 'clsx';
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -42,7 +42,7 @@ export default function Page() {
                 <ButtonTabs tabs={exploreTabItems} />
               </div>
               <div className="mt-6 ml-1">
-                <p className={classNames(inter.className, 'text-3xl font-bold')}>Featured Groups</p>
+                <p className={clsx(inter.className, 'text-3xl font-bold')}>Featured Groups</p>
                 <p className="text-base text-gray-500">注目されているグループ</p>
               </div>
               <div className="mt-6">

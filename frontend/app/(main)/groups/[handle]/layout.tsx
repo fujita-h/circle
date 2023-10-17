@@ -8,10 +8,10 @@ import { apiRequest } from '@/components/msal/requests';
 import { NavigationTabs, TabItem } from '@/components/tabs';
 import { Group, Membership, SomeRequired } from '@/types';
 import { FollowGroup } from '@/types/follow-group';
-import { classNames } from '@/utils';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { Disclosure } from '@headlessui/react';
 import { ChevronRightIcon, UserGroupIcon } from '@heroicons/react/24/solid';
+import clsx from 'clsx';
 import { Inter } from 'next/font/google';
 import { usePathname } from 'next/navigation';
 import useSWR, { useSWRConfig } from 'swr';
@@ -85,7 +85,7 @@ function Layout({ group, children }: { group: SomeRequired<Group, '_count'>; chi
                 <div className="flex-1 min-w-0">
                   <div className="text-center sm:text-left">
                     <span
-                      className={classNames(
+                      className={clsx(
                         inter.className,
                         'mb-1 text-xl md:text-2xl lg:text-3xl font-semibold leading-7 text-gray-900 break-all  sm:tracking-tight',
                       )}
@@ -100,9 +100,9 @@ function Layout({ group, children }: { group: SomeRequired<Group, '_count'>; chi
                           <>
                             <Disclosure.Button as="div" className="flex items-start min-w-0 hover:cursor-pointer">
                               <ChevronRightIcon
-                                className={classNames('flex-none inline-block w-4 h-4 mt-1', open ? 'rotate-90 transform' : '')}
+                                className={clsx('flex-none inline-block w-4 h-4 mt-1', open ? 'rotate-90 transform' : '')}
                               />
-                              <p className={classNames('ml-[6px] flex-1 truncate', open ? 'hidden' : '')}>{group.description}</p>
+                              <p className={clsx('ml-[6px] flex-1 truncate', open ? 'hidden' : '')}>{group.description}</p>
                             </Disclosure.Button>
                             <Disclosure.Panel className="ml-4">
                               {({ close }) => (

@@ -5,9 +5,9 @@ import { apiRequest } from '@/components/msal/requests';
 import { Parser } from '@/components/react-markdown/parser';
 import mdStyles from '@/components/react-markdown/styles.module.css';
 import { Topic } from '@/types';
-import { classNames } from '@/utils';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { DocumentTextIcon, PencilSquareIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
+import clsx from 'clsx';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useSWRConfig } from 'swr';
@@ -125,7 +125,7 @@ export function Editor({
 
   return (
     <div className="h-full px-1 py-2 bg-slate-100">
-      <div className={classNames(styles.h44, 'flex gap-2')}>
+      <div className={clsx(styles.h44, 'flex gap-2')}>
         <div className="flex-1">
           <input
             type="text"
@@ -136,7 +136,7 @@ export function Editor({
           />
         </div>
       </div>
-      <div className={classNames(styles.h50, 'flex gap-2')}>
+      <div className={clsx(styles.h50, 'flex gap-2')}>
         <div className="flex-1">
           <TopicSelector
             topics={form.Topics}
@@ -146,7 +146,7 @@ export function Editor({
           />
         </div>
       </div>
-      <div className={classNames(styles.h44, 'flex gap-2')}>
+      <div className={clsx(styles.h44, 'flex gap-2')}>
         <div className="flex-1">
           <GroupSelector
             groupId={groupId}
@@ -157,7 +157,7 @@ export function Editor({
         </div>
         <div className="bg-white ring-gray-300 border-0 ring-1 rounded-md mb-2 p-1 px-2 mr-0.5 flex gap-2 items-center">
           <PencilSquareIcon
-            className={classNames(
+            className={clsx(
               'h-6 w-6',
               editorMode === 'edit'
                 ? 'text-indigo-600 bg-indigo-50 rounded-md'
@@ -169,7 +169,7 @@ export function Editor({
             }}
           />
           <ViewColumnsIcon
-            className={classNames(
+            className={clsx(
               'h-6 w-6',
               editorMode === 'both'
                 ? 'text-indigo-600 bg-indigo-50 rounded-md'
@@ -181,7 +181,7 @@ export function Editor({
             }}
           />
           <DocumentTextIcon
-            className={classNames(
+            className={clsx(
               'h-6 w-6',
               editorMode === 'preview'
                 ? 'text-indigo-600 bg-indigo-50 rounded-md'
@@ -194,7 +194,7 @@ export function Editor({
           />
         </div>
       </div>
-      <div className={classNames(styles.body, 'grid', 'mb-2', editorMode === 'both' ? 'grid-cols-2 gap-2' : 'grid-cols-1')}>
+      <div className={clsx(styles.body, 'grid', 'mb-2', editorMode === 'both' ? 'grid-cols-2 gap-2' : 'grid-cols-1')}>
         <div className="w-full h-full" hidden={editorMode === 'preview'}>
           <DnDTextarea
             body={form.body}
@@ -205,7 +205,7 @@ export function Editor({
           />
         </div>
         <div
-          className={classNames(
+          className={clsx(
             styles.thinScrollbar,
             editorMode === 'edit' ? 'hidden' : 'block',
             'w-full rounded-md border-0 px-4 py-2 ring-1 ring-inset ring-gray-300 bg-white break-words overflow-y-scroll',

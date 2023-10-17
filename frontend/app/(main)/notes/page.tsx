@@ -1,11 +1,11 @@
 'use client';
 
+import { navTabItems } from '@/app/(main)/nav-tab-items';
+import { NavigationTabs } from '@/components/tabs';
+import clsx from 'clsx';
+import { Inter } from 'next/font/google';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Loader } from './loader';
-import { Inter } from 'next/font/google';
-import { classNames } from '@/utils';
-import { NavigationTabs } from '@/components/tabs';
-import { navTabItems } from '@/app/(main)/nav-tab-items';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -32,7 +32,7 @@ export default function Page() {
           <div className="p-4 md:p-8">
             <div className="px-4">
               <div className="ml-1">
-                <p className={classNames(inter.className, 'text-3xl font-bold')}>Notes</p>
+                <p className={clsx(inter.className, 'text-3xl font-bold')}>Notes</p>
                 <p className="text-base text-gray-500">新着の記事一覧</p>
               </div>
               <div className="mt-6">

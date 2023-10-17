@@ -4,10 +4,10 @@ import { useEnvironment } from '@/components/environment/providers';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
 import { CardList } from '@/components/notes';
 import { LinkPagination } from '@/components/paginations';
-import { classNames } from '@/utils';
-import { useAccount, useMsal } from '@azure/msal-react';
-import { Inter } from 'next/font/google';
 import { UserSetting } from '@/types';
+import { useAccount, useMsal } from '@azure/msal-react';
+import clsx from 'clsx';
+import { Inter } from 'next/font/google';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import useSWR from 'swr';
@@ -37,7 +37,7 @@ function StartPage() {
   };
   return (
     <div className="p-8">
-      <p className={classNames(inter.className, 'text-3xl font-bold mb-2')}>Search</p>
+      <p className={clsx(inter.className, 'text-3xl font-bold mb-2')}>Search</p>
       <form onSubmit={handleSubmit}>
         <input
           autoFocus
@@ -91,7 +91,7 @@ function ResultPage({ searchQuery }: { searchQuery: string }) {
 
   return (
     <div className="p-8">
-      <p className={classNames(inter.className, 'text-3xl font-bold mb-2')}>Search</p>
+      <p className={clsx(inter.className, 'text-3xl font-bold mb-2')}>Search</p>
       <form onSubmit={handleSubmit}>
         <input
           autoFocus

@@ -7,10 +7,10 @@ import { Note, SomeRequired } from '@/types';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { ChevronRightIcon, UserIcon } from '@heroicons/react/20/solid';
 import { HeartIcon } from '@heroicons/react/24/outline';
+import clsx from 'clsx';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { StockButton } from './buttons';
-import { classNames } from '@/utils';
 
 export function List({ notes }: { notes: SomeRequired<Note, 'User'>[] }) {
   return (
@@ -66,7 +66,7 @@ export function CardList({
   forceSingleCols?: boolean;
 }) {
   return (
-    <ul role="list" className={classNames('grid', forceSingleCols ? 'grid-cols-1 gap-4' : 'grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8')}>
+    <ul role="list" className={clsx('grid', forceSingleCols ? 'grid-cols-1 gap-4' : 'grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8')}>
       {notes.map((note) => {
         const pulishedAt = note.publishedAt
           ? new Date(note.publishedAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })

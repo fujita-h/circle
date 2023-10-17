@@ -1,6 +1,6 @@
 import { navTabItems } from '@/app/(main)/nav-tab-items';
 import { NavigationTabs } from '@/components/tabs';
-import { classNames } from '@/utils';
+import clsx from 'clsx';
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
 import { Loader as GroupsLoader } from './groups/explore/loader';
@@ -26,7 +26,7 @@ export default function Page() {
           <div className="divide-y">
             <div className="px-8 py-4 md:px-12 md:py-12 bg-slate-100">
               <div className="ml-1">
-                <p className={classNames(inter.className, 'text-3xl font-bold')}>Notes</p>
+                <p className={clsx(inter.className, 'text-3xl font-bold')}>Notes</p>
                 <p className="text-base text-gray-500">注目されている記事</p>
               </div>
               <div className="mt-6">
@@ -40,7 +40,7 @@ export default function Page() {
             </div>
             <div className="px-8 py-4 md:px-12 md:py-12 bg-stone-100">
               <div className="ml-1">
-                <p className={classNames(inter.className, 'text-3xl font-bold')}>Groups</p>
+                <p className={clsx(inter.className, 'text-3xl font-bold')}>Groups</p>
                 <p className="text-base text-gray-500">注目されているグループ</p>
               </div>
               <div className="mt-6">
@@ -54,7 +54,7 @@ export default function Page() {
             </div>
             <div className="px-8 py-4 md:px-12 md:py-12 bg-slate-100">
               <div className="ml-1">
-                <p className={classNames(inter.className, 'text-3xl font-bold')}>Topics</p>
+                <p className={clsx(inter.className, 'text-3xl font-bold')}>Topics</p>
                 <p className="text-base text-gray-500">注目されているグループ</p>
               </div>
               <div className="mt-6">

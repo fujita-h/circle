@@ -2,7 +2,7 @@
 
 import { RadioGroup } from '@headlessui/react';
 import { CheckCircleIcon } from '@heroicons/react/20/solid';
-import { classNames } from '@/utils';
+import clsx from 'clsx';
 
 export function RadioGroupOption({
   label,
@@ -34,7 +34,7 @@ export function RadioGroupOption({
             key={v.value}
             value={v.value}
             className={({ active }) =>
-              classNames(
+              clsx(
                 active ? 'border-indigo-600 ring-2 ring-indigo-600' : 'border-gray-300',
                 'relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none',
               )
@@ -52,9 +52,9 @@ export function RadioGroupOption({
                     </RadioGroup.Description>
                   </span>
                 </span>
-                <CheckCircleIcon className={classNames(!checked ? 'invisible' : '', 'h-5 w-5 text-indigo-600')} aria-hidden="true" />
+                <CheckCircleIcon className={clsx(!checked ? 'invisible' : '', 'h-5 w-5 text-indigo-600')} aria-hidden="true" />
                 <span
-                  className={classNames(
+                  className={clsx(
                     active ? 'border' : 'border-2',
                     checked ? 'border-indigo-600' : 'border-transparent',
                     'pointer-events-none absolute -inset-px rounded-lg',

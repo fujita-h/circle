@@ -2,8 +2,8 @@
 
 import { BackendImage } from '@/components/backend-image';
 import { Topic } from '@/types';
-import { classNames } from '@/utils';
 import { TagIcon } from '@heroicons/react/20/solid';
+import clsx from 'clsx';
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
 
@@ -24,7 +24,7 @@ export function CardList({ topics }: { topics: Topic[] }) {
               />
               <div className="mt-4">
                 <div className="text-base font-medium text-gray-900 group-hover:underline">{topic.name}</div>
-                <div className={classNames('text-sm text-gray-600 group-hover:underline', inter.className)}>{topic.handle}</div>
+                <div className={clsx('text-sm text-gray-600 group-hover:underline', inter.className)}>{topic.handle}</div>
               </div>
             </div>
           </Link>

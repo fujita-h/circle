@@ -2,11 +2,11 @@
 
 import { useEnvironment } from '@/components/environment/providers';
 import { apiRequest } from '@/components/msal/requests';
-import { classNames } from '@/utils';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { ExclamationCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import clsx from 'clsx';
 import { Inter } from 'next/font/google';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Fragment, useEffect, useState } from 'react';
@@ -28,7 +28,7 @@ export default function Page() {
           <div className="px-4">
             <div className="flex items-center">
               <div className="flex-1 ml-1">
-                <p className={classNames(inter.className, 'text-3xl font-bold')}>Groups</p>
+                <p className={clsx(inter.className, 'text-3xl font-bold')}>Groups</p>
                 <p className="text-base text-gray-500">全てのグループ</p>
               </div>
               <div className="flex-none">

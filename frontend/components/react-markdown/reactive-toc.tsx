@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import clsx from 'clsx';
+import throttle from 'lodash/throttle';
+import { useCallback, useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Link as Scroll } from 'react-scroll';
-import { classNames } from '@/utils';
-import throttle from 'lodash/throttle';
 
 const CONTENT_ANCHOR_PREFIX = 'content-line';
 const CONTENT_ANCHOR_CLASS_NAME = 'doc-content-lines';
@@ -41,7 +41,7 @@ export function ReactiveToC({ children }: { children: string }) {
       return (
         <Scroll to={`${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}`} smooth={true} duration={400} offset={0}>
           <div
-            className={classNames(
+            className={clsx(
               `${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}` == scrollMarker ? 'bg-gray-200' : '',
               'py-1 px-1 hover:cursor-pointer hover:bg-gray-300',
             )}
@@ -59,7 +59,7 @@ export function ReactiveToC({ children }: { children: string }) {
       return (
         <Scroll to={`${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}`} smooth={true} duration={400} offset={0}>
           <div
-            className={classNames(
+            className={clsx(
               `${CONTENT_ANCHOR_PREFIX}-${node.position?.start.line.toString()}` == scrollMarker ? 'bg-gray-200' : '',
               'py-1 pl-3 pr-1 hover:cursor-pointer hover:bg-gray-300',
             )}

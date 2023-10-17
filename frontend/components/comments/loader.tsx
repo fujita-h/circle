@@ -1,16 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import { useEnvironment } from '@/components/environment/providers';
-import { useAccount, useMsal } from '@azure/msal-react';
-import { apiRequest } from '@/components/msal/requests';
 import { swrMsalTokenFetcher } from '@/components/msal/fetchers';
-import useSWR from 'swr';
-import { classNames } from '@/utils';
-import { Tab } from '@headlessui/react';
-import { CommentList } from './list';
-import mdStyles from '@/components/react-markdown/styles.module.css';
+import { apiRequest } from '@/components/msal/requests';
 import { Parser } from '@/components/react-markdown/parser';
+import mdStyles from '@/components/react-markdown/styles.module.css';
+import { useAccount, useMsal } from '@azure/msal-react';
+import { Tab } from '@headlessui/react';
+import clsx from 'clsx';
+import { useState } from 'react';
+import useSWR from 'swr';
+import { CommentList } from './list';
 
 export function Loader({ noteId }: { noteId: string }) {
   const environment = useEnvironment();
@@ -84,7 +84,7 @@ export function Loader({ noteId }: { noteId: string }) {
           <Tab.List className="flex items-center">
             <Tab
               className={({ selected }) =>
-                classNames(
+                clsx(
                   selected ? 'bg-gray-100 text-gray-900 hover:bg-gray-200' : 'bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-900',
                   'rounded-md border border-transparent px-3 py-1.5 text-sm font-medium',
                 )
@@ -94,7 +94,7 @@ export function Loader({ noteId }: { noteId: string }) {
             </Tab>
             <Tab
               className={({ selected }) =>
-                classNames(
+                clsx(
                   selected ? 'bg-gray-100 text-gray-900 hover:bg-gray-200' : 'bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-900',
                   'ml-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium',
                 )

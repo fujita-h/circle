@@ -1,6 +1,6 @@
 'use client';
 
-import { classNames } from '@/utils';
+import clsx from 'clsx';
 import { Inter } from 'next/font/google';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Loader } from './loader';
@@ -20,7 +20,7 @@ export default function Page() {
         <div className="p-4 md:p-8">
           <div className="px-4">
             <div className="ml-1">
-              <p className={classNames(inter.className, 'text-3xl font-bold')}>Users</p>
+              <p className={clsx(inter.className, 'text-3xl font-bold')}>Users</p>
               <p className="text-base text-gray-500">全てのユーザー</p>
             </div>
             <div className="mt-6">

@@ -1,11 +1,10 @@
 'use client';
 
-import { classNames } from '@/utils';
+import clsx from 'clsx';
+import { Inter } from 'next/font/google';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { TabItem } from './types';
-import Link from 'next/link';
-import React from 'react';
-import { Inter } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,7 +22,7 @@ export function NavigationTabs({ tabs }: { tabs: TabItem[] }) {
           <Link
             key={tab.name}
             href={href}
-            className={classNames(
+            className={clsx(
               tab.current
                 ? 'border-indigo-500 text-indigo-600'
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
@@ -35,7 +34,7 @@ export function NavigationTabs({ tabs }: { tabs: TabItem[] }) {
             {tab.name}
             {tab.count !== undefined ? (
               <span
-                className={classNames(
+                className={clsx(
                   tab.current ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-900',
                   'ml-3 hidden rounded-full py-0.5 px-2.5 text-xs font-medium md:inline-block',
                 )}

@@ -1,6 +1,6 @@
 'use client';
 
-import { classNames } from '@/utils';
+import clsx from 'clsx';
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -28,7 +28,7 @@ export function ResponsiveTabs({ tabs, dynamic = true }: { tabs: TabItem[]; dyna
           <select
             id="current-tab"
             name="current-tab"
-            className={classNames(
+            className={clsx(
               inter.className,
               'block w-full rounded-md border-0 py-1.5 pl-3 pr-10 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600',
             )}
@@ -55,7 +55,7 @@ export function ResponsiveTabs({ tabs, dynamic = true }: { tabs: TabItem[]; dyna
                 <Link
                   key={tab.name}
                   href={href}
-                  className={classNames(
+                  className={clsx(
                     tab.current
                       ? 'border-indigo-500 text-indigo-600'
                       : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',

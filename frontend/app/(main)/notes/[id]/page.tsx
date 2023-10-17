@@ -9,21 +9,17 @@ import { Parser } from '@/components/react-markdown/parser';
 import { ReactiveToC } from '@/components/react-markdown/reactive-toc';
 import mdStyles from '@/components/react-markdown/styles.module.css';
 import { Note, SomeRequired, TopicMap } from '@/types';
-import { classNames } from '@/utils';
 import { useAccount, useMsal } from '@azure/msal-react';
 import { Menu, Transition } from '@headlessui/react';
 import {
-  ArchiveBoxIcon,
-  ArrowRightCircleIcon,
   DocumentDuplicateIcon,
   EllipsisHorizontalIcon,
-  HeartIcon,
   PencilSquareIcon,
   TrashIcon,
   UserGroupIcon,
   UserIcon,
-  UserPlusIcon,
 } from '@heroicons/react/24/solid';
+import clsx from 'clsx';
 import Link from 'next/link';
 import { Fragment, useEffect } from 'react';
 import useSWR from 'swr';
@@ -235,10 +231,7 @@ function OtherMenuButton({ note, className }: { note: any; className?: string })
               {({ active }) => (
                 <Link
                   href={`/notes/${note.id}/edit`}
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'group flex items-center px-4 py-2 text-sm',
-                  )}
+                  className={clsx(active ? 'bg-gray-100 text-gray-900' : 'text-gray-700', 'group flex items-center px-4 py-2 text-sm')}
                 >
                   <PencilSquareIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
                   Edit
@@ -249,10 +242,7 @@ function OtherMenuButton({ note, className }: { note: any; className?: string })
               {({ active }) => (
                 <a
                   href="#"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'group flex items-center px-4 py-2 text-sm',
-                  )}
+                  className={clsx(active ? 'bg-gray-100 text-gray-900' : 'text-gray-700', 'group flex items-center px-4 py-2 text-sm')}
                 >
                   <DocumentDuplicateIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
                   Duplicate
@@ -265,10 +255,7 @@ function OtherMenuButton({ note, className }: { note: any; className?: string })
               {({ active }) => (
                 <a
                   href="#"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'group flex items-center px-4 py-2 text-sm',
-                  )}
+                  className={clsx(active ? 'bg-gray-100 text-gray-900' : 'text-gray-700', 'group flex items-center px-4 py-2 text-sm')}
                 >
                   <TrashIcon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
                   Delete

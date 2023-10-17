@@ -2,8 +2,8 @@
 
 import { BackendImage } from '@/components/backend-image';
 import { User } from '@/types';
-import { classNames } from '@/utils';
 import { UserIcon } from '@heroicons/react/20/solid';
+import clsx from 'clsx';
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
 
@@ -23,7 +23,7 @@ export function CardList({ users }: { users: User[] }) {
                 fallback={<UserIcon className="mx-auto h-32 w-32 flex-shrink-0 rounded-full bg-gray-100 text-gray-400" />}
               />
               <div className="mt-6">
-                <div className={classNames('text-sm text-gray-600 group-hover:underline', inter.className)}>@{user.handle}</div>
+                <div className={clsx('text-sm text-gray-600 group-hover:underline', inter.className)}>@{user.handle}</div>
                 <div className="text-base font-medium text-gray-900 group-hover:underline">{user.name}</div>
                 <dl className="mt-1 flex flex-grow flex-col justify-between">
                   <dt className="sr-only">Title</dt>
