@@ -37,7 +37,7 @@ export function Footer() {
         <div className="mx-auto max-w-7xl px-6 pb-8 pt-16 sm:pt-24 lg:px-8 lg:pt-32">
           <div className="xl:grid xl:grid-cols-3 xl:gap-8">
             <div className="space-y-8">
-              <Image src="/assets/images/circle_logo.png" width={36} height={36} alt="Circle logo" className="opacity-80" />
+              <Image src="/assets/images/logo.png" width={36} height={36} alt="site logo" className="opacity-80" />
               <p className="text-sm leading-6 text-gray-600">Making the world a better place through constructing elegant hierarchies.</p>
             </div>
             <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
@@ -99,7 +99,7 @@ export function Footer() {
         <div className="mt-16 border-t border-gray-900/10 py-4 sm:mt-20 lg:mt-24">
           <div className="mx-auto max-w-7xl px-6">
             <a
-              href="https://github.com/fujita-h/circle"
+              href="https://github.com/fujita-h/mdocs"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-600 hover:text-gray-500 hover:underline"
@@ -113,7 +113,7 @@ export function Footer() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <p className="text-sm leading-5">Circle is open source software licensed by the AGPL-3.0.</p>
+                <p className="text-sm leading-5">mdocs is open source software licensed by the AGPL-3.0.</p>
               </div>
             </a>
           </div>

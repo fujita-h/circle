@@ -9,7 +9,7 @@ const environment: EnvironmentContextType = {
   AAD_BACKEND_CLIENT_ID: process.env.AAD_BACKEND_CLIENT_ID || '',
   AAD_BACKEND_API_SCOPE_NAME: process.env.AAD_BACKEND_API_SCOPE_NAME || '',
   BACKEND_ENDPOINT: process.env.BACKEND_ENDPOINT || 'http://127.0.0.1:3001',
-  WEBSITE_NAME: process.env.WEBSITE_NAME || 'Circle',
+  WEBSITE_NAME: process.env.WEBSITE_NAME || 'mdocs',
 };
 
 export const metadata = {

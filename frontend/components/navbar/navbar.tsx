@@ -36,7 +36,7 @@ export function Navbar() {
                   <Link href="/">
                     <div className="flex items-center gap-2">
                       <div>
-                        <Image src="/assets/images/circle_logo.png" alt="logo" width={32} height={32} />
+                        <Image src="/assets/images/logo.png" alt="logo" width={32} height={32} />
                       </div>
                       <div className="pt-3">
                         <span className={clsx('text-xl text-gray-700 font-semibold', inter.className)}>{environment.WEBSITE_NAME}</span>
