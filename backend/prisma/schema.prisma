@@ -11,39 +11,35 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(cuid()) // Automatically generated CUID for identifying user on this site. Even if user is deleted, this CUID is not changed.
-  oid       String?    @unique // AAD OID = Unique User ID. Set null if user is deleted.
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
-  type      UserType   @default(NORMAL)
-  status    UserStatus @default(NORMAL)
-  handle    String?    @unique // Set null if user is deleted.
-  name      String?    @db.VarChar(50)
-  email     String?    @db.VarChar(254)
+  id        String   @id @default(cuid())
+  oid       String   @unique // AAD OID = Unique User ID. 
+  handle    String   @unique
+  name      String
+  email     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  Joined          Membership[]
+  JoinedGroups    Membership[]
   Comments        Comment[]
   Notes           Note[]
   Stocks          Stock[]
   StockLabels     StockLabel[]
   Likes           Like[]
-  FollowingUsers  FollowUser[]   @relation("from")
-  FollowedUsers   FollowUser[]   @relation("to")
+  FollowingUsers  FollowUser[]   @relation("from_user")
+  FollowedUsers   FollowUser[]   @relation("to_user")
   FollowingGroups FollowGroup[]
   FollowingTopics FollowTopic[]
   Notifications   Notification[]
   UserSetting     UserSetting?
 
-  @@index([type])
-  @@index([status])
   @@map("user")
 }
 
 model UserSetting {
   id             String         @id @default(cuid())
-  User           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String         @unique @map("user_id")
-  listNotesStyle StyleListNotes @default(CARD) @map("list_notes_style")
+  User           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  styleNotesView StyleNotesView @default(LIST) @map("style_notes_view")
   createdAt      DateTime       @default(now()) @map("created_at")
   updatedAt      DateTime       @updatedAt @map("updated_at")
 
@@ -51,31 +47,73 @@ model UserSetting {
   @@map("user_setting")
 }
 
+enum StyleNotesView {
+  LIST
+  GRID
+}
+
+model FollowUser {
+  fromUserId String   @map("from_user_id")
+  toUserId   String   @map("to_user_id")
+  FromUser   User     @relation("from_user", fields: [fromUserId], references: [id], onDelete: Cascade)
+  ToUser     User     @relation("to_user", fields: [toUserId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@id([fromUserId, toUserId])
+  @@map("follow_user")
+}
+
+model FollowGroup {
+  userId    String   @map("user_id")
+  groupId   String   @map("group_id")
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([userId, groupId])
+  @@map("follow_group")
+}
+
+model FollowTopic {
+  userId    String   @map("user_id")
+  topicId   String   @map("topic_id")
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([userId, topicId])
+  @@map("follow_topic")
+}
+
 model Group {
-  id                  String              @id @default(cuid())
-  createdAt           DateTime            @default(now()) @map("created_at")
-  updatedAt           DateTime            @updatedAt @map("updated_at")
-  status              GroupStatus         @default(NORMAL)
-  handle              String?             @unique // Set null if the group is deleted.
-  name                String?             @db.VarChar(50)
-  description         String?             @db.Text
-  joinGroupCondition  ConditionJoinGroup  @default(DENIED) @map("join_group_condition")
-  writeNotePermission PermissionWriteNote @default(ADMIN) @map("write_note_permission")
-  readNotePermission  PermissionReadNote  @default(ADMIN) @map("read_note_permission")
+  id          String    @id @default(cuid())
+  handle      String    @unique
+  name        String
+  description String?
+  type        GroupType @default(PRIVATE)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  Members  Membership[]
-  Notes    Note[]
-  Followed FollowGroup[]
+  Members        Membership[]
+  Notes          Note[]
+  FollowedGroups FollowGroup[]
 
-  @@index([status])
   @@map("group")
 }
 
+enum GroupType {
+  PRIVATE
+  ADVERTISING
+}
+
 model Membership {
-  User      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String         @map("user_id")
-  Group     Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId   String         @map("group_id")
+  User      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Group     Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
   role      MembershipRole @default(MEMBER)
   createdAt DateTime       @default(now()) @map("created_at")
   updatedAt DateTime       @updatedAt @map("updated_at")
@@ -85,51 +123,71 @@ model Membership {
   @@map("membership")
 }
 
+enum MembershipRole {
+  MEMBER
+  ADMIN
+}
+
 model Note {
-  id                     String                 @id @default(cuid())
-  createdAt              DateTime               @default(now()) @map("created_at")
-  updatedAt              DateTime               @updatedAt @map("updated_at")
-  publishedAt            DateTime?              @map("published_at")
-  User                   User                   @relation(fields: [userId], references: [id])
-  userId                 String                 @map("user_id")
-  Group                  Group?                 @relation(fields: [groupId], references: [id], onDelete: SetNull) // group is null if the note is drafted.
-  groupId                String?                @map("group_id")
-  title                  String?                @db.VarChar(250)
-  blobPointer            String?                @map("blob_pointer")
-  draftBlobPointer       String?                @map("draft_blob_pointer")
-  type                   NoteType               @default(NORMAL)
-  status                 NoteStatus             @default(NORMAL)
-  writeCommentPermission PermissionWriteComment @default(ALL) @map("write_comment_permission")
+  id            String    @id @default(cuid())
+  userId        String    @map("user_id")
+  groupId       String?   @map("group_id")
+  title         String?
+  bodyBlobName  String?   @map("body_blob_name")
+  draftBlobName String?   @map("draft_blob_name")
+  isPublished   Boolean   @default(false) @map("is_published")
+  canComment    Boolean   @default(true) @map("can_comment")
+  publishedAt   DateTime? @map("published_at")
+  User          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Group         Group?    @relation(fields: [groupId], references: [id], onDelete: SetNull) // group is null if the note is drafted.
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   Topics   TopicMap[]
   Comments Comment[]
   Stocked  Stock[]
   Liked    Like[]
 
-  @@index([type])
-  @@index([status])
   @@map("note")
+}
+
+model Comment {
+  id           String      @id @default(cuid())
+  userId       String      @map("user_id")
+  noteId       String      @map("note_id")
+  commentType  CommentType @default(NORMAL) @map("comment_type")
+  bodyBlobName String?     @map("body_blob_name")
+  User         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Note         Note        @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  @@map("comment")
+}
+
+enum CommentType {
+  NORMAL
 }
 
 model Topic {
   id        String   @id @default(cuid())
+  handle    String   @unique
+  name      String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  handle    String   @unique
-  name      String   @db.VarChar(50)
 
-  Notes    TopicMap[]
-  Followed FollowTopic[]
+  Notes          TopicMap[]
+  FollowedTopics FollowTopic[]
 
   @@map("topic")
 }
 
 model TopicMap {
-  Note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
   noteId    String   @map("note_id")
-  Topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
   topicId   String   @map("topic_id")
   order     Int      @default(0)
+  Note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  Topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -138,30 +196,13 @@ model TopicMap {
   @@map("topic_map")
 }
 
-model Comment {
-  id          String        @id @default(cuid())
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
-  Note        Note          @relation(fields: [noteId], references: [id])
-  noteId      String        @map("note_id")
-  User        User          @relation(fields: [userId], references: [id])
-  userId      String        @map("user_id")
-  blobPointer String?       @map("blob_pointer")
-  type        CommentType   @default(NORMAL)
-  status      CommentStatus @default(NORMAL)
-
-  @@index([type])
-  @@index([status])
-  @@map("comment")
-}
-
 model Stock {
-  User      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String     @map("user_id")
-  Note      Note       @relation(fields: [noteId], references: [id], onDelete: Cascade)
   noteId    String     @map("note_id")
-  Label     StockLabel @relation(fields: [labelId], references: [id])
   labelId   String
+  User      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Note      Note       @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  Label     StockLabel @relation(fields: [labelId], references: [id])
   createdAt DateTime   @default(now()) @map("created_at")
   updatedAt DateTime   @updatedAt @map("updated_at")
 
@@ -171,10 +212,10 @@ model Stock {
 
 model StockLabel {
   id        String   @id @default(cuid())
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @map("user_id")
-  name      String   @db.VarChar(50)
+  name      String
   default   Boolean  @default(false)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -186,10 +227,10 @@ model StockLabel {
 }
 
 model Like {
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @map("user_id")
-  Note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
   noteId    String   @map("note_id")
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -197,135 +238,19 @@ model Like {
   @@map("like")
 }
 
-model FollowUser {
-  From      User     @relation("from", fields: [fromId], references: [id], onDelete: Cascade)
-  fromId    String   @map("from_id")
-  To        User     @relation("to", fields: [toId], references: [id], onDelete: Cascade)
-  toId      String   @map("to_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@id([fromId, toId])
-  @@map("follow_user")
-}
-
-model FollowGroup {
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @map("user_id")
-  Group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId   String   @map("group_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@id([userId, groupId])
-  @@map("follow_group")
-}
-
-model FollowTopic {
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @map("user_id")
-  Topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  topicId   String   @map("topic_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@id([userId, topicId])
-  @@map("follow_topic")
-}
-
 model Notification {
-  id        String             @id @default(cuid())
-  createdAt DateTime           @default(now()) @map("created_at")
-  updatedAt DateTime           @updatedAt @map("updated_at")
-  User      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String             @map("user_id")
-  type      NotificationType   @default(NORMAL)
-  status    NotificationStatus @default(UNREAD)
-  title     String?            @db.VarChar(50)
-  message   String?            @db.Text
+  id        String           @id @default(cuid())
+  userId    String           @map("user_id")
+  type      NotificationType @default(NORMAL)
+  body      String           @db.Text
+  User      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
 
   @@index([type])
-  @@index([status])
   @@map("notification")
-}
-
-enum UserType {
-  NORMAL
-}
-
-enum UserStatus {
-  NORMAL
-  DELETED
-}
-
-enum ConditionJoinGroup {
-  DENIED
-  REQUIRE_ADMIN_APPROVAL
-  ALLOWED
-}
-
-enum PermissionWriteNote {
-  ADMIN
-  MEMBER
-  ALL
-}
-
-enum PermissionReadNote {
-  ADMIN
-  MEMBER
-  ALL
-}
-
-enum PermissionWriteComment {
-  OWNER
-  MEMBER
-  ALL
-}
-
-enum GroupStatus {
-  NORMAL
-  DELETED
-}
-
-enum NoteType {
-  NORMAL
-  SHARED
-}
-
-enum NoteStatus {
-  NORMAL
-  DELETED
-  PENDING_APPROVAL
-  REJECTED_BY_ADMIN
-  EXCLUDED_BY_ADMIN
-}
-
-enum CommentType {
-  NORMAL
-}
-
-enum CommentStatus {
-  NORMAL
-  DELETED
-}
-
-enum MembershipRole {
-  ADMIN
-  MEMBER
-  PENDING_APPROVAL
 }
 
 enum NotificationType {
   NORMAL
-}
-
-enum NotificationStatus {
-  UNREAD
-  READ
-  DELETED
-}
-
-enum StyleListNotes {
-  CARD
-  LIST
 }
